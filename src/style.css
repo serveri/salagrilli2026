@@ -1,0 +1,28 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  body {
+    @apply bg-black text-white;
+  }
+
+  ::selection {
+    @apply bg-white/20;
+  }
+}
+
+@layer utilities {
+  .glass {
+    @apply bg-white/60 backdrop-blur-2xl border border-white/80;
+  }
+
+  .glass-dark {
+    @apply bg-neutral-900/5 backdrop-blur-xl border border-neutral-900/5;
+  }
+}
