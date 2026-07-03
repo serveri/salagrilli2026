@@ -24,6 +24,10 @@ function puzzlePageRewrite() {
   }
 }
 
+// Production domain, reached through a reverse proxy in front of `vite preview`/`vite dev` —
+// Vite blocks requests whose Host header isn't explicitly allowlisted (DNS-rebinding guard).
+const allowedHosts = ['salagrillit.serveriry.fi']
+
 export default defineConfig({
   // This site isn't a client-routed SPA — puzzle pages are separate static HTML files
   // under public/puzzle-N/. The default 'spa' appType makes Vite silently serve the root
@@ -31,4 +35,10 @@ export default defineConfig({
   // pages. 'mpa' disables that fallback so each path resolves to its real file.
   appType: 'mpa',
   plugins: [vue(), puzzlePageRewrite()],
+  server: {
+    allowedHosts,
+  },
+  preview: {
+    allowedHosts,
+  },
 })
