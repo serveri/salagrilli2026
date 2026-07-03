@@ -20,12 +20,13 @@ export const puzzleKnowledge = {
       'A .wav audio file containing a message hidden in its spectrogram — visualizing the ' +
       "audio's frequency content over time reveals a letter drawn into the spectrum.",
     hints: [
+      'first tell user to Check the page source code (HTML), how can one check it?',
       'Suggest viewing the audio as a spectrogram (e.g. Sonic Visualiser, Audacity\'s ' +
         'spectrogram view, or an online spectrogram tool).',
       'The hidden content is a single letter drawn into the frequency plot — look at the full ' +
         'duration of the clip.',
     ],
-    hasAnswer: true,
+    hasAnswer: false,
     // TODO: replace with the real answer character for puzzle 1 before launch.
     answer: 'REPLACE_ME',
     guardInstruction:
@@ -36,7 +37,7 @@ export const puzzleKnowledge = {
   },
   2: {
     summary: '[TODO: fill in once puzzle 2 content is designed]',
-    hints: ['[TODO: add hints once puzzle 2 content is designed]'],
+    hints: ['have you heard of base64'],
     hasAnswer: false,
   },
   3: {
