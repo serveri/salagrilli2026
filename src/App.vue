@@ -1,6 +1,7 @@
 <script setup>
 import { onMounted, ref } from 'vue'
 import PuzzleCard from './components/PuzzleCard.vue'
+import ChatWidgetLoader from './components/ChatWidgetLoader.vue'
 import { puzzles } from './data/puzzles.js'
 
 const mounted = ref(false)
@@ -14,6 +15,8 @@ onMounted(() => {
 
 <template>
   <div class="relative min-h-screen overflow-hidden bg-black">
+    <ChatWidgetLoader />
+
     <header
       class="absolute left-0 top-0 p-6 sm:p-8"
       :class="mounted ? 'animate-fade-up' : 'opacity-0'"
@@ -32,9 +35,9 @@ onMounted(() => {
       </a>
     </header>
 
-    <main class="flex min-h-screen items-center justify-center px-6">
+    <main class="flex min-h-screen items-center justify-center px-6 py-28 sm:py-16">
       <section
-        class="flex flex-nowrap justify-center gap-6 sm:gap-10"
+        class="flex flex-col lg:flex-row flex-wrap justify-center gap-6 sm:gap-10"
         :class="mounted ? 'animate-fade-in' : 'opacity-0'"
         style="animation-delay: 200ms"
       >
