@@ -6,7 +6,8 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
-    "preview": "vite preview --host"
+    "preview": "vite preview --host",
+    "gen:challenges": "node scripts/generate-challenges.mjs"
   },
   "dependencies": {
     "vue": "^3.5.13"
