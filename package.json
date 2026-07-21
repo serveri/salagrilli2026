@@ -10,6 +10,7 @@
     "gen:challenges": "node scripts/generate-challenges.mjs"
   },
   "dependencies": {
+    "phaser": "^4.2.1",
     "vue": "^3.5.13"
   },
   "devDependencies": {
