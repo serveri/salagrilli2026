@@ -260,11 +260,27 @@ Game.Backpack = class Backpack {
 
     _handleUse(item) {
         this.close();
-        if (this.scene.dialogue) {
-            // Displays in a single dialogue box page
-            this.scene.dialogue.show([
-                `Used ${item.name}! ${item.desc}`
-            ], () => { this.open(); });
+        
+        if (item.id === 'coffee') {
+            if (this.scene && typeof this.scene.energy !== 'undefined') {
+                this.scene.energy = 200;
+                if (this.scene.updateEnergyUI) {
+                    this.scene.updateEnergyUI();
+                }
+            }
+            if (this.scene.dialogue) {
+                this.scene.dialogue.show([
+                    `You drank the ${item.name}!`,
+                    `Your energy was restored to 200.`
+                ], () => { this.open(); });
+            }
+        } else {
+            if (this.scene.dialogue) {
+                // Displays in a single dialogue box page
+                this.scene.dialogue.show([
+                    `Used ${item.name}! ${item.desc}`
+                ], () => { this.open(); });
+            }
         }
     }
 

@@ -40,14 +40,71 @@
       image-rendering: pixelated;
       image-rendering: crisp-edges;
     }
+
+    #ui-wrapper {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 16px;
+    }
+
+    #energy-bar-container {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      width: 100%;
+      min-width: 250px;
+      background: #181822;
+      padding: 8px 12px;
+      border: 4px solid #343446;
+      border-radius: 8px;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
+      box-sizing: border-box;
+    }
+
+    #energy-label {
+      font-weight: bold;
+      font-size: 16px;
+      font-family: 'Pokemon Classic', 'Courier New', monospace;
+      color: #fff;
+      text-transform: uppercase;
+    }
+
+    #energy-bar-bg {
+      flex-grow: 1;
+      height: 16px;
+      background: #0a0a0f;
+      border: 2px solid #343446;
+      border-radius: 4px;
+      overflow: hidden;
+      position: relative;
+    }
+
+    #energy-number {
+      position: absolute;
+      top: 35%;
+      left: 30px;
+      transform: translateY(-50%);
+      font-family: 'Pokemon Classic', 'Courier New', monospace;
+      font-size: 13px;
+      color: #fff;
+      text-shadow: 1px 1px 0 #000, -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000;
+      z-index: 2;
+    }
+
+    #energy-bar-fill {
+      height: 100%;
+      width: 100%;
+      /* Default to full energy */
+      background: #FFD700;
+      /* Yellow flat color */
+    }
   </style>
   <!-- Phaser 3 CDN -->
   <script src="https://cdn.jsdelivr.net/npm/phaser@3.80.1/dist/phaser.min.js"></script>
 
-  <!-- Game modules (load order matters: config → data → systems → scenes → init) -->
+  <!-- Game modules (load order matters: config → systems → scenes → init) -->
   <script src="/puzzle-8/config.js"></script>
-  <script src="/puzzle-8/data/areas.js"></script>
-  <script src="/puzzle-8/systems/MapLoader.js"></script>
   <script src="/puzzle-8/systems/DialogueBox.js"></script>
   <script src="/puzzle-8/systems/Backpack.js"></script>
   <script src="/puzzle-8/scenes/BootScene.js"></script>
@@ -57,7 +114,17 @@
 </head>
 
 <body>
-  <div id="game-container"></div>
+  <div id="ui-wrapper">
+    <div id="game-container"></div>
+
+    <div id="energy-bar-container">
+      <div id="energy-label">Energy</div>
+      <div id="energy-bar-bg">
+        <div id="energy-bar-fill"></div>
+        <div id="energy-number">200</div>
+      </div>
+    </div>
+  </div>
 
   <script src="/chat-widget.js" data-puzzle="8" data-api-base="https://salagrillitchat.serveriry.fi" defer></script>
 </body>

@@ -13,6 +13,7 @@ Game.GameScene = class GameScene extends Phaser.Scene {
         this.keyHoldTimer = 0;
         this.isTurning = false;
         this.dialogue = null;
+        this.energy = 200;
     }
 
     create() {
@@ -63,15 +64,27 @@ Game.GameScene = class GameScene extends Phaser.Scene {
         this.player.setOrigin(0, 0);
         this.player.setDepth(10);
 
+        // Create Shadow Sprite (for jumping)
+        this.shadow = this.add.sprite(
+            this.tileX * Game.TILE_SIZE,
+            this.tileY * Game.TILE_SIZE,
+            'player', 10
+        );
+        this.shadow.setOrigin(0, 0);
+        this.shadow.setDepth(9); // Below player
+        this.shadow.setVisible(false);
+
         // Camera
         this.cameras.main.startFollow(this.player, true);
         this.cameras.main.setZoom(Game.SCALE);
+        this.cameras.main.setVisible(false);
 
         // Load starting area
-        this.loadArea('overworld', 12, 8);
-
-        // Camera fade in when game starts (after menu)
-        this.cameras.main.fadeIn(900, 0, 0, 0);
+        this.loadArea('/puzzle-8/data/serveriquest.csv', 1, 1).then(() => {
+            // Camera fade in when game starts (after menu)
+            this.cameras.main.setVisible(true);
+            this.cameras.main.fadeIn(900, 0, 0, 0);
+        });
 
         // Dialogue system
         this.dialogue = new Game.DialogueBox(this);
@@ -82,6 +95,10 @@ Game.GameScene = class GameScene extends Phaser.Scene {
         // Toggle backpack with 'E' or 'I' key
         const toggleBag = () => {
             if (this.dialogue && this.dialogue.active) return;
+            if (this.player.anims.isPlaying) {
+                this.player.anims.stop();
+                this.setIdleFrame();
+            }
             this.backpack.toggle();
         };
         this.input.keyboard.on('keydown-E', toggleBag);
@@ -90,23 +107,73 @@ Game.GameScene = class GameScene extends Phaser.Scene {
             if (this.backpack && this.backpack.active) this.backpack.close();
         });
 
+        // Inspect interaction
+        this.input.keyboard.on('keydown-SPACE', () => {
+            if (this.isTransitioning || this.isMoving) return;
+            if (this.dialogue && this.dialogue.active) return;
+            if (this.backpack && this.backpack.active) return;
+
+            const [dx, dy] = this.getDeltaFromDir(this.facing);
+            const targetX = this.tileX + dx;
+            const targetY = this.tileY + dy;
+
+            if (targetX >= 0 && targetX < this.currentArea.width &&
+                targetY >= 0 && targetY < this.currentArea.height) {
+                
+                const targetTileIndex = this.tileData[targetY][targetX];
+
+                if (targetTileIndex === 192) {
+                    if (this.player.anims.isPlaying) {
+                        this.player.anims.stop();
+                        this.setIdleFrame();
+                    }
+                    this.dialogue.show(['Its a rock...']);
+                }
+            }
+        });
+
         // Show intro dialogue
         this.dialogue.show([
             'You woke up \n \n \n Press space to continue..',
             'You feel tired..\n \n \n Press E or I to open backpack'
         ]);
+
+        this.updateEnergyUI();
     }
 
-    loadArea(areaId, startTileX, startTileY) {
-        const area = Game.Areas[areaId];
-        if (!area) return;
+    updateEnergyUI() {
+        const fill = document.getElementById('energy-bar-fill');
+        const num = document.getElementById('energy-number');
+        if (fill) {
+            const percent = Math.max(0, (this.energy / 200) * 100);
+            fill.style.width = `${percent}%`;
+        }
+        if (num) {
+            num.innerText = Math.floor(Math.max(0, this.energy));
+        }
+    }
 
-        this.currentArea = area;
+    async loadArea(csvPath, startTileX, startTileY) {
+        const response = await fetch(csvPath);
+        const text = await response.text();
+        const rows = text.trim().split('\n');
+        
+        this.tileData = rows.map(r => r.split(',').map(Number));
+
+        this.currentArea = {
+            width: this.tileData[0].length,
+            height: this.tileData.length,
+            doors: []
+        };
+
+        if (csvPath.includes('serveriquest.csv')) {
+            this.currentArea.doors.push({ x: 8, y: 1, targetArea: '/puzzle-8/data/House.csv', targetX: 2, targetY: 11 });
+        } else if (csvPath.includes('House.csv')) {
+            this.currentArea.doors.push({ x: 2, y: 11, targetArea: '/puzzle-8/data/serveriquest.csv', targetX: 8, targetY: 1 });
+        }
+
         this.tileX = startTileX;
         this.tileY = startTileY;
-
-        // Parse compact map format into tile array (cached for collision checks)
-        this.tileData = Game.MapLoader.parse(area);
 
         // Rebuild Tilemap
         if (this.tilemap) this.tilemap.destroy();
@@ -127,8 +194,8 @@ Game.GameScene = class GameScene extends Phaser.Scene {
         this.setIdleFrame();
 
         // Camera bounds — center small areas
-        const areaWidthPx = area.width * Game.TILE_SIZE;
-        const areaHeightPx = area.height * Game.TILE_SIZE;
+        const areaWidthPx = this.currentArea.width * Game.TILE_SIZE;
+        const areaHeightPx = this.currentArea.height * Game.TILE_SIZE;
         const viewWidth = this.cameras.main.width / Game.SCALE;
         const viewHeight = this.cameras.main.height / Game.SCALE;
 
@@ -246,6 +313,15 @@ Game.GameScene = class GameScene extends Phaser.Scene {
     }
 
     tryMove(dx, dy) {
+        if (this.energy <= 0) {
+            this.player.anims.stop();
+            this.setIdleFrame();
+            if (this.dialogue && !this.dialogue.active) {
+                this.dialogue.show(['You are too tired to move']);
+            }
+            return;
+        }
+
         const targetX = this.tileX + dx;
         const targetY = this.tileY + dy;
 
@@ -257,7 +333,52 @@ Game.GameScene = class GameScene extends Phaser.Scene {
 
         // Check solids against cached tile data
         const targetTileIndex = this.tileData[targetY][targetX];
-        if (this.currentArea.solidTiles.includes(targetTileIndex)) {
+        const walkthroughTiles = [0, 1, 288, 682, 683, 273];
+        const isWalkable = walkthroughTiles.includes(targetTileIndex) || targetTileIndex > 2816;
+
+        const cliffs = {
+            'up': 13,
+            'down': 141,
+            'right': 78,
+            'left': 76
+        };
+
+        let finalTargetX = targetX;
+        let finalTargetY = targetY;
+        let isJumping = false;
+        let jumpDistance = 1;
+
+        if (targetTileIndex === cliffs[this.facing]) {
+            isJumping = true;
+            let testX = targetX;
+            let testY = targetY;
+            
+            while (
+                testX >= 0 && testX < this.currentArea.width &&
+                testY >= 0 && testY < this.currentArea.height &&
+                this.tileData[testY][testX] === cliffs[this.facing]
+            ) {
+                testX += dx;
+                testY += dy;
+                jumpDistance++;
+            }
+            
+            if (testX < 0 || testX >= this.currentArea.width || testY < 0 || testY >= this.currentArea.height) {
+                this.player.play(`walk-${this.facing}`, true);
+                return;
+            }
+            
+            const landingTile = this.tileData[testY][testX];
+            const landingWalkable = walkthroughTiles.includes(landingTile) || landingTile > 2816;
+            
+            if (!landingWalkable) {
+                this.player.play(`walk-${this.facing}`, true);
+                return;
+            }
+            
+            finalTargetX = testX;
+            finalTargetY = testY;
+        } else if (!isWalkable) {
             this.player.play(`walk-${this.facing}`, true);
             return;
         }
@@ -265,19 +386,46 @@ Game.GameScene = class GameScene extends Phaser.Scene {
         this.isMoving = true;
         this.player.play(`walk-${this.facing}`, true);
 
-        const targetPxX = targetX * Game.TILE_SIZE;
-        const targetPxY = targetY * Game.TILE_SIZE;
+        const targetPxX = finalTargetX * Game.TILE_SIZE;
+        const targetPxY = finalTargetY * Game.TILE_SIZE;
+
+        if (isJumping) {
+            this.shadow.setPosition(this.player.x, this.player.y);
+            this.shadow.setVisible(true);
+
+            this.tweens.add({
+                targets: this.shadow,
+                x: targetPxX,
+                y: targetPxY,
+                duration: (Game.TWEEN_DURATION * 0.8 * jumpDistance),
+                ease: 'Linear'
+            });
+
+            this.tweens.add({
+                targets: this.player,
+                displayOriginY: 10,
+                duration: (Game.TWEEN_DURATION * jumpDistance) / 2,
+                yoyo: true,
+                ease: 'Sine.easeInOut'
+            });
+        }
 
         this.tweens.add({
             targets: this.player,
             x: targetPxX,
             y: targetPxY,
-            duration: Game.TWEEN_DURATION,
+            duration: isJumping ? (Game.TWEEN_DURATION * 0.8 * jumpDistance) : Game.TWEEN_DURATION,
             ease: 'Linear',
             onComplete: () => {
-                this.tileX = targetX;
-                this.tileY = targetY;
+                this.tileX = finalTargetX;
+                this.tileY = finalTargetY;
                 this.isMoving = false;
+                this.player.displayOriginY = 0;
+                this.shadow.setVisible(false);
+
+                // Decrease energy for each tile moved
+                this.energy = Math.max(0, this.energy - 1);
+                this.updateEnergyUI();
 
                 const doorTriggered = this.checkDoorTrigger();
 
@@ -317,11 +465,12 @@ Game.GameScene = class GameScene extends Phaser.Scene {
 
             this.cameras.main.fadeOut(250, 0, 0, 0, (camera, progress) => {
                 if (progress === 1) {
-                    this.loadArea(door.targetArea, door.targetX, door.targetY);
-                    this.cameras.main.fadeIn(250, 0, 0, 0, (cam, prog) => {
-                        if (prog === 1) {
-                            this.isTransitioning = false;
-                        }
+                    this.loadArea(door.targetArea, door.targetX, door.targetY).then(() => {
+                        this.cameras.main.fadeIn(250, 0, 0, 0, (cam, prog) => {
+                            if (prog === 1) {
+                                this.isTransitioning = false;
+                            }
+                        });
                     });
                 }
             });
