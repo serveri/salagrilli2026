@@ -80,7 +80,7 @@ Game.Backpack = class Backpack {
         });
         this.headerText.setOrigin(0.5, 0.5);
         this.headerText.setDepth(3002);
-        this.headerText.setScale(0.25);
+        this.headerText.setScale(0.22);
         this.elements.push(this.headerText);
 
         // 3. Container for Action Buttons (Inspect, Use, Back) in Header
@@ -152,7 +152,7 @@ Game.Backpack = class Backpack {
                 fontFamily: "'Pokemon Classic', 'Courier New', monospace",
                 fontSize: '32px',
                 color: '#004488'
-            }).setOrigin(1, 0.5).setInteractive({ useHandCursor: true }).setScale(0.25);
+            }).setOrigin(1, 0.5).setInteractive({ useHandCursor: true }).setScale(0.22);
 
             inspectBtn.on('pointerover', () => inspectBtn.setColor('#0088ff'));
             inspectBtn.on('pointerout', () => inspectBtn.setColor('#004488'));
@@ -167,7 +167,7 @@ Game.Backpack = class Backpack {
                     fontFamily: "'Pokemon Classic', 'Courier New', monospace",
                     fontSize: '32px',
                     color: '#006600'
-                }).setOrigin(1, 0.5).setInteractive({ useHandCursor: true }).setScale(0.25);
+                }).setOrigin(1, 0.5).setInteractive({ useHandCursor: true }).setScale(0.22);
 
                 useBtn.on('pointerover', () => useBtn.setColor('#00cc00'));
                 useBtn.on('pointerout', () => useBtn.setColor('#006600'));
@@ -181,7 +181,7 @@ Game.Backpack = class Backpack {
             fontFamily: "'Pokemon Classic', 'Courier New', monospace",
             fontSize: '32px',
             color: '#880000'
-        }).setOrigin(0, 0.5).setInteractive({ useHandCursor: true }).setScale(0.25);
+        }).setOrigin(0, 0.5).setInteractive({ useHandCursor: true }).setScale(0.22);
 
         closeBtn.on('pointerover', () => closeBtn.setColor('#ff0000'));
         closeBtn.on('pointerout', () => closeBtn.setColor('#880000'));
@@ -201,7 +201,51 @@ Game.Backpack = class Backpack {
         const spacingX = 4;
         const spacingY = 4;
 
-        this.items.forEach((item, index) => {
+        if (typeof this.currentPage === 'undefined') this.currentPage = 0;
+        const itemsPerPage = 9;
+        const totalPages = Math.ceil(this.items.length / itemsPerPage) || 1;
+        if (this.currentPage >= totalPages) this.currentPage = Math.max(0, totalPages - 1);
+
+        const startIndex = this.currentPage * itemsPerPage;
+        const pageItems = this.items.slice(startIndex, startIndex + itemsPerPage);
+
+        if (totalPages > 1) {
+            // Left arrow
+            if (this.currentPage > 0) {
+                const leftArrow = this.scene.add.text(8, 86, '<', {
+                    fontFamily: "'Pokemon Classic', 'Courier New', monospace",
+                    fontSize: '32px',
+                    color: '#1a1a2e'
+                }).setOrigin(0.5).setInteractive({ useHandCursor: true }).setScale(0.25);
+
+                leftArrow.on('pointerover', () => leftArrow.setColor('#004488'));
+                leftArrow.on('pointerout', () => leftArrow.setColor('#1a1a2e'));
+                leftArrow.on('pointerdown', () => {
+                    this.currentPage--;
+                    this._renderGrid();
+                });
+                this.gridContainer.add(leftArrow);
+            }
+
+            // Right arrow
+            if (this.currentPage < totalPages - 1) {
+                const rightArrow = this.scene.add.text(190, 86, '>', {
+                    fontFamily: "'Pokemon Classic', 'Courier New', monospace",
+                    fontSize: '32px',
+                    color: '#1a1a2e'
+                }).setOrigin(0.5).setInteractive({ useHandCursor: true }).setScale(0.25);
+
+                rightArrow.on('pointerover', () => rightArrow.setColor('#004488'));
+                rightArrow.on('pointerout', () => rightArrow.setColor('#1a1a2e'));
+                rightArrow.on('pointerdown', () => {
+                    this.currentPage++;
+                    this._renderGrid();
+                });
+                this.gridContainer.add(rightArrow);
+            }
+        }
+
+        pageItems.forEach((item, index) => {
             const c = index % cols;
             const r = Math.floor(index / cols);
 
@@ -228,8 +272,8 @@ Game.Backpack = class Backpack {
                 fontSize: '32px',
                 color: isSelected ? '#003366' : '#222233',
                 align: 'center',
-                wordWrap: { width: (slotW - 4) * 4, useAdvancedWrap: true }
-            }).setOrigin(0.5, 0.5).setScale(0.25);
+                wordWrap: { width: (slotW) * 4, useAdvancedWrap: true }
+            }).setOrigin(0.5, 0.5).setScale(0.22);
 
             // Slot click interaction: clicking an item selects it, clicking it again deselects it!
             bgRect.on('pointerdown', () => {
@@ -260,7 +304,7 @@ Game.Backpack = class Backpack {
 
     _handleUse(item) {
         this.close();
-        
+
         if (item.id === 'coffee') {
             if (this.scene && typeof this.scene.energy !== 'undefined') {
                 this.scene.energy = 200;
@@ -272,6 +316,24 @@ Game.Backpack = class Backpack {
                 this.scene.dialogue.show([
                     `You drank the ${item.name}!`,
                     `Your energy was restored to 200.`
+                ], () => { this.open(); });
+            }
+        } else if (item.id.startsWith('berry')) {
+            if (this.scene && typeof this.scene.energy !== 'undefined') {
+                this.scene.energy = Math.min(200, this.scene.energy + 50);
+                if (this.scene.updateEnergyUI) {
+                    this.scene.updateEnergyUI();
+                }
+            }
+
+            // Remove berry from backpack
+            this.items = this.items.filter(i => i.id !== item.id);
+            this.selectedItem = null;
+
+            if (this.scene.dialogue) {
+                this.scene.dialogue.show([
+                    `You ate the ${item.name}!`,
+                    `Restored 50 energy.`
                 ], () => { this.open(); });
             }
         } else {

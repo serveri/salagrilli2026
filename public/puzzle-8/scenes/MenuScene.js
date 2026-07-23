@@ -62,7 +62,7 @@ Game.MenuScene = class MenuScene extends Phaser.Scene {
         menuGroup.add(aboutBtnLabel);
 
         // --- About View Elements ---
-        const aboutText = this.add.text(width / 2, height / 3, 'About ServeriQuest\n\nThis is an adventure following the life of Serveri mouse. Excercise and socialising is kinda tiring. Beat the game and you get the flag! There might be other secrets. \n \n \n Credit\n Pokemon Classic font by TheLouster115 \n isaiah658\'s Pixel Pack #2\n Everything else by https://github.com/RemesTop', {
+        const aboutText = this.add.text(width / 2, height / 3, 'About ServeriQuest\n\nThis is an adventure following the life of Serveri mouse. Excercise and socialising is kinda tiring. Beat the game and you get the flag! There might be other secrets.\n You may need to restart couple of times... \n \n \n Credit\n Pokemon Classic font by TheLouster115 \n isaiah658\'s Pixel Pack #2\n Everything else by https://github.com/RemesTop', {
             fontFamily: 'Pokemon Classic',
             fontSize: '12px',
             color: '#ffffff',

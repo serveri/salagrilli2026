@@ -13,6 +13,8 @@ Game.DialogueBox = class DialogueBox {
         this.currentIndex = 0;
         this.isActive = false;
         this.onComplete = null;
+        this.buttonsData = [];
+        this.buttonElements = [];
 
         // UI elements (created once, reused)
         this.bgImage = null;
@@ -31,12 +33,13 @@ Game.DialogueBox = class DialogueBox {
      * @param {string[]} messages - Array of message strings to display sequentially
      * @param {Function} [onComplete] - Called when all messages are dismissed
      */
-    show(messages, onComplete) {
+    show(messages, onComplete, buttons = []) {
         if (!messages || messages.length === 0) return;
 
         this.messages = messages;
         this.currentIndex = 0;
         this.onComplete = onComplete || null;
+        this.buttonsData = buttons;
         this.isActive = true;
 
         this._createUI();
@@ -97,6 +100,15 @@ Game.DialogueBox = class DialogueBox {
 
         this.bgImage.setPosition(boxX, boxY);
         this.textObj.setPosition(boxX + 6, boxY + 10);
+
+        if (this.buttonElements && this.buttonElements.length > 0) {
+            const btnY = boxY + this.boxH - 26; // Raised higher
+            let btnX = boxX + (this.boxW - (this.buttonElements.length * 75 - 5)) / 2 + 35;
+            this.buttonElements.forEach(b => {
+                b.text.setPosition(btnX, btnY);
+                btnX += 75;
+            });
+        }
     }
 
     _showMessage(index) {
@@ -108,11 +120,53 @@ Game.DialogueBox = class DialogueBox {
         this.currentIndex = index;
         this.textObj.setText(this.messages[index]);
 
+        if (index === this.messages.length - 1 && this.buttonsData && this.buttonsData.length > 0) {
+            this._renderButtons();
+        } else {
+            this._clearButtons();
+        }
+
         // Brief delay between message advances
         this.inputLocked = true;
         this.scene.time.delayedCall(250, () => {
             this.inputLocked = false;
         });
+    }
+
+    _renderButtons() {
+        this._clearButtons();
+        this.buttonElements = [];
+        
+        this.buttonsData.forEach((btn, i) => {
+            const defaultColor = btn.color || '#004488';
+            const hoverColor = btn.hoverColor || '#0077cc';
+
+            const btnText = this.scene.add.text(0, 0, `[${btn.text}]`, {
+                fontFamily: "'Pokemon Classic', 'Courier New', monospace",
+                fontSize: '8px',
+                color: defaultColor
+            }).setOrigin(0.5, 0.5).setDepth(2003).setResolution(2).setInteractive({ useHandCursor: true });
+            
+            btnText.on('pointerdown', () => {
+                if (this.inputLocked) return;
+                btn.onClick();
+                this._close();
+            });
+            btnText.on('pointerover', () => btnText.setColor(hoverColor));
+            btnText.on('pointerout', () => btnText.setColor(defaultColor));
+            
+            this.buttonElements.push({ text: btnText });
+        });
+        this._updatePosition();
+    }
+
+    _clearButtons() {
+        if (this.buttonElements) {
+            this.buttonElements.forEach(b => {
+                b.text.destroy();
+            });
+            this.buttonElements = [];
+        }
     }
 
     _bindInput() {
@@ -122,6 +176,9 @@ Game.DialogueBox = class DialogueBox {
 
         this._keyHandler = () => {
             if (!this.isActive || this.inputLocked) return;
+            if (this.currentIndex === this.messages.length - 1 && this.buttonsData && this.buttonsData.length > 0) {
+                return; // Require button click to proceed
+            }
             this._showMessage(this.currentIndex + 1);
         };
 
@@ -130,6 +187,7 @@ Game.DialogueBox = class DialogueBox {
 
     _close() {
         this.isActive = false;
+        this._clearButtons();
 
         if (this.bgImage) {
             this.bgImage.setVisible(false);

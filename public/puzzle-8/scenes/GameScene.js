@@ -80,7 +80,7 @@ Game.GameScene = class GameScene extends Phaser.Scene {
         this.cameras.main.setVisible(false);
 
         // Load starting area
-        this.loadArea('/puzzle-8/data/serveriquest.csv', 1, 1).then(() => {
+        this.loadArea('/puzzle-8/data/serveriquest.csv', 89, 23).then(() => {
             // Camera fade in when game starts (after menu)
             this.cameras.main.setVisible(true);
             this.cameras.main.fadeIn(900, 0, 0, 0);
@@ -119,7 +119,7 @@ Game.GameScene = class GameScene extends Phaser.Scene {
 
             if (targetX >= 0 && targetX < this.currentArea.width &&
                 targetY >= 0 && targetY < this.currentArea.height) {
-                
+
                 const targetTileIndex = this.tileData[targetY][targetX];
 
                 if (targetTileIndex === 192) {
@@ -128,6 +128,73 @@ Game.GameScene = class GameScene extends Phaser.Scene {
                         this.setIdleFrame();
                     }
                     this.dialogue.show(['Its a rock...']);
+                } else if (targetTileIndex === 260) {
+                    if (this.player.anims.isPlaying) {
+                        this.player.anims.stop();
+                        this.setIdleFrame();
+                    }
+                    this.dialogue.show(['Every Serveri loves grilling!']);
+                } else if (targetTileIndex === 3269 || targetTileIndex === 3270 || targetTileIndex === 3208 || targetTileIndex === 3272) {
+                    if (this.player.anims.isPlaying) {
+                        this.player.anims.stop();
+                        this.setIdleFrame();
+                    }
+                    this.dialogue.show(['Rubbish old Skoda']);
+                } else if (targetTileIndex === 3141 || targetTileIndex === 3142 || targetTileIndex === 3143 || targetTileIndex === 3079) {
+                    if (this.player.anims.isPlaying) {
+                        this.player.anims.stop();
+                        this.setIdleFrame();
+                    }
+                    this.dialogue.show(['Audi 50 ']);
+                } else if (targetTileIndex === 3077 || targetTileIndex === 3078 || targetTileIndex === 3144 || targetTileIndex === 3080) {
+                    if (this.player.anims.isPlaying) {
+                        this.player.anims.stop();
+                        this.setIdleFrame();
+                    }
+                    this.dialogue.show(['Wolksvagen golf GTI']);
+                } else if (targetTileIndex === 3205 || targetTileIndex === 3206 || targetTileIndex === 3271 || targetTileIndex === 3207) {
+                    if (this.player.anims.isPlaying) {
+                        this.player.anims.stop();
+                        this.setIdleFrame();
+                    }
+                    this.dialogue.show(['Mercedes-Benz X 350 d 4MATIC', 'What a car!']);
+                } else if (targetTileIndex === 196 || targetTileIndex === 68) {
+                    if (this.player.anims.isPlaying) {
+                        this.player.anims.stop();
+                        this.setIdleFrame();
+                    }
+
+                    this.backpack.items.push({
+                        id: 'berry_' + Date.now(), // unique ID to allow multiple berries
+                        name: 'Berry',
+                        desc: 'A fresh berry picked from a bush.',
+                        canUse: true
+                    });
+
+                    // Update tile logically and visually
+                    this.tileData[targetY][targetX] = 132;
+                    if (this.layer) {
+                        this.layer.putTileAt(132, targetX, targetY);
+                    }
+
+                    this.dialogue.show(['You found a berry!']);
+                } else if (targetTileIndex === 4) {
+                    if (this.player.anims.isPlaying) {
+                        this.player.anims.stop();
+                        this.setIdleFrame();
+                    }
+
+                    const signKey = `${this.currentArea.name}_${targetX}_${targetY}`;
+                    const signMessages = {
+                        'serveriquest_66_24': ['Neulamäki karting', 'Open 10-19'],
+                        'serveriquest_54_21': ['Road to Neulamäki'],
+                        'serveriquest_54_4': ['Road to Savilahti'],
+                        'House_3_8': ['Home sweet home.'],
+                        // Add more signs here as needed
+                    };
+
+                    const msg = signMessages[signKey] || [`[Sign at ${targetX}, ${targetY}]`, 'Edit GameScene.js to add text here!'];
+                    this.dialogue.show(msg);
                 }
             }
         });
@@ -154,23 +221,36 @@ Game.GameScene = class GameScene extends Phaser.Scene {
     }
 
     async loadArea(csvPath, startTileX, startTileY) {
+        let loadingEl = document.getElementById('game-loading');
+        if (!loadingEl) {
+            loadingEl = document.createElement('div');
+            loadingEl.id = 'game-loading';
+            loadingEl.style.position = 'absolute';
+            loadingEl.style.top = '50%';
+            loadingEl.style.left = '50%';
+            loadingEl.style.transform = 'translate(-50%, -50%)';
+            loadingEl.style.color = '#ffffff';
+            loadingEl.style.fontFamily = "'Pokemon Classic', 'Courier New', monospace";
+            loadingEl.style.fontSize = '24px';
+            loadingEl.style.zIndex = '9999';
+            loadingEl.style.textShadow = '2px 2px 0 #000';
+            loadingEl.style.pointerEvents = 'none';
+            loadingEl.innerText = 'LOADING...';
+            document.body.appendChild(loadingEl);
+        }
+        loadingEl.style.display = 'block';
+
         const response = await fetch(csvPath);
         const text = await response.text();
         const rows = text.trim().split('\n');
-        
+
         this.tileData = rows.map(r => r.split(',').map(Number));
 
         this.currentArea = {
+            name: csvPath.split('/').pop().replace('.csv', ''),
             width: this.tileData[0].length,
-            height: this.tileData.length,
-            doors: []
+            height: this.tileData.length
         };
-
-        if (csvPath.includes('serveriquest.csv')) {
-            this.currentArea.doors.push({ x: 8, y: 1, targetArea: '/puzzle-8/data/House.csv', targetX: 2, targetY: 11 });
-        } else if (csvPath.includes('House.csv')) {
-            this.currentArea.doors.push({ x: 2, y: 11, targetArea: '/puzzle-8/data/serveriquest.csv', targetX: 8, targetY: 1 });
-        }
 
         this.tileX = startTileX;
         this.tileY = startTileY;
@@ -212,6 +292,11 @@ Game.GameScene = class GameScene extends Phaser.Scene {
         }
 
         this.cameras.main.setBounds(boundX, boundY, boundW, boundH);
+
+        const endLoadingEl = document.getElementById('game-loading');
+        if (endLoadingEl) {
+            endLoadingEl.style.display = 'none';
+        }
     }
 
     update(time, delta) {
@@ -317,7 +402,19 @@ Game.GameScene = class GameScene extends Phaser.Scene {
             this.player.anims.stop();
             this.setIdleFrame();
             if (this.dialogue && !this.dialogue.active) {
-                this.dialogue.show(['You are too tired to move']);
+                this.dialogue.show(['You are too tired to move.'], null, [
+                    {
+                        text: 'Inventory', onClick: () => {
+                            this.backpack.open();
+                            // Optional: since they open inventory, we close dialogue natively but they might heal
+                        }
+                    },
+                    {
+                        text: 'Restart', color: '#880000', hoverColor: '#ff0000', onClick: () => {
+                            window.location.reload();
+                        }
+                    }
+                ]);
             }
             return;
         }
@@ -333,8 +430,12 @@ Game.GameScene = class GameScene extends Phaser.Scene {
 
         // Check solids against cached tile data
         const targetTileIndex = this.tileData[targetY][targetX];
-        const walkthroughTiles = [0, 1, 288, 682, 683, 273];
-        const isWalkable = walkthroughTiles.includes(targetTileIndex) || targetTileIndex > 2816;
+        const walkthroughTiles = [0, 1, 199, 200, 288, 517, 518, 581, 582, 645, 682, 683, 273, 2816, 2817, 2818, 2819, 2820, 2821, 2822, 2823, 2824, 2825, 2826, 2827, 2828, 2829,
+            2830, 2831, 2832, 2833, 2880, 2881, 2882, 2883, 2884, 2885, 2886, 2887, 2888, 2889, 2890, 2891, 2892, 2893, 2894, 2895, 2896,
+            2944, 2945, 2946, 2947, 3008, 3009, 3010, 3011, 2631, 436, 1370, 451, 2633, 2631, 320, 384, 448, 69, 70, 5, 6, 1829, 1831, 2021, 2023
+        ];
+        const isWalkable = walkthroughTiles.includes(targetTileIndex);
+
 
         const cliffs = {
             'up': 13,
@@ -352,7 +453,7 @@ Game.GameScene = class GameScene extends Phaser.Scene {
             isJumping = true;
             let testX = targetX;
             let testY = targetY;
-            
+
             while (
                 testX >= 0 && testX < this.currentArea.width &&
                 testY >= 0 && testY < this.currentArea.height &&
@@ -362,20 +463,20 @@ Game.GameScene = class GameScene extends Phaser.Scene {
                 testY += dy;
                 jumpDistance++;
             }
-            
+
             if (testX < 0 || testX >= this.currentArea.width || testY < 0 || testY >= this.currentArea.height) {
                 this.player.play(`walk-${this.facing}`, true);
                 return;
             }
-            
+
             const landingTile = this.tileData[testY][testX];
             const landingWalkable = walkthroughTiles.includes(landingTile) || landingTile > 2816;
-            
+
             if (!landingWalkable) {
                 this.player.play(`walk-${this.facing}`, true);
                 return;
             }
-            
+
             finalTargetX = testX;
             finalTargetY = testY;
         } else if (!isWalkable) {
@@ -453,22 +554,71 @@ Game.GameScene = class GameScene extends Phaser.Scene {
         });
     }
 
-    checkDoorTrigger() {
-        const door = this.currentArea.doors.find(
-            d => d.x === this.tileX && d.y === this.tileY
-        );
+    teleportSameMap(x, y) {
+        this.isTransitioning = true;
+        this.player.anims.stop();
+        this.setIdleFrame();
 
-        if (door) {
+        this.cameras.main.fadeOut(250, 0, 0, 0, (camera, progress) => {
+            if (progress === 1) {
+                this.tileX = x;
+                this.tileY = y;
+                this.player.setPosition(x * Game.TILE_SIZE, y * Game.TILE_SIZE);
+                this.cameras.main.fadeIn(250, 0, 0, 0, (cam, prog) => {
+                    if (prog === 1) {
+                        this.isTransitioning = false;
+                        const [dx, dy] = this.getDeltaFromDir(this.facing);
+                        this.tryMove(dx, dy);
+                    }
+                });
+            }
+        });
+    } checkDoorTrigger() {
+        const currentTile = this.tileData[this.tileY][this.tileX];
+
+        if (currentTile === 199) {
+            this.teleportSameMap(this.tileX + 3, this.tileY);
+            return true;
+        } else if (currentTile === 200) {
+            this.teleportSameMap(this.tileX - 3, this.tileY);
+            return true;
+        }
+
+        const mapTransitions = {
+            'serveriquest': {
+                2631: { targetMap: '/puzzle-8/data/NeulamaenSale.csv', targetX: 1, targetY: 2 },
+                2633: { targetMap: '/puzzle-8/data/savilahti.csv', targetX: 4, targetY: 6 },
+                1370: { targetMap: '/puzzle-8/data/House.csv', targetX: 2, targetY: 11 }
+            },
+            'NeulamaenSale': {
+                2021: { targetMap: '/puzzle-8/data/serveriquest.csv', targetX: 13, targetY: 48 },
+                2023: { targetMap: '/puzzle-8/data/serveriquest.csv', targetX: 13, targetY: 48 }
+            },
+            'savilahti': {
+                2631: { targetMap: '/puzzle-8/data/serveriquest.csv', targetX: 57, targetY: 0 }
+            },
+            'House': {
+                1829: { targetMap: '/puzzle-8/data/serveriquest.csv', targetX: 38, targetY: 52 },
+                1831: { targetMap: '/puzzle-8/data/serveriquest.csv', targetX: 38, targetY: 52 }
+            }
+        };
+
+        const areaTransitions = mapTransitions[this.currentArea.name] || {};
+        const transition = areaTransitions[currentTile];
+
+        if (transition) {
             this.isTransitioning = true;
             this.player.anims.stop();
             this.setIdleFrame();
 
             this.cameras.main.fadeOut(250, 0, 0, 0, (camera, progress) => {
                 if (progress === 1) {
-                    this.loadArea(door.targetArea, door.targetX, door.targetY).then(() => {
+                    this.loadArea(transition.targetMap, transition.targetX, transition.targetY).then(() => {
                         this.cameras.main.fadeIn(250, 0, 0, 0, (cam, prog) => {
                             if (prog === 1) {
                                 this.isTransitioning = false;
+                                const [dx, dy] = this.getDeltaFromDir(this.facing);
+                                this.tryMove(dx, dy);
                             }
                         });
                     });
@@ -476,6 +626,7 @@ Game.GameScene = class GameScene extends Phaser.Scene {
             });
             return true;
         }
+
         return false;
     }
 };
