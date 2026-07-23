@@ -15,10 +15,11 @@ Game.Backpack = class Backpack {
         this.items = [
             { id: 'jallu', name: 'Jallu', desc: 'Restores HP to full health.', canUse: true },
             { id: 'key', name: 'Nappiavain', desc: 'A key found in the grass.', canUse: false },
-            { id: 'map', name: 'Town Map', desc: 'A map showing Neulamäki outskirts.', canUse: true },
+            { id: 'map', name: 'Town Map', desc: 'A map showing Kuopio. \nI live in Neulamäki.', canUse: false },
             { id: 'coffee', name: 'Hot Coffee', desc: 'Warm roasted coffee. Cures fatigue.', canUse: true },
             { id: 'badge', name: 'Puzzle Badge', desc: 'A shiny badge from solving Puzzle 8.', canUse: false },
-            { id: 'note', name: 'Secret Note', desc: 'Reads: "Check under the pine tree..."', canUse: true }
+            { id: 'note', name: 'Reminder Note', desc: '"Remember to feed the cat.. \n Exam today at 10:00!" ..Can\'t forget!', canUse: false },
+            { id: 'watch', name: 'Watch', desc: 'It says 4:16 ..I think', canUse: false }
         ];
 
         // UI Element References
@@ -159,10 +160,10 @@ Game.Backpack = class Backpack {
             inspectBtn.on('pointerdown', () => this._handleInspect(item));
             this.actionContainer.add(inspectBtn);
 
-            // Action: Use button (if item is usable)
-            if (item.canUse) {
-                inspectBtn.setPosition(142, 138);
+            // Action: Use button (if item is usable) or Drop button
+            inspectBtn.setPosition(134, 138);
 
+            if (item.canUse) {
                 const useBtn = this.scene.add.text(178, 138, '[Use]', {
                     fontFamily: "'Pokemon Classic', 'Courier New', monospace",
                     fontSize: '32px',
@@ -173,6 +174,17 @@ Game.Backpack = class Backpack {
                 useBtn.on('pointerout', () => useBtn.setColor('#006600'));
                 useBtn.on('pointerdown', () => this._handleUse(item));
                 this.actionContainer.add(useBtn);
+            } else {
+                const dropBtn = this.scene.add.text(178, 138, '[Drop]', {
+                    fontFamily: "'Pokemon Classic', 'Courier New', monospace",
+                    fontSize: '32px',
+                    color: '#666666'
+                }).setOrigin(1, 0.5).setInteractive({ useHandCursor: true }).setScale(0.22);
+
+                dropBtn.on('pointerover', () => dropBtn.setColor('#aaaaaa'));
+                dropBtn.on('pointerout', () => dropBtn.setColor('#666666'));
+                dropBtn.on('pointerdown', () => this._handleDrop(item));
+                this.actionContainer.add(dropBtn);
             }
         }
 
@@ -212,7 +224,7 @@ Game.Backpack = class Backpack {
         if (totalPages > 1) {
             // Left arrow
             if (this.currentPage > 0) {
-                const leftArrow = this.scene.add.text(8, 86, '<', {
+                const leftArrow = this.scene.add.text(8, 94, '<\n<', {
                     fontFamily: "'Pokemon Classic', 'Courier New', monospace",
                     fontSize: '32px',
                     color: '#1a1a2e'
@@ -229,7 +241,7 @@ Game.Backpack = class Backpack {
 
             // Right arrow
             if (this.currentPage < totalPages - 1) {
-                const rightArrow = this.scene.add.text(190, 86, '>', {
+                const rightArrow = this.scene.add.text(190, 94, '>\n>', {
                     fontFamily: "'Pokemon Classic', 'Courier New', monospace",
                     fontSize: '32px',
                     color: '#1a1a2e'
@@ -298,6 +310,17 @@ Game.Backpack = class Backpack {
             // Displays in a single dialogue box page
             this.scene.dialogue.show([
                 `${item.name}: ${item.desc}`
+            ], () => { this.open(); });
+        }
+    }
+
+    _handleDrop(item) {
+        this.close();
+        this.items = this.items.filter(i => i.id !== item.id);
+        this.selectedItem = null;
+        if (this.scene && this.scene.dialogue) {
+            this.scene.dialogue.show([
+                `You threw ${item.name} away`
             ], () => { this.open(); });
         }
     }

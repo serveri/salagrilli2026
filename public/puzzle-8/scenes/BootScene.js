@@ -14,6 +14,12 @@ Game.BootScene = class BootScene extends Phaser.Scene {
             frameWidth: 16,
             frameHeight: 16
         });
+        
+        // Police spritesheet (16x18 frames, 4 cols x 4 rows)
+        this.load.spritesheet('poliisi', 'Poliisi.png', {
+            frameWidth: 16,
+            frameHeight: 18
+        });
 
         // Tileset (1024x1024, 64 tiles per row)
         this.load.image('tiles', 'Tileset.png');

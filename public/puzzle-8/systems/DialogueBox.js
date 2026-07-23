@@ -72,7 +72,7 @@ Game.DialogueBox = class DialogueBox {
             fontFamily: "'Pokemon Classic', 'Courier New', monospace",
             fontSize: '8px',
             color: '#1a1a2e',
-            wordWrap: { width: 146 },
+            wordWrap: { width: 160 },
             lineSpacing: 2,
             maxLines: 5
         });
@@ -136,7 +136,7 @@ Game.DialogueBox = class DialogueBox {
     _renderButtons() {
         this._clearButtons();
         this.buttonElements = [];
-        
+
         this.buttonsData.forEach((btn, i) => {
             const defaultColor = btn.color || '#004488';
             const hoverColor = btn.hoverColor || '#0077cc';
@@ -146,7 +146,7 @@ Game.DialogueBox = class DialogueBox {
                 fontSize: '8px',
                 color: defaultColor
             }).setOrigin(0.5, 0.5).setDepth(2003).setResolution(2).setInteractive({ useHandCursor: true });
-            
+
             btnText.on('pointerdown', () => {
                 if (this.inputLocked) return;
                 btn.onClick();
@@ -154,7 +154,7 @@ Game.DialogueBox = class DialogueBox {
             });
             btnText.on('pointerover', () => btnText.setColor(hoverColor));
             btnText.on('pointerout', () => btnText.setColor(defaultColor));
-            
+
             this.buttonElements.push({ text: btnText });
         });
         this._updatePosition();
@@ -174,7 +174,8 @@ Game.DialogueBox = class DialogueBox {
             this.scene.input.keyboard.off('keydown', this._keyHandler);
         }
 
-        this._keyHandler = () => {
+        this._keyHandler = (event) => {
+            if (event.code !== 'Space') return;
             if (!this.isActive || this.inputLocked) return;
             if (this.currentIndex === this.messages.length - 1 && this.buttonsData && this.buttonsData.length > 0) {
                 return; // Require button click to proceed
