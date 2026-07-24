@@ -94,8 +94,8 @@
 
     #energy-bar-fill {
       height: 100%;
-      width: 100%;
-      /* Default to full energy */
+      width: 75%;
+      /* Default to 150 / 200 energy */
       background: #FFD700;
       /* Yellow flat color */
     }
@@ -121,7 +121,8 @@
       <div id="energy-label">Energy</div>
       <div id="energy-bar-bg">
         <div id="energy-bar-fill"></div>
-        <div id="energy-number">200</div>
+        <div id="energy-number"><span id="energy-val">150</span><span id="energy-lost"
+            style="color: #cc0000; display: none; margin-left: 15px; text-shadow: none;"></span></div>
       </div>
     </div>
   </div>

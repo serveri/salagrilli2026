@@ -15,11 +15,12 @@ Game.Backpack = class Backpack {
         this.items = [
             { id: 'jallu', name: 'Jallu', desc: 'Restores HP to full health.', canUse: true },
             { id: 'key', name: 'Nappiavain', desc: 'A key found in the grass.', canUse: false },
-            { id: 'map', name: 'Town Map', desc: 'A map showing Kuopio. \nI live in Neulamäki.', canUse: false },
+            { id: 'map', name: 'Town Map', desc: 'A map showing Kuopio. \nI live in Neulamäki.', canUse: true },
             { id: 'coffee', name: 'Hot Coffee', desc: 'Warm roasted coffee. Cures fatigue.', canUse: true },
             { id: 'badge', name: 'Puzzle Badge', desc: 'A shiny badge from solving Puzzle 8.', canUse: false },
             { id: 'note', name: 'Reminder Note', desc: '"Remember to feed the cat.. \n Exam today at 10:00!" ..Can\'t forget!', canUse: false },
-            { id: 'watch', name: 'Watch', desc: 'It says 4:16 ..I think', canUse: false }
+            { id: 'watch', name: 'Watch', desc: 'It says 4:16 ..I think', canUse: false },
+            { id: 'teleport', name: 'Teleport', desc: 'A strange device that teleports you to your House.', canUse: true }
         ];
 
         // UI Element References
@@ -330,9 +331,10 @@ Game.Backpack = class Backpack {
 
         if (item.id === 'coffee') {
             if (this.scene && typeof this.scene.energy !== 'undefined') {
+                const old = this.scene.energy;
                 this.scene.energy = 200;
-                if (this.scene.updateEnergyUI) {
-                    this.scene.updateEnergyUI();
+                if (this.scene.addEnergyDiff) {
+                    this.scene.addEnergyDiff(this.scene.energy - old);
                 }
             }
             if (this.scene.dialogue) {
@@ -343,9 +345,10 @@ Game.Backpack = class Backpack {
             }
         } else if (item.id.startsWith('berry')) {
             if (this.scene && typeof this.scene.energy !== 'undefined') {
+                const old = this.scene.energy;
                 this.scene.energy = Math.min(200, this.scene.energy + 50);
-                if (this.scene.updateEnergyUI) {
-                    this.scene.updateEnergyUI();
+                if (this.scene.addEnergyDiff) {
+                    this.scene.addEnergyDiff(this.scene.energy - old);
                 }
             }
 
@@ -358,6 +361,47 @@ Game.Backpack = class Backpack {
                     `You ate the ${item.name}!`,
                     `Restored 50 energy.`
                 ], () => { this.open(); });
+            }
+        } else if (item.id === 'map') {
+            if (this.scene) {
+                const cam = this.scene.cameras.main;
+                const wv = cam.worldView;
+
+                const mapImg = this.scene.add.image(wv.x + wv.width / 2, wv.y + wv.height / 2, 'questMap');
+                mapImg.setOrigin(0.5, 0.5);
+                mapImg.setDepth(9999);
+
+                // Scale map to fit screen (95% of worldView)
+                const scaleX = (wv.width * 1) / mapImg.width;
+                const scaleY = (wv.height * 1) / mapImg.height;
+                const scale = Math.min(scaleX, scaleY);
+                mapImg.setScale(scale);
+
+                mapImg.setInteractive({ useHandCursor: true });
+                mapImg.on('pointerdown', () => {
+                    mapImg.destroy();
+                    this.open();
+                });
+            }
+        } else if (item.id === 'teleport') {
+            if (this.scene && this.scene.dialogue) {
+                this.scene.isTransitioning = true;
+                this.scene.dialogue.show([
+                    `You used the ${item.name}!`,
+                    `Teleporting to House...`
+                ], () => {
+                    this.scene.cameras.main.fadeOut(250, 0, 0, 0, (camera, progress) => {
+                        if (progress === 1) {
+                            this.scene.loadArea('/puzzle-8/data/House.csv', 7, 8).then(() => {
+                                this.scene.cameras.main.fadeIn(250, 0, 0, 0, (cam, prog) => {
+                                    if (prog === 1) {
+                                        this.scene.isTransitioning = false;
+                                    }
+                                });
+                            });
+                        }
+                    });
+                });
             }
         } else {
             if (this.scene.dialogue) {

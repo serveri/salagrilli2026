@@ -8,10 +8,8 @@ const config = {
     scale: {
         mode: Phaser.Scale.FIT
     },
-    render: {
-        pixelArt: true,
-        antialias: false
-    },
+    pixelArt: true,
+    roundPixels: true,
     scene: [Game.BootScene, Game.MenuScene, Game.GameScene]
 };
 
