@@ -14,6 +14,7 @@ Game.GameScene = class GameScene extends Phaser.Scene {
         this.isTurning = false;
         this.dialogue = null;
         this.energy = 150;
+        this.isMapOpen = false;
     }
 
     create() {
@@ -130,6 +131,7 @@ Game.GameScene = class GameScene extends Phaser.Scene {
         // Toggle backpack with 'E' or 'I' key
         const toggleBag = () => {
             if (this.dialogue && this.dialogue.active) return;
+            if (this.isMapOpen) return;
             if (this.player.anims.isPlaying) {
                 this.player.anims.stop();
                 this.setIdleFrame();
@@ -144,7 +146,7 @@ Game.GameScene = class GameScene extends Phaser.Scene {
 
         // Inspect interaction
         this.input.keyboard.on('keydown-SPACE', () => {
-            if (this.isTransitioning || this.isMoving) return;
+            if (this.isTransitioning || this.isMoving || this.isMapOpen) return;
             if (this.dialogue && this.dialogue.active) return;
             if (this.backpack && this.backpack.active) return;
 
@@ -234,7 +236,7 @@ Game.GameScene = class GameScene extends Phaser.Scene {
 
     addEnergyDiff(diff) {
         if (diff === 0) return;
-        
+
         if (this.energyDiffStack > 0 && diff < 0) {
             this.energyDiffStack = diff;
         } else if (this.energyDiffStack < 0 && diff > 0) {
@@ -242,7 +244,7 @@ Game.GameScene = class GameScene extends Phaser.Scene {
         } else {
             this.energyDiffStack = (this.energyDiffStack || 0) + diff;
         }
-        
+
         this.cancelEnergyLostReset();
         this.updateEnergyUI();
     }
@@ -266,7 +268,7 @@ Game.GameScene = class GameScene extends Phaser.Scene {
             } else {
                 num.innerText = Math.floor(Math.max(0, this.energy));
             }
-            
+
             const lostEl = document.getElementById('energy-lost');
             if (lostEl) {
                 if (this.energyDiffStack < 0) {
@@ -307,7 +309,7 @@ Game.GameScene = class GameScene extends Phaser.Scene {
                 if (lostEl) {
                     lostEl.style.transition = 'opacity 0.5s ease-out';
                     lostEl.style.opacity = '0';
-                    
+
                     this.fadeEnergyTimer = this.time.delayedCall(500, () => {
                         lostEl.style.display = 'none';
                         lostEl.style.transition = '';
@@ -431,7 +433,7 @@ Game.GameScene = class GameScene extends Phaser.Scene {
 
         this.updatePolice(time, delta);
 
-        if (this.isTransitioning || (this.dialogue && this.dialogue.active) || (this.backpack && this.backpack.active)) {
+        if (this.isTransitioning || (this.dialogue && this.dialogue.active) || (this.backpack && this.backpack.active) || this.isMapOpen) {
             this.resetEnergyLostStack();
             return;
         }
@@ -661,6 +663,7 @@ Game.GameScene = class GameScene extends Phaser.Scene {
             onComplete: () => {
                 this.tileX = finalTargetX;
                 this.tileY = finalTargetY;
+                console.log('Player at tile:', this.tileX, this.tileY);
                 this.isMoving = false;
                 this.player.displayOriginY = 0;
                 this.shadow.setVisible(false);
@@ -729,7 +732,7 @@ Game.GameScene = class GameScene extends Phaser.Scene {
         const mapTransitions = {
             'serveriquest': {
                 2631: { targetMap: '/puzzle-8/data/NeulamaenSale.csv', targetX: 1, targetY: 2 },
-                2633: { targetMap: '/puzzle-8/data/savilahti.csv', targetX: 4, targetY: 6 },
+                2633: { targetMap: '/puzzle-8/data/savilahti.csv', targetX: 29, targetY: 79 },
                 1370: { targetMap: '/puzzle-8/data/House.csv', targetX: 7, targetY: 11 }
             },
             'NeulamaenSale': {

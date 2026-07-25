@@ -364,22 +364,30 @@ Game.Backpack = class Backpack {
             }
         } else if (item.id === 'map') {
             if (this.scene) {
+                this.scene.isMapOpen = true; // Block movement
                 const cam = this.scene.cameras.main;
                 const wv = cam.worldView;
 
-                const mapImg = this.scene.add.image(wv.x + wv.width / 2, wv.y + wv.height / 2, 'questMap');
-                mapImg.setOrigin(0.5, 0.5);
-                mapImg.setDepth(9999);
+                const mapContainer = this.scene.add.container(wv.x + wv.width / 2, wv.y + wv.height / 2);
+                mapContainer.setDepth(9999);
 
-                // Scale map to fit screen (95% of worldView)
+                const mapImg = this.scene.add.image(0, 0, 'questMap');
+                mapImg.setOrigin(0.5, 0.5);
+
+                // Scale map to fit screen (100% of worldView)
                 const scaleX = (wv.width * 1) / mapImg.width;
                 const scaleY = (wv.height * 1) / mapImg.height;
                 const scale = Math.min(scaleX, scaleY);
-                mapImg.setScale(scale);
+                mapContainer.setScale(scale);
+                mapContainer.add(mapImg);
+
+                // Add player position marker
+                this._addPlayerMarkerToMap(mapContainer);
 
                 mapImg.setInteractive({ useHandCursor: true });
                 mapImg.on('pointerdown', () => {
-                    mapImg.destroy();
+                    mapContainer.destroy();
+                    this.scene.isMapOpen = false;
                     this.open();
                 });
             }
@@ -413,7 +421,56 @@ Game.Backpack = class Backpack {
         }
     }
 
+    _addPlayerMarkerToMap(mapContainer) {
+        if (!this.scene || !this.scene.currentArea) return;
+        const areaName = this.scene.currentArea.name;
+        const tx = this.scene.tileX;
+        const ty = this.scene.tileY;
+        const areaW = this.scene.currentArea.width;
+        const areaH = this.scene.currentArea.height;
 
+        // Define marker positions for each submap on the quest map image.
+        // - condition: a function to check if this region should be used
+        // - x, y: the exact coordinates for the marker on the questMap image
+        const mapRegions = {
+            'serveriquest': [
+                {
+                    // Example: If player is past Y=50
+                    condition: (x, y) => x >= 40,
+                    x: -31, y: 90
+                },
+                {
+                    // Default region for serveriquest
+                    condition: (x, y) => true,
+                    x: -90, y: 109
+                }
+            ],
+            'NeulamaenSale': [
+                { condition: () => true, x: -90, y: 109 }
+            ],
+            'savilahti': [
+                { condition: () => true, x: -22, y: 55 }
+            ],
+            'House': [
+                { condition: () => true, x: -82, y: 115 }
+            ],
+            'default': [
+                { condition: () => true, x: -31, y: 90 }
+            ]
+        };
+
+        const regions = mapRegions[areaName] || mapRegions['default'];
+        let region = regions.find(r => r.condition(tx, ty));
+        if (!region) region = regions[regions.length - 1]; // fallback
+
+        const markerX = region.x;
+        const markerY = region.y;
+
+        // Use 'effects' asset for the marker
+        const marker = this.scene.add.image(markerX, markerY, 'effects');
+        marker.setScale(0.75); // Adjust this if it doesn't match the map's pixels!
+        mapContainer.add(marker);
+    }
 
     /** Check if backpack is currently open & blocking movement */
     get active() {
