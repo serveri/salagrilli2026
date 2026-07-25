@@ -14,7 +14,7 @@ Game.Backpack = class Backpack {
         // Sample Inventory Items
         this.items = [
             { id: 'jallu', name: 'Jallu', desc: 'Restores HP to full health.', canUse: true },
-            { id: 'key', name: 'Nappiavain', desc: 'A key found in the grass.', canUse: false },
+            { id: 'key', name: 'Nappi avain', desc: 'A key found in the grass.', canUse: false },
             { id: 'map', name: 'Town Map', desc: 'A map showing Kuopio. \nI live in Neulamäki.', canUse: true },
             { id: 'coffee', name: 'Hot Coffee', desc: 'Warm roasted coffee. Cures fatigue.', canUse: true },
             { id: 'badge', name: 'Puzzle Badge', desc: 'A shiny badge from solving Puzzle 8.', canUse: false },
@@ -179,18 +179,18 @@ Game.Backpack = class Backpack {
                 const dropBtn = this.scene.add.text(178, 138, '[Drop]', {
                     fontFamily: "'Pokemon Classic', 'Courier New', monospace",
                     fontSize: '32px',
-                    color: '#666666'
+                    color: '#cc0000'
                 }).setOrigin(1, 0.5).setInteractive({ useHandCursor: true }).setScale(0.22);
 
-                dropBtn.on('pointerover', () => dropBtn.setColor('#aaaaaa'));
-                dropBtn.on('pointerout', () => dropBtn.setColor('#666666'));
+                dropBtn.on('pointerover', () => dropBtn.setColor('#ff3333'));
+                dropBtn.on('pointerout', () => dropBtn.setColor('#cc0000'));
                 dropBtn.on('pointerdown', () => this._handleDrop(item));
                 this.actionContainer.add(dropBtn);
             }
         }
 
         // Close button (Bottom Left)
-        const closeBtn = this.scene.add.text(20, 138, '[Close]', {
+        const closeBtn = this.scene.add.text(20, 138, '[X]', {
             fontFamily: "'Pokemon Classic', 'Courier New', monospace",
             fontSize: '32px',
             color: '#880000'
@@ -280,12 +280,11 @@ Game.Backpack = class Backpack {
             strokeRect.strokeRect(x, y, slotW, slotH);
 
             // Item Name text inside slot (rounded integer coordinates for crisp pixel rendering)
-            const itemText = this.scene.add.text(Math.round(x + slotW / 2), Math.round(y + slotH / 2), item.name, {
+            const itemText = this.scene.add.text(Math.round(x + slotW / 2), Math.round(y + slotH / 2), this._formatItemName(item.name), {
                 fontFamily: "'Pokemon Classic', 'Courier New', monospace",
                 fontSize: '32px',
                 color: isSelected ? '#003366' : '#222233',
-                align: 'center',
-                wordWrap: { width: (slotW) * 4, useAdvancedWrap: true }
+                align: 'center'
             }).setOrigin(0.5, 0.5).setScale(0.22);
 
             // Slot click interaction: clicking an item selects it, clicking it again deselects it!
@@ -449,7 +448,16 @@ Game.Backpack = class Backpack {
                 { condition: () => true, x: -90, y: 109 }
             ],
             'savilahti': [
-                { condition: () => true, x: -22, y: 55 }
+                {
+                    // Example: If player is past Y=50
+                    condition: (x, y) => y <= 59,
+                    x: 21, y: 35
+                },
+                {
+                    // Default region for serveriquest
+                    condition: (x, y) => true,
+                    x: -22, y: 55
+                }
             ],
             'House': [
                 { condition: () => true, x: -82, y: 115 }
@@ -470,6 +478,54 @@ Game.Backpack = class Backpack {
         const marker = this.scene.add.image(markerX, markerY, 'effects');
         marker.setScale(0.75); // Adjust this if it doesn't match the map's pixels!
         mapContainer.add(marker);
+    }
+
+    /**
+     * Formats an item name for display inside a grid slot.
+     * Shows 1 more character per line before wrapping (max 7 chars),
+     * and adds a dash '-' to the end of a cut word if it wraps mid-word.
+     */
+    _formatItemName(name, maxLen = 7) {
+        if (!name || name.length <= maxLen) return name;
+
+        const words = name.split(' ');
+        const lines = [];
+        let currentLine = '';
+
+        for (let word of words) {
+            if (!currentLine) {
+                if (word.length <= maxLen) {
+                    currentLine = word;
+                } else {
+                    while (word.length > maxLen) {
+                        lines.push(word.slice(0, maxLen - 1) + '-');
+                        word = word.slice(maxLen - 1);
+                    }
+                    currentLine = word;
+                }
+            } else {
+                if ((currentLine + ' ' + word).length <= maxLen) {
+                    currentLine += ' ' + word;
+                } else {
+                    lines.push(currentLine);
+                    if (word.length <= maxLen) {
+                        currentLine = word;
+                    } else {
+                        while (word.length > maxLen) {
+                            lines.push(word.slice(0, maxLen - 1) + '-');
+                            word = word.slice(maxLen - 1);
+                        }
+                        currentLine = word;
+                    }
+                }
+            }
+        }
+
+        if (currentLine) {
+            lines.push(currentLine);
+        }
+
+        return lines.join('\n');
     }
 
     /** Check if backpack is currently open & blocking movement */

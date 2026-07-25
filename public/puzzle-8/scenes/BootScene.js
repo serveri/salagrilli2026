@@ -43,7 +43,7 @@ Game.BootScene = class BootScene extends Phaser.Scene {
 
     create() {
         // Load custom font via FontFace API, then proceed to menu
-        const font = new FontFace('Pokemon Classic', "url('/puzzle-8/assets/Pokemon Classic.ttf')");
+        const font = new FontFace('Pokemon Classic', "url('/puzzle-8/assets/Pokemon%20Classic.ttf')");
         font.load().then((loadedFont) => {
             document.fonts.add(loadedFont);
             this.scene.start('MenuScene');

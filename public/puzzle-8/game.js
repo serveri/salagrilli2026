@@ -2,14 +2,18 @@
 // All game logic lives in scenes/, systems/, and data/ modules
 const config = {
     type: Phaser.AUTO,
-    parent: 'game-container',
+    parent: 'canvas-wrapper',
     width: 640,
     height: 576,
     scale: {
         mode: Phaser.Scale.FIT
     },
-    pixelArt: true,
-    roundPixels: true,
+    render: {
+        pixelArt: true,
+        roundPixels: true,
+        antialias: false,
+        mipmapFilter: 'NEAREST'
+    },
     scene: [Game.BootScene, Game.MenuScene, Game.GameScene]
 };
 

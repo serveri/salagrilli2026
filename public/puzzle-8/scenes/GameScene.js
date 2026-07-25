@@ -127,21 +127,39 @@ Game.GameScene = class GameScene extends Phaser.Scene {
 
         // Backpack / Inventory system
         this.backpack = new Game.Backpack(this);
+        this.pendingBackpackOpen = false;
+
+        this.openBackpackSafely = () => {
+            if (this.player.anims.isPlaying) {
+                this.player.anims.stop();
+                this.setIdleFrame();
+            }
+            this.backpack.open();
+        };
 
         // Toggle backpack with 'E' or 'I' key
         const toggleBag = () => {
             if (this.dialogue && this.dialogue.active) return;
             if (this.isMapOpen) return;
-            if (this.player.anims.isPlaying) {
-                this.player.anims.stop();
-                this.setIdleFrame();
+
+            if (this.backpack && this.backpack.active) {
+                this.backpack.close();
+                this.pendingBackpackOpen = false;
+                return;
             }
-            this.backpack.toggle();
+
+            if (this.isMoving || this.isTransitioning) {
+                this.pendingBackpackOpen = true;
+                return;
+            }
+
+            this.openBackpackSafely();
         };
         this.input.keyboard.on('keydown-E', toggleBag);
         this.input.keyboard.on('keydown-I', toggleBag);
         this.input.keyboard.on('keydown-ESC', () => {
             if (this.backpack && this.backpack.active) this.backpack.close();
+            this.pendingBackpackOpen = false;
         });
 
         // Inspect interaction
@@ -433,7 +451,7 @@ Game.GameScene = class GameScene extends Phaser.Scene {
 
         this.updatePolice(time, delta);
 
-        if (this.isTransitioning || (this.dialogue && this.dialogue.active) || (this.backpack && this.backpack.active) || this.isMapOpen) {
+        if (this.isTransitioning || (this.dialogue && this.dialogue.active) || (this.backpack && this.backpack.active) || this.isMapOpen || this.pendingBackpackOpen) {
             this.resetEnergyLostStack();
             return;
         }
@@ -668,6 +686,11 @@ Game.GameScene = class GameScene extends Phaser.Scene {
                 this.player.displayOriginY = 0;
                 this.shadow.setVisible(false);
 
+                if (this.pendingBackpackOpen) {
+                    this.pendingBackpackOpen = false;
+                    this.openBackpackSafely();
+                }
+
                 // Decrease energy for each tile moved
                 const old = this.energy;
                 this.energy = Math.max(0, this.energy - 1);
@@ -732,7 +755,7 @@ Game.GameScene = class GameScene extends Phaser.Scene {
         const mapTransitions = {
             'serveriquest': {
                 2631: { targetMap: '/puzzle-8/data/NeulamaenSale.csv', targetX: 1, targetY: 2 },
-                2633: { targetMap: '/puzzle-8/data/savilahti.csv', targetX: 29, targetY: 79 },
+                2633: { targetMap: '/puzzle-8/data/savilahti.csv', targetX: 26, targetY: 79 },
                 1370: { targetMap: '/puzzle-8/data/House.csv', targetX: 7, targetY: 11 }
             },
             'NeulamaenSale': {
