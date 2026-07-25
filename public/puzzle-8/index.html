@@ -25,24 +25,22 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      padding: 24px;
+      padding: 10px;
       background: #181822;
-      border: 4px solid #343446;
+      border: 2px solid #343446;
       border-radius: 16px;
       box-shadow: 0 10px 40px rgba(0, 0, 0, 0.9), inset 0 0 15px rgba(0, 0, 0, 0.6);
     }
 
     #canvas-wrapper {
       position: relative;
-      width: min(78vw, calc((100vh - 160px) * 720 / 654));
-      aspect-ratio: 720 / 654;
-      border: 4px solid #141420;
+      display: inline-block;
+      border: 2px solid #141420;
       border-radius: 12px;
       overflow: hidden;
       box-shadow: 
         0 0 0 2px #262638,
         0 15px 40px rgba(0, 0, 0, 0.95);
-      box-sizing: border-box;
     }
 
     #canvas-wrapper canvas {
@@ -63,46 +61,35 @@
       transform: translateZ(0);
       background:
         /* Glass Screen Diagonal Sheen Glare */
-        linear-gradient(135deg, rgba(255, 255, 255, 0.09) 0%, rgba(255, 255, 255, 0.03) 35%, rgba(0, 0, 0, 0) 65%),
-        /* Very Soft Horizontal Scanlines */
+        linear-gradient(135deg, rgba(255, 255, 255, 0.07) 0%, rgba(255, 255, 255, 0.02) 30%, rgba(0, 0, 0, 0) 60%),
+        /* Visible Horizontal Scanlines */
         repeating-linear-gradient(to bottom,
           rgba(0, 0, 0, 0) 0px,
-          rgba(0, 0, 0, 0) 2px,
-          rgba(0, 0, 0, 0.06) 2px,
-          rgba(0, 0, 0, 0.06) 4px),
-        /* Subtle RGB Phosphor Grid */
-        repeating-linear-gradient(90deg,
-          rgba(255, 0, 0, 0.015) 0px,
-          rgba(0, 255, 0, 0.015) 1px,
-          rgba(0, 0, 255, 0.015) 2px,
-          rgba(0, 0, 0, 0) 3px),
-        /* Soft CRT Glass Vignette */
-        radial-gradient(ellipse 90% 90% at 50% 50%,
-          rgba(0, 0, 0, 0) 65%,
-          rgba(0, 0, 0, 0.12) 85%,
-          rgba(0, 0, 0, 0.22) 100%);
-      box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.25);
-      animation: crtLivingBreathe 6.5s ease-in-out infinite alternate;
+          rgba(0, 0, 0, 0) 3px,
+          rgba(0, 0, 0, 0.06) 3px,
+          rgba(0, 0, 0, 0.06) 6px),
+        /* CRT Glass Vignette */
+        radial-gradient(ellipse 85% 85% at 50% 50%,
+          rgba(0, 0, 0, 0) 55%,
+          rgba(0, 0, 0, 0.15) 75%,
+          rgba(0, 0, 0, 0.35) 100%);
+      box-shadow: inset 0 0 12px rgba(0, 0, 0, 0.3);
+      animation: crtBreathe 5s ease-in-out infinite alternate;
     }
 
-    /* Balatro-style slow, ambient living phosphor breathing */
-    @keyframes crtLivingBreathe {
-      0% {
-        opacity: 0.68;
-      }
-      50% {
-        opacity: 0.58;
-      }
-      100% {
-        opacity: 0.74;
-      }
+
+    /* Ambient phosphor breathing */
+    @keyframes crtBreathe {
+      0% { opacity: 0.9; }
+      50% { opacity: 0.45; }
+      100% { opacity: 1.0; }
     }
 
     #ui-wrapper {
       display: flex;
       flex-direction: column;
       align-items: center;
-      gap: 16px;
+      gap: 6px;
     }
 
     #energy-bar-container {
@@ -112,8 +99,8 @@
       width: 100%;
       min-width: 250px;
       background: #181822;
-      padding: 8px 12px;
-      border: 4px solid #343446;
+      padding: 4px 10px;
+      border: 2px solid #343446;
       border-radius: 8px;
       box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
       box-sizing: border-box;

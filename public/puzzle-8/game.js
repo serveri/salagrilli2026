@@ -3,10 +3,10 @@
 const config = {
     type: Phaser.AUTO,
     parent: 'canvas-wrapper',
-    width: 720,
-    height: 654,
+    width: 896,
+    height: 832,
     scale: {
-        mode: Phaser.Scale.FIT,
+        mode: Phaser.Scale.NONE,
         autoCenter: Phaser.Scale.CENTER_BOTH
     },
     render: {
