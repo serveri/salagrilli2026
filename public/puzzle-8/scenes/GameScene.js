@@ -179,21 +179,9 @@ Game.GameScene = class GameScene extends Phaser.Scene {
 
                 let interacted = false;
 
-                if (this.currentArea && this.currentArea.name === 'savilahti') {
-                    if (targetX === 14 && targetY === 21) {
-                        const msg = this.hasItem('Nappi avain')
-                            ? ['Nappi avain fails to open the door']
-                            : ['Its locked'];
-                        this.dialogue.show(msg);
-                        interacted = true;
-                    } else if ((targetX === 14 && targetY === 36) || (targetX === 16 && targetY === 28)) {
-                        if (this.hasItem('Nappi avain')) {
-                            this.triggerMapTransition('/puzzle-8/data/Laitos.csv', 5, 2);
-                        } else {
-                            this.dialogue.show(['Its locked']);
-                        }
-                        interacted = true;
-                    }
+                if (this.isDoorLocked(targetX, targetY)) {
+                    this.handleLockedDoor(targetX, targetY);
+                    interacted = true;
                 }
 
                 if (!interacted && Game.INSPECT_MESSAGES[targetTileIndex]) {
@@ -393,6 +381,7 @@ Game.GameScene = class GameScene extends Phaser.Scene {
 
         this.tileX = startTileX;
         this.tileY = startTileY;
+        this.activeDoorEffect = null;
 
         // Rebuild Tilemap
         if (this.tilemap) this.tilemap.destroy();
@@ -405,6 +394,19 @@ Game.GameScene = class GameScene extends Phaser.Scene {
 
         const tileset = this.tilemap.addTilesetImage('tiles', 'tiles', 16, 16, 0, 0);
         this.layer = this.tilemap.createLayer(0, tileset, 0, 0);
+        this.layer.setDepth(0);
+
+        this.overlayLayer = this.tilemap.createBlankLayer(
+            'overlay',
+            tileset,
+            0,
+            0,
+            this.currentArea.width,
+            this.currentArea.height,
+            Game.TILE_SIZE,
+            Game.TILE_SIZE
+        );
+        this.overlayLayer.setDepth(15);
 
         this.player.setPosition(
             this.tileX * Game.TILE_SIZE,
@@ -593,6 +595,13 @@ Game.GameScene = class GameScene extends Phaser.Scene {
 
         // Check solids against cached tile data
         const targetTileIndex = this.tileData[targetY][targetX];
+
+        if (this.isDoorLocked(targetX, targetY)) {
+            this.player.play(`walk-${this.facing}`, true);
+            this.handleLockedDoor(targetX, targetY);
+            return;
+        }
+
         const isWalkable = Game.WALKABLE_TILES.has(targetTileIndex);
 
 
@@ -645,6 +654,28 @@ Game.GameScene = class GameScene extends Phaser.Scene {
 
         this.isMoving = true;
         this.player.play(`walk-${this.facing}`, true);
+
+        if (this.activeDoorEffect && (this.activeDoorEffect.x !== finalTargetX || this.activeDoorEffect.y !== finalTargetY)) {
+            this.restoreActiveDoorEffect();
+        }
+
+        if (Game.DOOR_FRAMES && Game.DOOR_FRAMES[targetTileIndex]) {
+            const frameTile = Game.DOOR_FRAMES[targetTileIndex];
+            const blackTile = (Game.DOOR_BLACK_TILES && Game.DOOR_BLACK_TILES[targetTileIndex]) || Game.DOOR_BLACK_TILE || 780;
+
+            this.activeDoorEffect = {
+                x: finalTargetX,
+                y: finalTargetY,
+                origTile: targetTileIndex
+            };
+
+            if (this.layer) {
+                this.layer.putTileAt(blackTile, finalTargetX, finalTargetY);
+            }
+            if (this.overlayLayer) {
+                this.overlayLayer.putTileAt(frameTile, finalTargetX, finalTargetY);
+            }
+        }
 
         const targetPxX = finalTargetX * Game.TILE_SIZE;
         const targetPxY = finalTargetY * Game.TILE_SIZE;
@@ -741,6 +772,7 @@ Game.GameScene = class GameScene extends Phaser.Scene {
     }
 
     teleportSameMap(x, y) {
+        this.restoreActiveDoorEffect();
         this.isTransitioning = true;
         this.player.anims.stop();
         this.setIdleFrame();
@@ -766,6 +798,55 @@ Game.GameScene = class GameScene extends Phaser.Scene {
         return this.backpack.items.some(
             item => item.id === itemName || item.name === itemName || (item.name && item.name.toLowerCase() === itemName.toLowerCase())
         );
+    }
+
+    restoreActiveDoorEffect() {
+        if (this.activeDoorEffect) {
+            const { x, y, origTile } = this.activeDoorEffect;
+            if (this.layer) {
+                this.layer.putTileAt(origTile, x, y);
+            }
+            if (this.overlayLayer) {
+                this.overlayLayer.removeTileAt(x, y);
+            }
+            this.activeDoorEffect = null;
+        }
+    }
+
+    isDoorLocked(targetX, targetY) {
+        if (!this.currentArea) return false;
+        const areaName = this.currentArea.name;
+
+        if (areaName === 'savilahti') {
+            if (targetX === 14 && targetY === 21) return true;
+            if ((targetX === 14 && targetY === 36) || (targetX === 16 && targetY === 28)) {
+                return !this.hasItem('Nappi avain');
+            }
+        }
+        return false;
+    }
+
+    handleLockedDoor(targetX, targetY) {
+        if (!this.currentArea) return false;
+        const areaName = this.currentArea.name;
+
+        if (areaName === 'savilahti') {
+            if (targetX === 14 && targetY === 21) {
+                const msg = this.hasItem('Nappi avain')
+                    ? ['Nappi avain fails to open the door']
+                    : ['Its locked'];
+                this.dialogue.show(msg);
+                return true;
+            }
+
+            if ((targetX === 14 && targetY === 36) || (targetX === 16 && targetY === 28)) {
+                if (!this.hasItem('Nappi avain')) {
+                    this.dialogue.show(['Its locked']);
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 
     triggerMapTransition(targetMap, targetX, targetY) {
@@ -802,21 +883,11 @@ Game.GameScene = class GameScene extends Phaser.Scene {
         const areaName = this.currentArea ? this.currentArea.name : '';
 
         if (areaName === 'savilahti') {
-            if (this.tileX === 14 && this.tileY === 21) {
-                const msg = this.hasItem('Nappi avain')
-                    ? ['Nappi avain fails to open the door']
-                    : ['Its locked'];
-                this.dialogue.show(msg);
-                return true;
-            }
-
             if ((this.tileX === 14 && this.tileY === 36) || (this.tileX === 16 && this.tileY === 28)) {
                 if (this.hasItem('Nappi avain')) {
                     this.triggerMapTransition('/puzzle-8/data/Laitos.csv', 5, 2);
-                } else {
-                    this.dialogue.show(['Its locked']);
+                    return true;
                 }
-                return true;
             }
         }
 
