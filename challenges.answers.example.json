@@ -1,0 +1,34 @@
+{
+  "1": {
+    "flag": "SALA{453c5edc22}",
+    "reward": "REWARD 1 — replace with the value this task reveals"
+  },
+  "2": {
+    "flag": "SALA{f16bb34dec}",
+    "reward": "REWARD 2 — replace with the value this task reveals"
+  },
+  "3": {
+    "flag": "SALA{9cdf06e1be}",
+    "reward": "REWARD 3 — replace with the value this task reveals"
+  },
+  "4": {
+    "flag": "SALA{3fe5df263a}",
+    "reward": "REWARD 4 — replace with the value this task reveals"
+  },
+  "5": {
+    "flag": "SALA{fda566abb6}",
+    "reward": "REWARD 5 — replace with the value this task reveals"
+  },
+  "6": {
+    "flag": "SALA{0a18f87675}",
+    "reward": "REWARD 6 — replace with the value this task reveals"
+  },
+  "7": {
+    "flag": "SALA{c75d5cb15a}",
+    "reward": "REWARD 7 — replace with the value this task reveals"
+  },
+  "8": {
+    "flag": "SALA{07273ec7e1}",
+    "reward": "REWARD 8 — replace with the value this task reveals"
+  }
+}

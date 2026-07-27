@@ -1,26 +1,132 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="fi">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>6</title>
     <style>
-      html,
-      body {
+      * { box-sizing: border-box; }
+      html, body {
         margin: 0;
         min-height: 100%;
-        background: #000;
-        color: #fff;
-        font-family: system-ui, sans-serif;
-        display: grid;
-        place-items: center;
-        text-align: center;
+        background: radial-gradient(circle at 50% 20%, #1a2233 0%, #05070c 70%);
+        color: #f3f5f8;
+        font-family: "Iowan Old Style", "Palatino Linotype", Palatino, Georgia, serif;
       }
+      body {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        min-height: 100vh;
+        padding: 32px 18px 56px;
+        text-align: center;
+        gap: 22px;
+      }
+      .icon {
+        width: 220px;
+        max-width: 60vw;
+        border-radius: 16px;
+        box-shadow: 0 0 60px rgba(180, 200, 255, 0.25);
+        object-fit: contain;
+      }
+      .prayer {
+        max-width: 560px;
+        line-height: 1.8;
+        font-size: 18px;
+        white-space: pre-line;
+        color: #e7ecf5;
+        text-shadow: 0 1px 8px rgba(0, 0, 0, 0.5);
+      }
+      .prayer .last { display: block; margin-top: 1.2em; font-style: italic; color: #cdd6e6; }
+      .amen {
+        display: block;
+        margin-top: 1.4em;
+        font-size: 26px;
+        letter-spacing: 0.12em;
+        font-weight: 700;
+        color: #f7d774;
+      }
+      .btn {
+        margin-top: 8px;
+        padding: 14px 34px;
+        border: 1px solid rgba(247, 215, 116, 0.55);
+        border-radius: 999px;
+        background: linear-gradient(180deg, rgba(247, 215, 116, 0.18), rgba(247, 215, 116, 0.06));
+        color: #f7d774;
+        font-family: system-ui, sans-serif;
+        font-size: 17px;
+        font-weight: 700;
+        letter-spacing: 0.08em;
+        cursor: pointer;
+        transition: transform 0.1s, box-shadow 0.2s, background 0.2s;
+      }
+      .btn:hover { box-shadow: 0 0 28px rgba(247, 215, 116, 0.35); background: rgba(247, 215, 116, 0.18); }
+      .btn:active { transform: translateY(1px); }
+      .btn:disabled { opacity: 0.6; cursor: default; box-shadow: none; }
+      .flag {
+        margin-top: 6px;
+        padding: 16px 22px;
+        border: 1px solid rgba(247, 215, 116, 0.5);
+        border-radius: 14px;
+        background: rgba(247, 215, 116, 0.1);
+        font-family: ui-monospace, "SF Mono", Menlo, monospace;
+        font-size: 20px;
+        letter-spacing: 0.04em;
+        color: #f7e7b0;
+        display: none;
+      }
+      .flag.show { display: block; animation: reveal 0.6s ease; }
+      .flag small { display: block; font-family: system-ui, sans-serif; font-size: 12px; color: #d8c88a; letter-spacing: normal; margin-bottom: 8px; }
+      @keyframes reveal { from { opacity: 0; transform: translateY(10px) scale(0.98); } to { opacity: 1; transform: none; } }
     </style>
   </head>
   <body>
-    <!-- TODO: replace with puzzle 6 content. See README "Adding a puzzle" section. -->
-    <p>Puzzle 6 — coming soon.</p>
+    <img
+      class="icon"
+      src="pray.png"
+      alt="Pyhä hahmo"
+      onerror="this.style.display='none'"
+    />
+
+    <div class="prayer">Juvaste meidän,
+joka olet Joensuussa,
+
+Optimoitu olkoon algoritmisi,
+pyhitetty olkoon tietorakenne kirjastosi,
+kääntyköön sinun koodisi
+myös maan päällä,
+niin kuin kääntäjässäkin.
+
+Äläkä saata meitä neliölliseen aikavaativuuteen,
+vaan ohjaa meidät logaritmiseen.
+
+<span class="last">Sillä sinun on Java, viisaus ja Dokumentaatio, optimaalisesti.</span>
+<span class="amen">TRAamen</span></div>
+
+    <button class="btn" id="amenBtn" type="button">🙏 TRAamen</button>
+
+    <div class="flag" id="flag">
+      <small>Rukous kuultu. Tässä on lippusi:</small>
+      <span id="flagText"></span>
+    </div>
+
+    <script>
+      (function () {
+        // Revealed once the seeker has prayed and pressed TRAamen.
+        const FLAG = 'SALA{045491bde0}';
+        const btn = document.getElementById('amenBtn');
+        const flagEl = document.getElementById('flag');
+        const flagTextEl = document.getElementById('flagText');
+
+        btn.addEventListener('click', function () {
+          flagTextEl.textContent = FLAG;
+          flagEl.classList.add('show');
+          btn.disabled = true;
+          btn.textContent = 'Aamen 🙏';
+          flagEl.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        });
+      })();
+    </script>
 
     <script
       src="/chat-widget.js"

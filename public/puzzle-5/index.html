@@ -5,22 +5,269 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>5</title>
     <style>
-      html,
-      body {
+      :root {
+        --bg: #000;
+        --fg: #fff;
+        --border: #3a3a3c;
+        --absent: #3a3a3c;
+        --present: #b59f3b;
+        --correct: #538d4e;
+      }
+      * { box-sizing: border-box; }
+      html, body {
         margin: 0;
         min-height: 100%;
-        background: #000;
-        color: #fff;
-        font-family: system-ui, sans-serif;
-        display: grid;
-        place-items: center;
-        text-align: center;
+        background: var(--bg);
+        color: var(--fg);
+        font-family: system-ui, -apple-system, sans-serif;
       }
+      body {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        min-height: 100vh;
+        padding: 24px 16px 48px;
+        text-align: center;
+        gap: 18px;
+      }
+      h1 {
+        margin: 0;
+        font-size: 20px;
+        letter-spacing: 0.35em;
+        text-transform: uppercase;
+        font-weight: 700;
+      }
+      .sub { margin: 0; font-size: 13px; color: #9a9a9a; }
+      .board {
+        display: grid;
+        grid-template-rows: repeat(6, 1fr);
+        gap: 6px;
+      }
+      .row {
+        display: grid;
+        grid-template-columns: repeat(5, 1fr);
+        gap: 6px;
+      }
+      .tile {
+        width: 54px;
+        height: 54px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border: 2px solid var(--border);
+        font-size: 28px;
+        font-weight: 700;
+        text-transform: uppercase;
+        user-select: none;
+        transition: background 0.15s, border-color 0.15s, transform 0.1s;
+      }
+      .tile.filled { border-color: #565758; }
+      .tile.pop { transform: scale(1.08); }
+      .tile.absent { background: var(--absent); border-color: var(--absent); }
+      .tile.present { background: var(--present); border-color: var(--present); }
+      .tile.correct { background: var(--correct); border-color: var(--correct); }
+      .keyboard {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+        width: 100%;
+        max-width: 460px;
+      }
+      .krow { display: flex; justify-content: center; gap: 5px; }
+      .key {
+        min-width: 30px;
+        height: 48px;
+        padding: 0 8px;
+        border: none;
+        border-radius: 5px;
+        background: #818384;
+        color: #fff;
+        font-size: 13px;
+        font-weight: 700;
+        text-transform: uppercase;
+        cursor: pointer;
+      }
+      .key.wide { min-width: 58px; font-size: 11px; }
+      .key.absent { background: var(--absent); }
+      .key.present { background: var(--present); }
+      .key.correct { background: var(--correct); }
+      .key:active { transform: translateY(1px); }
+      .msg {
+        min-height: 20px;
+        font-size: 14px;
+        font-weight: 600;
+        color: #f5c451;
+      }
+      .flag {
+        margin-top: 4px;
+        padding: 14px 18px;
+        border: 1px solid var(--correct);
+        border-radius: 12px;
+        background: rgba(83, 141, 78, 0.12);
+        font-family: ui-monospace, "SF Mono", Menlo, monospace;
+        font-size: 18px;
+        letter-spacing: 0.04em;
+        display: none;
+      }
+      .flag.show { display: block; animation: reveal 0.4s ease; }
+      .flag small { display: block; font-family: system-ui, sans-serif; font-size: 11px; color: #9ccf97; letter-spacing: normal; margin-bottom: 6px; }
+      @keyframes reveal { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
     </style>
   </head>
   <body>
-    <!-- TODO: replace with puzzle 5 content. See README "Adding a puzzle" section. -->
-    <p>Puzzle 5 — coming soon.</p>
+    <h1>Wordle</h1>
+    <p class="sub">Guess the 5-letter word. 6 tries.</p>
+
+    <div class="board" id="board" aria-label="game board"></div>
+    <div class="msg" id="msg" role="status"></div>
+
+    <div class="flag" id="flag">
+      <small>Solved — here is your flag:</small>
+      <span id="flagText"></span>
+    </div>
+
+    <div class="keyboard" id="keyboard"></div>
+
+    <script>
+      (function () {
+        const ANSWER = 'SPACE';
+        // Revealed only once the player guesses the word correctly.
+        const FLAG = 'SALA{55d11f17a2}';
+        const ROWS = 6;
+        const COLS = 5;
+
+        const boardEl = document.getElementById('board');
+        const msgEl = document.getElementById('msg');
+        const flagEl = document.getElementById('flag');
+        const flagTextEl = document.getElementById('flagText');
+        const keyboardEl = document.getElementById('keyboard');
+
+        let row = 0;
+        let current = '';
+        let done = false;
+        const tiles = [];
+
+        for (let r = 0; r < ROWS; r++) {
+          const rowEl = document.createElement('div');
+          rowEl.className = 'row';
+          const rowTiles = [];
+          for (let c = 0; c < COLS; c++) {
+            const t = document.createElement('div');
+            t.className = 'tile';
+            rowEl.appendChild(t);
+            rowTiles.push(t);
+          }
+          boardEl.appendChild(rowEl);
+          tiles.push(rowTiles);
+        }
+
+        const KEY_ROWS = ['QWERTYUIOP', 'ASDFGHJKL', '↵ZXCVBNM←'];
+        const keyEls = {};
+        KEY_ROWS.forEach((line) => {
+          const kr = document.createElement('div');
+          kr.className = 'krow';
+          for (const ch of line) {
+            const btn = document.createElement('button');
+            btn.className = 'key';
+            let label = ch;
+            let val = ch;
+            if (ch === '↵') { label = 'Enter'; val = 'Enter'; btn.classList.add('wide'); }
+            else if (ch === '←') { label = 'Del'; val = 'Backspace'; btn.classList.add('wide'); }
+            else { keyEls[ch] = btn; }
+            btn.textContent = label;
+            btn.addEventListener('click', () => handleKey(val));
+            kr.appendChild(btn);
+          }
+          keyboardEl.appendChild(kr);
+        });
+
+        function setMsg(text) {
+          msgEl.textContent = text;
+          if (text) setTimeout(() => { if (msgEl.textContent === text) msgEl.textContent = ''; }, 1800);
+        }
+
+        function rankBetter(a, b) {
+          const order = { '': 0, present: 1, correct: 2 };
+          return (order[a] || 0) >= (order[b] || 0) ? a : b;
+        }
+
+        function submit() {
+          if (current.length !== COLS) { setMsg('Not enough letters'); return; }
+          const guess = current.toUpperCase();
+          const answer = ANSWER.toUpperCase();
+          const result = new Array(COLS).fill('absent');
+          const counts = {};
+          for (const ch of answer) counts[ch] = (counts[ch] || 0) + 1;
+
+          for (let c = 0; c < COLS; c++) {
+            if (guess[c] === answer[c]) { result[c] = 'correct'; counts[guess[c]]--; }
+          }
+          for (let c = 0; c < COLS; c++) {
+            if (result[c] === 'correct') continue;
+            const ch = guess[c];
+            if (counts[ch] > 0) { result[c] = 'present'; counts[ch]--; }
+          }
+
+          for (let c = 0; c < COLS; c++) {
+            const t = tiles[row][c];
+            t.classList.add(result[c]);
+            const kb = keyEls[guess[c]];
+            if (kb) {
+              const cur = kb.classList.contains('correct') ? 'correct' : kb.classList.contains('present') ? 'present' : kb.classList.contains('absent') ? 'absent' : '';
+              const best = rankBetter(cur === 'absent' ? '' : cur, result[c]);
+              kb.classList.remove('present', 'absent', 'correct');
+              kb.classList.add(best || 'absent');
+            }
+          }
+
+          if (guess === answer) {
+            done = true;
+            setMsg('Correct!');
+            flagTextEl.textContent = FLAG;
+            flagEl.classList.add('show');
+            return;
+          }
+
+          row++;
+          current = '';
+          if (row >= ROWS) {
+            done = true;
+            setMsg('The word was ' + answer);
+          }
+        }
+
+        function handleKey(key) {
+          if (done) return;
+          if (key === 'Enter') { submit(); return; }
+          if (key === 'Backspace') {
+            current = current.slice(0, -1);
+            render();
+            return;
+          }
+          if (/^[a-zA-Z]$/.test(key) && current.length < COLS) {
+            current += key.toUpperCase();
+            render();
+          }
+        }
+
+        function render() {
+          for (let c = 0; c < COLS; c++) {
+            const t = tiles[row][c];
+            const ch = current[c] || '';
+            t.textContent = ch;
+            t.classList.toggle('filled', Boolean(ch));
+            if (ch) { t.classList.add('pop'); setTimeout(() => t.classList.remove('pop'), 100); }
+          }
+        }
+
+        window.addEventListener('keydown', (e) => {
+          if (e.metaKey || e.ctrlKey || e.altKey) return;
+          if (e.key === 'Enter' || e.key === 'Backspace' || /^[a-zA-Z]$/.test(e.key)) {
+            handleKey(e.key);
+          }
+        });
+      })();
+    </script>
 
     <script
       src="/chat-widget.js"

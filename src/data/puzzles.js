@@ -30,5 +30,5 @@ export const puzzles = [
   {
     id: 8,
     url: '/puzzle-8/index.html',
-  },
+  }
 ]
