@@ -802,7 +802,7 @@ Game.GameScene = class GameScene extends Phaser.Scene {
         const areaName = this.currentArea ? this.currentArea.name : '';
 
         if (areaName === 'savilahti') {
-            if (this.tileX === 14 && this.tileY === 22) {
+            if (this.tileX === 14 && this.tileY === 21) {
                 const msg = this.hasItem('Nappi avain')
                     ? ['Nappi avain fails to open the door']
                     : ['Its locked'];
