@@ -38,7 +38,7 @@
       border: 2px solid #141420;
       border-radius: 12px;
       overflow: hidden;
-      box-shadow: 
+      box-shadow:
         0 0 0 2px #262638,
         0 15px 40px rgba(0, 0, 0, 0.95);
     }
@@ -80,9 +80,17 @@
 
     /* Ambient phosphor breathing */
     @keyframes crtBreathe {
-      0% { opacity: 0.9; }
-      50% { opacity: 0.45; }
-      100% { opacity: 1.0; }
+      0% {
+        opacity: 0.9;
+      }
+
+      50% {
+        opacity: 0.45;
+      }
+
+      100% {
+        opacity: 1.0;
+      }
     }
 
     #ui-wrapper {
@@ -90,6 +98,8 @@
       flex-direction: column;
       align-items: center;
       gap: 6px;
+      margin-top: -10px;
+      margin-bottom: 10px;
     }
 
     #energy-bar-container {

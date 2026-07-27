@@ -184,7 +184,38 @@ Game.GameScene = class GameScene extends Phaser.Scene {
                     interacted = true;
                 }
 
-                if (!interacted && Game.INSPECT_MESSAGES[targetTileIndex]) {
+                if (!interacted && targetTileIndex === 3138) {
+                    this.dialogue.show(['Take the traffic sign?'], null, [
+                        {
+                            text: 'Yes', color: '#006600', hoverColor: '#00cc00', onClick: () => {
+                                this.backpack.items.push({
+                                    id: 'sign_' + targetX + '_' + targetY,
+                                    name: 'Traffic Sign',
+                                    desc: 'Might be related to triangle man.',
+                                    canUse: false
+                                });
+                                
+                                this.tileData[targetY][targetX] = 3008;
+                                if (this.layer) {
+                                    this.layer.putTileAt(3008, targetX, targetY);
+                                }
+                                
+                                Game.state = Game.state || {};
+                                Game.state.takenSigns = Game.state.takenSigns || [];
+                                Game.state.takenSigns.push({
+                                    area: this.currentArea.name,
+                                    x: targetX,
+                                    y: targetY
+                                });
+                            }
+                        },
+                        {
+                            text: 'No', color: '#880000', hoverColor: '#cc0000', onClick: () => {
+                            }
+                        }
+                    ]);
+                    interacted = true;
+                } else if (!interacted && Game.INSPECT_MESSAGES[targetTileIndex]) {
                     this.dialogue.show(Game.INSPECT_MESSAGES[targetTileIndex]);
                     interacted = true;
                 } else if (targetTileIndex === 196 || targetTileIndex === 68) {
@@ -382,6 +413,16 @@ Game.GameScene = class GameScene extends Phaser.Scene {
         this.tileX = startTileX;
         this.tileY = startTileY;
         this.activeDoorEffect = null;
+
+        if (Game.state && Game.state.takenSigns) {
+            Game.state.takenSigns.forEach(sign => {
+                if (sign.area === this.currentArea.name) {
+                    if (this.tileData[sign.y] && this.tileData[sign.y][sign.x] === 3138) {
+                        this.tileData[sign.y][sign.x] = 3008;
+                    }
+                }
+            });
+        }
 
         // Rebuild Tilemap
         if (this.tilemap) this.tilemap.destroy();
@@ -772,13 +813,13 @@ Game.GameScene = class GameScene extends Phaser.Scene {
     }
 
     teleportSameMap(x, y) {
-        this.restoreActiveDoorEffect();
         this.isTransitioning = true;
         this.player.anims.stop();
         this.setIdleFrame();
 
         this.cameras.main.fadeOut(250, 0, 0, 0, (camera, progress) => {
             if (progress === 1) {
+                this.restoreActiveDoorEffect();
                 this.tileX = x;
                 this.tileY = y;
                 this.player.setPosition(x * Game.TILE_SIZE, y * Game.TILE_SIZE);

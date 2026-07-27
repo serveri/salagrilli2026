@@ -29,6 +29,7 @@ Game.Backpack = class Backpack {
         this.headerText = null;
         this.actionContainer = null;
         this.gridContainer = null;
+        this._keyHandler = null;
 
         // Dimensions
         this.boxW = 198;
@@ -45,6 +46,31 @@ Game.Backpack = class Backpack {
         this.updatePosition();
         this._renderHeader();
         this._renderGrid();
+
+        if (this._keyHandler) {
+            this.scene.input.keyboard.off('keydown', this._keyHandler);
+        }
+        this._keyHandler = (event) => {
+            if (!this.isOpen) return;
+            if (event.code === 'Space') {
+                if (this.selectedItem) {
+                    if (this.selectedItem.canUse) {
+                        this._handleUse(this.selectedItem);
+                    } else {
+                        this._handleInspect(this.selectedItem);
+                    }
+                } else if (this.items && this.items.length > 0) {
+                    const startIndex = (this.currentPage || 0) * 9;
+                    const item = this.items[startIndex] || this.items[0];
+                    if (item) {
+                        this.selectedItem = item;
+                        this._renderHeader();
+                        this._renderGrid();
+                    }
+                }
+            }
+        };
+        this.scene.input.keyboard.on('keydown', this._keyHandler);
     }
 
     /** Close the backpack overlay */
@@ -52,6 +78,11 @@ Game.Backpack = class Backpack {
         if (!this.isOpen) return;
         this.isOpen = false;
         this.selectedItem = null;
+
+        if (this._keyHandler) {
+            this.scene.input.keyboard.off('keydown', this._keyHandler);
+            this._keyHandler = null;
+        }
 
         this._destroyUI();
     }
@@ -122,7 +153,7 @@ Game.Backpack = class Backpack {
 
         this.bgImage.setPosition(bgX, bgY);
 
-        this.headerText.setPosition(bgX + 99, bgY + 22);
+        this.headerText.setPosition(bgX + 99, bgY + 20);
         this.headerText.setOrigin(0.5, 0.5);
 
         if (this.actionContainer) {
@@ -140,13 +171,13 @@ Game.Backpack = class Backpack {
         if (!this.selectedItem) {
             // Show default "Inventory" title
             this.headerText.setText('Inventory');
-            this.headerText.setPosition(this.bgX + 99, this.bgY + 22);
+            this.headerText.setPosition(this.bgX + 99, this.bgY + 20);
             this.headerText.setOrigin(0.5, 0.5);
         } else {
             // Replace header text with selected item name, centered
             const item = this.selectedItem;
             this.headerText.setText(item.name);
-            this.headerText.setPosition(this.bgX + 99, this.bgY + 22);
+            this.headerText.setPosition(this.bgX + 99, this.bgY + 20);
             this.headerText.setOrigin(0.5, 0.5);
 
             // Action: Inspect button
@@ -208,7 +239,7 @@ Game.Backpack = class Backpack {
 
         const cols = 3;
         const startX = 20;
-        const startY = 38;
+        const startY = 36;
         const slotW = 50;
         const slotH = 28;
         const spacingX = 4;
@@ -225,7 +256,7 @@ Game.Backpack = class Backpack {
         if (totalPages > 1) {
             // Left arrow
             if (this.currentPage > 0) {
-                const leftArrow = this.scene.add.text(10, 94, '←', {
+                const leftArrow = this.scene.add.text(10, 88, '←', {
                     fontFamily: "'Pokemon Classic', 'Courier New', monospace",
                     fontSize: '32px',
                     color: '#1a1a2e'
@@ -242,7 +273,7 @@ Game.Backpack = class Backpack {
 
             // Right arrow
             if (this.currentPage < totalPages - 1) {
-                const rightArrow = this.scene.add.text(190, 94, '→', {
+                const rightArrow = this.scene.add.text(190, 88, '→', {
                     fontFamily: "'Pokemon Classic', 'Courier New', monospace",
                     fontSize: '32px',
                     color: '#1a1a2e'
@@ -462,12 +493,17 @@ Game.Backpack = class Backpack {
             ],
             'savilahti': [
                 {
-                    // Example: If player is past Y=50
-                    condition: (x, y) => y <= 59,
+                    // Front of microkatu
+                    condition: (x, y) => y <= 59 && x > 41,
                     x: 21, y: 35
                 },
                 {
-                    // Default region for serveriquest
+                    // Microkatu. x is less than 41, y is less than 48
+                    condition: (x, y) => y <= 48 && x <= 41,
+                    x: 11, y: 20
+                },
+                {
+                    // Starting region for savilahti
                     condition: (x, y) => true,
                     x: -22, y: 55
                 }
