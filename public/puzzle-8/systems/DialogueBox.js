@@ -21,6 +21,7 @@ Game.DialogueBox = class DialogueBox {
         this.textObj = null;
         this.inputLocked = false;
         this._keyHandler = null;
+        this._pointerHandler = null;
 
         // Textbox native dimensions
         this.boxW = 158;
@@ -173,9 +174,21 @@ Game.DialogueBox = class DialogueBox {
         if (this._keyHandler) {
             this.scene.input.keyboard.off('keydown', this._keyHandler);
         }
+        if (this._pointerHandler) {
+            this.scene.input.off('pointerdown', this._pointerHandler);
+        }
 
         this._keyHandler = (event) => {
-            if (event.code !== 'Space') return;
+            if (event.code !== 'Space' && event.code !== 'KeyE' && event.key !== 'e' && event.key !== 'E') return;
+            if (!this.isActive || this.inputLocked) return;
+            if (this.currentIndex === this.messages.length - 1 && this.buttonsData && this.buttonsData.length > 0) {
+                return; // Require button click to proceed
+            }
+            this._showMessage(this.currentIndex + 1);
+        };
+
+        this._pointerHandler = (pointer) => {
+            if (pointer.button !== 0) return;
             if (!this.isActive || this.inputLocked) return;
             if (this.currentIndex === this.messages.length - 1 && this.buttonsData && this.buttonsData.length > 0) {
                 return; // Require button click to proceed
@@ -184,6 +197,7 @@ Game.DialogueBox = class DialogueBox {
         };
 
         this.scene.input.keyboard.on('keydown', this._keyHandler);
+        this.scene.input.on('pointerdown', this._pointerHandler);
     }
 
     _close() {
@@ -198,6 +212,11 @@ Game.DialogueBox = class DialogueBox {
         if (this._keyHandler) {
             this.scene.input.keyboard.off('keydown', this._keyHandler);
             this._keyHandler = null;
+        }
+
+        if (this._pointerHandler) {
+            this.scene.input.off('pointerdown', this._pointerHandler);
+            this._pointerHandler = null;
         }
 
         if (this.onComplete) {

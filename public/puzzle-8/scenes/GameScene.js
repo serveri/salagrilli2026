@@ -14,6 +14,7 @@ Game.GameScene = class GameScene extends Phaser.Scene {
         this.isTurning = false;
         this.dialogue = null;
         this.energy = 150;
+        this.isMapOpen = false;
     }
 
     create() {
@@ -126,25 +127,44 @@ Game.GameScene = class GameScene extends Phaser.Scene {
 
         // Backpack / Inventory system
         this.backpack = new Game.Backpack(this);
+        this.pendingBackpackOpen = false;
 
-        // Toggle backpack with 'E' or 'I' key
-        const toggleBag = () => {
-            if (this.dialogue && this.dialogue.active) return;
+        this.openBackpackSafely = () => {
             if (this.player.anims.isPlaying) {
                 this.player.anims.stop();
                 this.setIdleFrame();
             }
-            this.backpack.toggle();
+            this.backpack.open();
+        };
+
+        // Toggle backpack with 'E' or 'I' key
+        const toggleBag = () => {
+            if (this.dialogue && this.dialogue.active) return;
+            if (this.isMapOpen) return;
+
+            if (this.backpack && this.backpack.active) {
+                this.backpack.close();
+                this.pendingBackpackOpen = false;
+                return;
+            }
+
+            if (this.isMoving || this.isTransitioning) {
+                this.pendingBackpackOpen = true;
+                return;
+            }
+
+            this.openBackpackSafely();
         };
         this.input.keyboard.on('keydown-E', toggleBag);
         this.input.keyboard.on('keydown-I', toggleBag);
         this.input.keyboard.on('keydown-ESC', () => {
             if (this.backpack && this.backpack.active) this.backpack.close();
+            this.pendingBackpackOpen = false;
         });
 
         // Inspect interaction
         this.input.keyboard.on('keydown-SPACE', () => {
-            if (this.isTransitioning || this.isMoving) return;
+            if (this.isTransitioning || this.isMoving || this.isMapOpen) return;
             if (this.dialogue && this.dialogue.active) return;
             if (this.backpack && this.backpack.active) return;
 
@@ -157,21 +177,27 @@ Game.GameScene = class GameScene extends Phaser.Scene {
 
                 const targetTileIndex = this.tileData[targetY][targetX];
 
-                const inspectMessages = {
-                    192: ['Its a rock...'], 193: ['Its a rock...'], 194: ['Its a rock...'],
-                    260: ['Every Serveri loves grilling!'],
-                    3269: ['Rubbish old Skoda'], 3270: ['Rubbish old Skoda'], 3208: ['Rubbish old Skoda'], 3272: ['Rubbish old Skoda'],
-                    3141: ['Audi 50 '], 3142: ['Audi 50 '], 3143: ['Audi 50 '], 3079: ['Audi 50 '],
-                    3077: ['Wolksvagen golf GTI'], 3078: ['Wolksvagen golf GTI'], 3144: ['Wolksvagen golf GTI'], 3080: ['Wolksvagen golf GTI'],
-                    3205: ['Mercedes-Benz X 350 d 4MATIC', 'What a car!'], 3206: ['Mercedes-Benz X 350 d 4MATIC', 'What a car!'], 3271: ['Mercedes-Benz X 350 d 4MATIC', 'What a car!'], 3207: ['Mercedes-Benz X 350 d 4MATIC', 'What a car!'],
-                    3138: ['Might be related to triangle man'], 3074: ['Its good thing there is not much traffic'], 195: ['Its a barrel, or a pipe maybe?'], 132: ['Just a bush'], 2762: ['Some old tires'], 2757: ['Damn construction!'], 2758: ['Damn construction!'],
-                    2759: ['Damn construction!']
-                };
-
                 let interacted = false;
 
-                if (inspectMessages[targetTileIndex]) {
-                    this.dialogue.show(inspectMessages[targetTileIndex]);
+                if (this.currentArea && this.currentArea.name === 'savilahti') {
+                    if (targetX === 14 && targetY === 21) {
+                        const msg = this.hasItem('Nappi avain')
+                            ? ['Nappi avain fails to open the door']
+                            : ['Its locked'];
+                        this.dialogue.show(msg);
+                        interacted = true;
+                    } else if ((targetX === 14 && targetY === 36) || (targetX === 16 && targetY === 28)) {
+                        if (this.hasItem('Nappi avain')) {
+                            this.triggerMapTransition('/puzzle-8/data/Laitos.csv', 5, 2);
+                        } else {
+                            this.dialogue.show(['Its locked']);
+                        }
+                        interacted = true;
+                    }
+                }
+
+                if (!interacted && Game.INSPECT_MESSAGES[targetTileIndex]) {
+                    this.dialogue.show(Game.INSPECT_MESSAGES[targetTileIndex]);
                     interacted = true;
                 } else if (targetTileIndex === 196 || targetTileIndex === 68) {
                     this.backpack.items.push({
@@ -202,8 +228,9 @@ Game.GameScene = class GameScene extends Phaser.Scene {
                             this.player.anims.stop();
                             this.player.setFrame(11);
                             if (this.energy < 50) {
+                                const old = this.energy;
                                 this.energy = 50;
-                                this.updateEnergyUI();
+                                this.addEnergyDiff(this.energy - old);
                                 this.dialogue.show(['You rested on the bench.', 'You feel a bit better.'], () => {
                                     this.walkBackFromBench(this.tileX, this.tileY);
                                 });
@@ -219,9 +246,12 @@ Game.GameScene = class GameScene extends Phaser.Scene {
                     const signKey = `${this.currentArea.name}_${targetX}_${targetY}`;
                     const signMessages = {
                         'serveriquest_66_24': ['Neulamäki karting', 'Open 10-19'],
+                        'serveriquest_75_48': ['Berries are a good snack!', 'Press I or E to open your inventory and eat collected berries.'],
                         'serveriquest_54_21': ['Road to Neulamäki'],
-                        'serveriquest_54_4': ['Road to Savilahti'],
-                        'House_3_8': ['Home sweet home.'],
+                        'serveriquest_55_4': ['Road to Savilahti'],
+                        'serveriquest_33_52': ['Serveri mouse house & grill', 'I live here!'],
+                        'savilahti_3_33': ['Novapolis\n \n↑ Main enterance', '→ Serveri enterance'],
+                        'savilahti_30_57': ['← Microkatu campus\n\n↓ Neulamäki']
                         // Add more signs here as needed
                     };
 
@@ -240,15 +270,92 @@ Game.GameScene = class GameScene extends Phaser.Scene {
         this.updateEnergyUI();
     }
 
+    addEnergyDiff(diff) {
+        if (diff === 0) return;
+
+        if (this.energyDiffStack > 0 && diff < 0) {
+            this.energyDiffStack = diff;
+        } else if (this.energyDiffStack < 0 && diff > 0) {
+            this.energyDiffStack = diff;
+        } else {
+            this.energyDiffStack = (this.energyDiffStack || 0) + diff;
+        }
+
+        this.cancelEnergyLostReset();
+        this.updateEnergyUI();
+    }
+
     updateEnergyUI() {
         const fill = document.getElementById('energy-bar-fill');
         const num = document.getElementById('energy-number');
         if (fill) {
             const percent = Math.max(0, (this.energy / 200) * 100);
             fill.style.width = `${percent}%`;
+            if (this.energy <= 25) {
+                fill.style.backgroundColor = '#ff4444'; // Red
+            } else {
+                fill.style.backgroundColor = '#FFD700'; // Yellow
+            }
         }
         if (num) {
-            num.innerText = Math.floor(Math.max(0, this.energy));
+            const valEl = document.getElementById('energy-val');
+            if (valEl) {
+                valEl.innerText = Math.floor(Math.max(0, this.energy));
+            } else {
+                num.innerText = Math.floor(Math.max(0, this.energy));
+            }
+
+            const lostEl = document.getElementById('energy-lost');
+            if (lostEl) {
+                if (this.energyDiffStack < 0) {
+                    lostEl.style.display = 'inline-block';
+                    lostEl.innerText = `${this.energyDiffStack}`;
+                    lostEl.style.color = '#cc0000';
+                } else if (this.energyDiffStack > 0) {
+                    lostEl.style.display = 'inline-block';
+                    lostEl.innerText = `+${this.energyDiffStack}`;
+                    lostEl.style.color = '#00cc00';
+                } else {
+                    lostEl.style.display = 'none';
+                }
+            }
+        }
+    }
+
+    cancelEnergyLostReset() {
+        if (this.resetEnergyTimer) {
+            this.resetEnergyTimer.remove();
+            this.resetEnergyTimer = null;
+        }
+        if (this.fadeEnergyTimer) {
+            this.fadeEnergyTimer.remove();
+            this.fadeEnergyTimer = null;
+        }
+        const lostEl = document.getElementById('energy-lost');
+        if (lostEl) {
+            lostEl.style.transition = '';
+            lostEl.style.opacity = '1';
+        }
+    }
+
+    resetEnergyLostStack() {
+        if (this.energyDiffStack !== 0 && this.energyDiffStack !== undefined && !this.resetEnergyTimer) {
+            this.resetEnergyTimer = this.time.delayedCall(800, () => {
+                const lostEl = document.getElementById('energy-lost');
+                if (lostEl) {
+                    lostEl.style.transition = 'opacity 0.5s ease-out';
+                    lostEl.style.opacity = '0';
+
+                    this.fadeEnergyTimer = this.time.delayedCall(500, () => {
+                        lostEl.style.display = 'none';
+                        lostEl.style.transition = '';
+                        lostEl.style.opacity = '1';
+                        this.energyDiffStack = 0;
+                        this.resetEnergyTimer = null;
+                        this.fadeEnergyTimer = null;
+                    });
+                }
+            });
         }
     }
 
@@ -362,9 +469,10 @@ Game.GameScene = class GameScene extends Phaser.Scene {
 
         this.updatePolice(time, delta);
 
-        if (this.isTransitioning) return;
-        if (this.dialogue && this.dialogue.active) return;
-        if (this.backpack && this.backpack.active) return;
+        if (this.isTransitioning || (this.dialogue && this.dialogue.active) || (this.backpack && this.backpack.active) || this.isMapOpen || this.pendingBackpackOpen) {
+            this.resetEnergyLostStack();
+            return;
+        }
 
         const activeDir = this.getActiveInput();
 
@@ -392,6 +500,7 @@ Game.GameScene = class GameScene extends Phaser.Scene {
                 }
                 this.setIdleFrame();
             }
+            this.resetEnergyLostStack();
         }
     }
 
@@ -484,11 +593,7 @@ Game.GameScene = class GameScene extends Phaser.Scene {
 
         // Check solids against cached tile data
         const targetTileIndex = this.tileData[targetY][targetX];
-        const walkthroughTiles = [0, 1, 199, 200, 288, 517, 518, 581, 582, 645, 682, 683, 273, 2816, 2817, 2818, 2819, 2820, 2821, 2822, 2823, 2824, 2825, 2826, 2827, 2828, 2829,
-            2830, 2831, 2832, 2833, 2880, 2881, 2882, 2883, 2884, 2885, 2886, 2887, 2888, 2889, 2890, 2891, 2892, 2893, 2894, 2895, 2896,
-            2944, 2945, 2946, 2947, 3008, 3009, 3010, 3011, 2631, 436, 1370, 451, 2633, 2631, 320, 384, 448, 69, 70, 5, 6, 1829, 1831, 2021, 2023
-        ];
-        const isWalkable = walkthroughTiles.includes(targetTileIndex);
+        const isWalkable = Game.WALKABLE_TILES.has(targetTileIndex);
 
 
         const cliffs = {
@@ -524,7 +629,7 @@ Game.GameScene = class GameScene extends Phaser.Scene {
             }
 
             const landingTile = this.tileData[testY][testX];
-            const landingWalkable = walkthroughTiles.includes(landingTile) || landingTile > 2816;
+            const landingWalkable = Game.WALKABLE_TILES.has(landingTile) || landingTile > 2816;
 
             if (!landingWalkable) {
                 this.player.play(`walk-${this.facing}`, true);
@@ -544,6 +649,13 @@ Game.GameScene = class GameScene extends Phaser.Scene {
         const targetPxX = finalTargetX * Game.TILE_SIZE;
         const targetPxY = finalTargetY * Game.TILE_SIZE;
 
+        let totalMoveDuration = Game.TWEEN_DURATION;
+        if (isJumping) {
+            totalMoveDuration = jumpDistance === 2
+                ? (Game.TWEEN_DURATION * 0.9 * jumpDistance)
+                : (Game.TWEEN_DURATION * 1.1 * jumpDistance);
+        }
+
         if (isJumping) {
             this.shadow.setPosition(this.player.x, this.player.y);
             this.shadow.setVisible(true);
@@ -552,35 +664,55 @@ Game.GameScene = class GameScene extends Phaser.Scene {
                 targets: this.shadow,
                 x: targetPxX,
                 y: targetPxY,
-                duration: (Game.TWEEN_DURATION * 0.8 * jumpDistance),
+                duration: totalMoveDuration,
                 ease: 'Linear'
             });
 
-            this.tweens.add({
-                targets: this.player,
-                displayOriginY: 10,
-                duration: (Game.TWEEN_DURATION * jumpDistance) / 2,
-                yoyo: true,
-                ease: 'Sine.easeInOut'
-            });
+            if (jumpDistance === 2) {
+                // Exactly match original single cliff jump
+                this.tweens.add({
+                    targets: this.player,
+                    displayOriginY: 10,
+                    duration: (Game.TWEEN_DURATION * jumpDistance) / 2,
+                    yoyo: true,
+                    ease: 'Sine.easeInOut'
+                });
+            } else {
+                const bounces = jumpDistance - 1;
+                this.tweens.add({
+                    targets: this.player,
+                    displayOriginY: 8,
+                    duration: (totalMoveDuration / bounces) / 2,
+                    yoyo: true,
+                    repeat: bounces - 1,
+                    ease: 'Sine.easeInOut'
+                });
+            }
         }
 
         this.tweens.add({
             targets: this.player,
             x: targetPxX,
             y: targetPxY,
-            duration: isJumping ? (Game.TWEEN_DURATION * 0.8 * jumpDistance) : Game.TWEEN_DURATION,
+            duration: totalMoveDuration,
             ease: 'Linear',
             onComplete: () => {
                 this.tileX = finalTargetX;
                 this.tileY = finalTargetY;
+                console.log('Player at tile:', this.tileX, this.tileY);
                 this.isMoving = false;
                 this.player.displayOriginY = 0;
                 this.shadow.setVisible(false);
 
+                if (this.pendingBackpackOpen) {
+                    this.pendingBackpackOpen = false;
+                    this.openBackpackSafely();
+                }
+
                 // Decrease energy for each tile moved
+                const old = this.energy;
                 this.energy = Math.max(0, this.energy - 1);
-                this.updateEnergyUI();
+                this.addEnergyDiff(this.energy - old);
 
                 const doorTriggered = this.checkDoorTrigger();
 
@@ -627,7 +759,36 @@ Game.GameScene = class GameScene extends Phaser.Scene {
                 });
             }
         });
-    } checkDoorTrigger() {
+    }
+
+    hasItem(itemName) {
+        if (!this.backpack || !this.backpack.items) return false;
+        return this.backpack.items.some(
+            item => item.id === itemName || item.name === itemName || (item.name && item.name.toLowerCase() === itemName.toLowerCase())
+        );
+    }
+
+    triggerMapTransition(targetMap, targetX, targetY) {
+        this.isTransitioning = true;
+        this.player.anims.stop();
+        this.setIdleFrame();
+
+        this.cameras.main.fadeOut(250, 0, 0, 0, (camera, progress) => {
+            if (progress === 1) {
+                this.loadArea(targetMap, targetX, targetY).then(() => {
+                    this.cameras.main.fadeIn(250, 0, 0, 0, (cam, prog) => {
+                        if (prog === 1) {
+                            this.isTransitioning = false;
+                            const [dx, dy] = this.getDeltaFromDir(this.facing);
+                            this.tryMove(dx, dy);
+                        }
+                    });
+                });
+            }
+        });
+    }
+
+    checkDoorTrigger() {
         const currentTile = this.tileData[this.tileY][this.tileX];
 
         if (currentTile === 199) {
@@ -638,11 +799,39 @@ Game.GameScene = class GameScene extends Phaser.Scene {
             return true;
         }
 
+        const areaName = this.currentArea ? this.currentArea.name : '';
+
+        if (areaName === 'savilahti') {
+            if (this.tileX === 14 && this.tileY === 21) {
+                const msg = this.hasItem('Nappi avain')
+                    ? ['Nappi avain fails to open the door']
+                    : ['Its locked'];
+                this.dialogue.show(msg);
+                return true;
+            }
+
+            if ((this.tileX === 14 && this.tileY === 36) || (this.tileX === 16 && this.tileY === 28)) {
+                if (this.hasItem('Nappi avain')) {
+                    this.triggerMapTransition('/puzzle-8/data/Laitos.csv', 5, 2);
+                } else {
+                    this.dialogue.show(['Its locked']);
+                }
+                return true;
+            }
+        }
+
+        if (areaName === 'Laitos') {
+            if (currentTile === 1765 || currentTile === 1767 || this.tileY === 0) {
+                this.triggerMapTransition('/puzzle-8/data/savilahti.csv', 14, 37);
+                return true;
+            }
+        }
+
         const mapTransitions = {
             'serveriquest': {
                 2631: { targetMap: '/puzzle-8/data/NeulamaenSale.csv', targetX: 1, targetY: 2 },
-                2633: { targetMap: '/puzzle-8/data/savilahti.csv', targetX: 4, targetY: 6 },
-                1370: { targetMap: '/puzzle-8/data/House.csv', targetX: 2, targetY: 11 }
+                2633: { targetMap: '/puzzle-8/data/savilahti.csv', targetX: 26, targetY: 79 },
+                1370: { targetMap: '/puzzle-8/data/House.csv', targetX: 7, targetY: 11 }
             },
             'NeulamaenSale': {
                 2021: { targetMap: '/puzzle-8/data/serveriquest.csv', targetX: 13, targetY: 48 },
@@ -657,27 +846,11 @@ Game.GameScene = class GameScene extends Phaser.Scene {
             }
         };
 
-        const areaTransitions = mapTransitions[this.currentArea.name] || {};
+        const areaTransitions = mapTransitions[areaName] || {};
         const transition = areaTransitions[currentTile];
 
         if (transition) {
-            this.isTransitioning = true;
-            this.player.anims.stop();
-            this.setIdleFrame();
-
-            this.cameras.main.fadeOut(250, 0, 0, 0, (camera, progress) => {
-                if (progress === 1) {
-                    this.loadArea(transition.targetMap, transition.targetX, transition.targetY).then(() => {
-                        this.cameras.main.fadeIn(250, 0, 0, 0, (cam, prog) => {
-                            if (prog === 1) {
-                                this.isTransitioning = false;
-                                const [dx, dy] = this.getDeltaFromDir(this.facing);
-                                this.tryMove(dx, dy);
-                            }
-                        });
-                    });
-                }
-            });
+            this.triggerMapTransition(transition.targetMap, transition.targetX, transition.targetY);
             return true;
         }
 
@@ -688,16 +861,17 @@ Game.GameScene = class GameScene extends Phaser.Scene {
         if (!this.police) return;
         if (this.police.isMoving) return;
         if (this.isTransitioning) return;
-        if (this.dialogue && this.dialogue.active) {
+
+        // Calculate Manhattan distance to player
+        const dist = Math.abs(this.police.tileX - this.tileX) + Math.abs(this.police.tileY - this.tileY);
+
+        if (this.dialogue && this.dialogue.active && dist > 1) {
             if (this.police.sprite.anims.isPlaying) {
                 this.police.sprite.anims.stop();
                 this.setPoliceIdleFrame();
             }
             return;
         }
-
-        // Calculate Manhattan distance to player
-        const dist = Math.abs(this.police.tileX - this.tileX) + Math.abs(this.police.tileY - this.tileY);
 
         // If player is caught
         if (dist === 1) {
@@ -716,12 +890,21 @@ Game.GameScene = class GameScene extends Phaser.Scene {
                 this.player.anims.stop();
                 this.setIdleFrame();
             }
+
+            // Close backpack if open
+            if (this.backpack && this.backpack.isOpen) {
+                this.backpack.close();
+            }
+
             this.isTransitioning = true; // lock player out
 
             this.dialogue.show(['You are under arrest'], () => {
                 this.cameras.main.fadeOut(250, 0, 0, 0, (camera, progress) => {
                     if (progress === 1) {
                         this.loadArea('/puzzle-8/data/savilahti.csv', 4, 6).then(() => {
+                            const old = this.energy;
+                            this.energy = Math.min(200, this.energy + 15);
+                            this.addEnergyDiff(this.energy - old);
                             this.cameras.main.fadeIn(250, 0, 0, 0, (cam, prog) => {
                                 if (prog === 1) {
                                     this.isTransitioning = false;
@@ -860,12 +1043,7 @@ Game.GameScene = class GameScene extends Phaser.Scene {
         }
 
         const targetTileIndex = this.tileData[targetY][targetX];
-        const walkthroughTiles = [0, 1, 199, 200, 288, 517, 518, 581, 582, 645, 682, 683, 273, 2816, 2817, 2818, 2819, 2820, 2821, 2822, 2823, 2824, 2825, 2826, 2827, 2828, 2829,
-            2830, 2831, 2832, 2833, 2880, 2881, 2882, 2883, 2884, 2885, 2886, 2887, 2888, 2889, 2890, 2891, 2892, 2893, 2894, 2895, 2896,
-            2944, 2945, 2946, 2947, 3008, 3009, 3010, 3011, 2631, 436, 1370, 451, 2633, 320, 384, 448, 69, 70, 5, 6, 1829, 1831, 2021, 2023
-        ];
-
-        return walkthroughTiles.includes(targetTileIndex);
+        return Game.WALKABLE_TILES.has(targetTileIndex);
     }
 
     walkBackFromBench(origX, origY) {

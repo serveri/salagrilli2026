@@ -25,27 +25,71 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      padding: 24px;
+      padding: 10px;
       background: #181822;
-      border: 4px solid #343446;
+      border: 2px solid #343446;
       border-radius: 16px;
       box-shadow: 0 10px 40px rgba(0, 0, 0, 0.9), inset 0 0 15px rgba(0, 0, 0, 0.6);
     }
 
-    #game-container canvas {
+    #canvas-wrapper {
+      position: relative;
+      display: inline-block;
+      border: 2px solid #141420;
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: 
+        0 0 0 2px #262638,
+        0 15px 40px rgba(0, 0, 0, 0.95);
+    }
+
+    #canvas-wrapper canvas {
       display: block;
       margin: 0 !important;
-      border: 3px solid #0a0a0f;
-      border-radius: 6px;
       image-rendering: pixelated;
       image-rendering: crisp-edges;
+    }
+
+    .crt-overlay {
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      z-index: 10;
+      overflow: hidden;
+      border-radius: 6px;
+      will-change: opacity;
+      transform: translateZ(0);
+      background:
+        /* Glass Screen Diagonal Sheen Glare */
+        linear-gradient(135deg, rgba(255, 255, 255, 0.07) 0%, rgba(255, 255, 255, 0.02) 30%, rgba(0, 0, 0, 0) 60%),
+        /* Visible Horizontal Scanlines */
+        repeating-linear-gradient(to bottom,
+          rgba(0, 0, 0, 0) 0px,
+          rgba(0, 0, 0, 0) 3px,
+          rgba(0, 0, 0, 0.06) 3px,
+          rgba(0, 0, 0, 0.06) 6px),
+        /* CRT Glass Vignette */
+        radial-gradient(ellipse 85% 85% at 50% 50%,
+          rgba(0, 0, 0, 0) 55%,
+          rgba(0, 0, 0, 0.15) 75%,
+          rgba(0, 0, 0, 0.35) 100%);
+      box-shadow: inset 0 0 12px rgba(0, 0, 0, 0.3);
+      animation: crtBreathe 5s ease-in-out infinite alternate;
+    }
+
+
+    /* Ambient phosphor breathing */
+    @keyframes crtBreathe {
+      0% { opacity: 0.9; }
+      50% { opacity: 0.45; }
+      100% { opacity: 1.0; }
     }
 
     #ui-wrapper {
       display: flex;
       flex-direction: column;
       align-items: center;
-      gap: 16px;
+      gap: 6px;
     }
 
     #energy-bar-container {
@@ -55,8 +99,8 @@
       width: 100%;
       min-width: 250px;
       background: #181822;
-      padding: 8px 12px;
-      border: 4px solid #343446;
+      padding: 4px 10px;
+      border: 2px solid #343446;
       border-radius: 8px;
       box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
       box-sizing: border-box;
@@ -94,8 +138,8 @@
 
     #energy-bar-fill {
       height: 100%;
-      width: 100%;
-      /* Default to full energy */
+      width: 75%;
+      /* Default to 150 / 200 energy */
       background: #FFD700;
       /* Yellow flat color */
     }
@@ -115,13 +159,18 @@
 
 <body>
   <div id="ui-wrapper">
-    <div id="game-container"></div>
+    <div id="game-container">
+      <div id="canvas-wrapper">
+        <div class="crt-overlay"></div>
+      </div>
+    </div>
 
     <div id="energy-bar-container">
       <div id="energy-label">Energy</div>
       <div id="energy-bar-bg">
         <div id="energy-bar-fill"></div>
-        <div id="energy-number">200</div>
+        <div id="energy-number"><span id="energy-val">150</span><span id="energy-lost"
+            style="color: #cc0000; display: none; margin-left: 15px; text-shadow: none;"></span></div>
       </div>
     </div>
   </div>

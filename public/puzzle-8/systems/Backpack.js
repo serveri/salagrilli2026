@@ -14,12 +14,13 @@ Game.Backpack = class Backpack {
         // Sample Inventory Items
         this.items = [
             { id: 'jallu', name: 'Jallu', desc: 'Restores HP to full health.', canUse: true },
-            { id: 'key', name: 'Nappiavain', desc: 'A key found in the grass.', canUse: false },
-            { id: 'map', name: 'Town Map', desc: 'A map showing Kuopio. \nI live in Neulamäki.', canUse: false },
+            { id: 'key', name: 'Nappi avain', desc: 'A key found in the grass.', canUse: false },
+            { id: 'map', name: 'Town Map', desc: 'A map showing Kuopio. \nI live in Neulamäki.', canUse: true },
             { id: 'coffee', name: 'Hot Coffee', desc: 'Warm roasted coffee. Cures fatigue.', canUse: true },
             { id: 'badge', name: 'Puzzle Badge', desc: 'A shiny badge from solving Puzzle 8.', canUse: false },
             { id: 'note', name: 'Reminder Note', desc: '"Remember to feed the cat.. \n Exam today at 10:00!" ..Can\'t forget!', canUse: false },
-            { id: 'watch', name: 'Watch', desc: 'It says 4:16 ..I think', canUse: false }
+            { id: 'watch', name: 'Watch', desc: 'It says 4:16 ..I think', canUse: false },
+            { id: 'teleport', name: 'Teleport', desc: 'A strange device that teleports you to your House.', canUse: true }
         ];
 
         // UI Element References
@@ -178,18 +179,18 @@ Game.Backpack = class Backpack {
                 const dropBtn = this.scene.add.text(178, 138, '[Drop]', {
                     fontFamily: "'Pokemon Classic', 'Courier New', monospace",
                     fontSize: '32px',
-                    color: '#666666'
+                    color: '#cc0000'
                 }).setOrigin(1, 0.5).setInteractive({ useHandCursor: true }).setScale(0.22);
 
-                dropBtn.on('pointerover', () => dropBtn.setColor('#aaaaaa'));
-                dropBtn.on('pointerout', () => dropBtn.setColor('#666666'));
+                dropBtn.on('pointerover', () => dropBtn.setColor('#ff3333'));
+                dropBtn.on('pointerout', () => dropBtn.setColor('#cc0000'));
                 dropBtn.on('pointerdown', () => this._handleDrop(item));
                 this.actionContainer.add(dropBtn);
             }
         }
 
         // Close button (Bottom Left)
-        const closeBtn = this.scene.add.text(20, 138, '[Close]', {
+        const closeBtn = this.scene.add.text(20, 138, '[X]', {
             fontFamily: "'Pokemon Classic', 'Courier New', monospace",
             fontSize: '32px',
             color: '#880000'
@@ -224,7 +225,7 @@ Game.Backpack = class Backpack {
         if (totalPages > 1) {
             // Left arrow
             if (this.currentPage > 0) {
-                const leftArrow = this.scene.add.text(8, 94, '<\n<', {
+                const leftArrow = this.scene.add.text(10, 94, '←', {
                     fontFamily: "'Pokemon Classic', 'Courier New', monospace",
                     fontSize: '32px',
                     color: '#1a1a2e'
@@ -241,7 +242,7 @@ Game.Backpack = class Backpack {
 
             // Right arrow
             if (this.currentPage < totalPages - 1) {
-                const rightArrow = this.scene.add.text(190, 94, '>\n>', {
+                const rightArrow = this.scene.add.text(190, 94, '→', {
                     fontFamily: "'Pokemon Classic', 'Courier New', monospace",
                     fontSize: '32px',
                     color: '#1a1a2e'
@@ -279,12 +280,11 @@ Game.Backpack = class Backpack {
             strokeRect.strokeRect(x, y, slotW, slotH);
 
             // Item Name text inside slot (rounded integer coordinates for crisp pixel rendering)
-            const itemText = this.scene.add.text(Math.round(x + slotW / 2), Math.round(y + slotH / 2), item.name, {
+            const itemText = this.scene.add.text(Math.round(x + slotW / 2), Math.round(y + slotH / 2), this._formatItemName(item.name), {
                 fontFamily: "'Pokemon Classic', 'Courier New', monospace",
                 fontSize: '32px',
                 color: isSelected ? '#003366' : '#222233',
-                align: 'center',
-                wordWrap: { width: (slotW) * 4, useAdvancedWrap: true }
+                align: 'center'
             }).setOrigin(0.5, 0.5).setScale(0.22);
 
             // Slot click interaction: clicking an item selects it, clicking it again deselects it!
@@ -330,9 +330,10 @@ Game.Backpack = class Backpack {
 
         if (item.id === 'coffee') {
             if (this.scene && typeof this.scene.energy !== 'undefined') {
+                const old = this.scene.energy;
                 this.scene.energy = 200;
-                if (this.scene.updateEnergyUI) {
-                    this.scene.updateEnergyUI();
+                if (this.scene.addEnergyDiff) {
+                    this.scene.addEnergyDiff(this.scene.energy - old);
                 }
             }
             if (this.scene.dialogue) {
@@ -343,9 +344,10 @@ Game.Backpack = class Backpack {
             }
         } else if (item.id.startsWith('berry')) {
             if (this.scene && typeof this.scene.energy !== 'undefined') {
+                const old = this.scene.energy;
                 this.scene.energy = Math.min(200, this.scene.energy + 50);
-                if (this.scene.updateEnergyUI) {
-                    this.scene.updateEnergyUI();
+                if (this.scene.addEnergyDiff) {
+                    this.scene.addEnergyDiff(this.scene.energy - old);
                 }
             }
 
@@ -359,6 +361,68 @@ Game.Backpack = class Backpack {
                     `Restored 50 energy.`
                 ], () => { this.open(); });
             }
+        } else if (item.id === 'map') {
+            if (this.scene) {
+                this.scene.isMapOpen = true; // Block movement
+                const cam = this.scene.cameras.main;
+                const wv = cam.worldView;
+
+                const mapContainer = this.scene.add.container(wv.x + wv.width / 2, wv.y + wv.height / 2);
+                mapContainer.setDepth(9999);
+
+                const mapImg = this.scene.add.image(0, 0, 'questMap');
+                mapImg.setOrigin(0.5, 0.5);
+
+                // Scale map to fit screen (100% of worldView)
+                const scaleX = (wv.width * 1) / mapImg.width;
+                const scaleY = (wv.height * 1) / mapImg.height;
+                const scale = Math.min(scaleX, scaleY);
+                mapContainer.setScale(scale);
+                mapContainer.add(mapImg);
+
+                // Add player position marker
+                this._addPlayerMarkerToMap(mapContainer);
+
+                const closeMap = () => {
+                    if (!this.scene.isMapOpen) return;
+                    if (keyHandler) {
+                        this.scene.input.keyboard.off('keydown', keyHandler);
+                    }
+                    mapContainer.destroy();
+                    this.scene.isMapOpen = false;
+                    this.open();
+                };
+
+                const keyHandler = (evt) => {
+                    if (evt.code === 'Space' || evt.code === 'Escape' || evt.code === 'KeyE' || evt.code === 'KeyI') {
+                        closeMap();
+                    }
+                };
+
+                mapImg.setInteractive({ useHandCursor: true });
+                mapImg.on('pointerdown', closeMap);
+                this.scene.input.keyboard.on('keydown', keyHandler);
+            }
+        } else if (item.id === 'teleport') {
+            if (this.scene && this.scene.dialogue) {
+                this.scene.isTransitioning = true;
+                this.scene.dialogue.show([
+                    `You used the ${item.name}!`,
+                    `Teleporting to House...`
+                ], () => {
+                    this.scene.cameras.main.fadeOut(250, 0, 0, 0, (camera, progress) => {
+                        if (progress === 1) {
+                            this.scene.loadArea('/puzzle-8/data/House.csv', 7, 8).then(() => {
+                                this.scene.cameras.main.fadeIn(250, 0, 0, 0, (cam, prog) => {
+                                    if (prog === 1) {
+                                        this.scene.isTransitioning = false;
+                                    }
+                                });
+                            });
+                        }
+                    });
+                });
+            }
         } else {
             if (this.scene.dialogue) {
                 // Displays in a single dialogue box page
@@ -369,7 +433,113 @@ Game.Backpack = class Backpack {
         }
     }
 
+    _addPlayerMarkerToMap(mapContainer) {
+        if (!this.scene || !this.scene.currentArea) return;
+        const areaName = this.scene.currentArea.name;
+        const tx = this.scene.tileX;
+        const ty = this.scene.tileY;
+        const areaW = this.scene.currentArea.width;
+        const areaH = this.scene.currentArea.height;
 
+        // Define marker positions for each submap on the quest map image.
+        // - condition: a function to check if this region should be used
+        // - x, y: the exact coordinates for the marker on the questMap image
+        const mapRegions = {
+            'serveriquest': [
+                {
+                    // Example: If player is past Y=50
+                    condition: (x, y) => x >= 40,
+                    x: -31, y: 90
+                },
+                {
+                    // Default region for serveriquest
+                    condition: (x, y) => true,
+                    x: -90, y: 109
+                }
+            ],
+            'NeulamaenSale': [
+                { condition: () => true, x: -90, y: 109 }
+            ],
+            'savilahti': [
+                {
+                    // Example: If player is past Y=50
+                    condition: (x, y) => y <= 59,
+                    x: 21, y: 35
+                },
+                {
+                    // Default region for serveriquest
+                    condition: (x, y) => true,
+                    x: -22, y: 55
+                }
+            ],
+            'House': [
+                { condition: () => true, x: -82, y: 115 }
+            ],
+            'default': [
+                { condition: () => true, x: -31, y: 90 }
+            ]
+        };
+
+        const regions = mapRegions[areaName] || mapRegions['default'];
+        let region = regions.find(r => r.condition(tx, ty));
+        if (!region) region = regions[regions.length - 1]; // fallback
+
+        const markerX = region.x;
+        const markerY = region.y;
+
+        // Use 'effects' asset for the marker
+        const marker = this.scene.add.image(markerX, markerY, 'effects');
+        marker.setScale(0.75); // Adjust this if it doesn't match the map's pixels!
+        mapContainer.add(marker);
+    }
+
+    /**
+     * Formats an item name for display inside a grid slot.
+     * Shows 1 more character per line before wrapping (max 7 chars),
+     * and adds a dash '-' to the end of a cut word if it wraps mid-word.
+     */
+    _formatItemName(name, maxLen = 7) {
+        if (!name || name.length <= maxLen) return name;
+
+        const words = name.split(' ');
+        const lines = [];
+        let currentLine = '';
+
+        for (let word of words) {
+            if (!currentLine) {
+                if (word.length <= maxLen) {
+                    currentLine = word;
+                } else {
+                    while (word.length > maxLen) {
+                        lines.push(word.slice(0, maxLen - 1) + '-');
+                        word = word.slice(maxLen - 1);
+                    }
+                    currentLine = word;
+                }
+            } else {
+                if ((currentLine + ' ' + word).length <= maxLen) {
+                    currentLine += ' ' + word;
+                } else {
+                    lines.push(currentLine);
+                    if (word.length <= maxLen) {
+                        currentLine = word;
+                    } else {
+                        while (word.length > maxLen) {
+                            lines.push(word.slice(0, maxLen - 1) + '-');
+                            word = word.slice(maxLen - 1);
+                        }
+                        currentLine = word;
+                    }
+                }
+            }
+        }
+
+        if (currentLine) {
+            lines.push(currentLine);
+        }
+
+        return lines.join('\n');
+    }
 
     /** Check if backpack is currently open & blocking movement */
     get active() {
