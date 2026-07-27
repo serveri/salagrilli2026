@@ -225,7 +225,7 @@ Game.Backpack = class Backpack {
         if (totalPages > 1) {
             // Left arrow
             if (this.currentPage > 0) {
-                const leftArrow = this.scene.add.text(8, 94, '<\n<', {
+                const leftArrow = this.scene.add.text(10, 94, '←', {
                     fontFamily: "'Pokemon Classic', 'Courier New', monospace",
                     fontSize: '32px',
                     color: '#1a1a2e'
@@ -242,7 +242,7 @@ Game.Backpack = class Backpack {
 
             // Right arrow
             if (this.currentPage < totalPages - 1) {
-                const rightArrow = this.scene.add.text(190, 94, '>\n>', {
+                const rightArrow = this.scene.add.text(190, 94, '→', {
                     fontFamily: "'Pokemon Classic', 'Courier New', monospace",
                     fontSize: '32px',
                     color: '#1a1a2e'
@@ -383,12 +383,25 @@ Game.Backpack = class Backpack {
                 // Add player position marker
                 this._addPlayerMarkerToMap(mapContainer);
 
-                mapImg.setInteractive({ useHandCursor: true });
-                mapImg.on('pointerdown', () => {
+                const closeMap = () => {
+                    if (!this.scene.isMapOpen) return;
+                    if (keyHandler) {
+                        this.scene.input.keyboard.off('keydown', keyHandler);
+                    }
                     mapContainer.destroy();
                     this.scene.isMapOpen = false;
                     this.open();
-                });
+                };
+
+                const keyHandler = (evt) => {
+                    if (evt.code === 'Space' || evt.code === 'Escape' || evt.code === 'KeyE' || evt.code === 'KeyI') {
+                        closeMap();
+                    }
+                };
+
+                mapImg.setInteractive({ useHandCursor: true });
+                mapImg.on('pointerdown', closeMap);
+                this.scene.input.keyboard.on('keydown', keyHandler);
             }
         } else if (item.id === 'teleport') {
             if (this.scene && this.scene.dialogue) {

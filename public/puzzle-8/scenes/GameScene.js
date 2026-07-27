@@ -179,7 +179,24 @@ Game.GameScene = class GameScene extends Phaser.Scene {
 
                 let interacted = false;
 
-                if (Game.INSPECT_MESSAGES[targetTileIndex]) {
+                if (this.currentArea && this.currentArea.name === 'savilahti') {
+                    if (targetX === 14 && targetY === 21) {
+                        const msg = this.hasItem('Nappi avain')
+                            ? ['Nappi avain fails to open the door']
+                            : ['Its locked'];
+                        this.dialogue.show(msg);
+                        interacted = true;
+                    } else if ((targetX === 14 && targetY === 36) || (targetX === 16 && targetY === 28)) {
+                        if (this.hasItem('Nappi avain')) {
+                            this.triggerMapTransition('/puzzle-8/data/Laitos.csv', 5, 2);
+                        } else {
+                            this.dialogue.show(['Its locked']);
+                        }
+                        interacted = true;
+                    }
+                }
+
+                if (!interacted && Game.INSPECT_MESSAGES[targetTileIndex]) {
                     this.dialogue.show(Game.INSPECT_MESSAGES[targetTileIndex]);
                     interacted = true;
                 } else if (targetTileIndex === 196 || targetTileIndex === 68) {
@@ -233,7 +250,8 @@ Game.GameScene = class GameScene extends Phaser.Scene {
                         'serveriquest_54_21': ['Road to Neulamäki'],
                         'serveriquest_55_4': ['Road to Savilahti'],
                         'serveriquest_33_52': ['Serveri mouse house & grill', 'I live here!'],
-                        'House_3_8': ['Home sweet home.'],
+                        'savilahti_3_33': ['Novapolis\n \n↑ Main enterance', '→ Serveri enterance'],
+                        'savilahti_30_57': ['← Microkatu campus\n\n↓ Neulamäki']
                         // Add more signs here as needed
                     };
 
@@ -741,7 +759,36 @@ Game.GameScene = class GameScene extends Phaser.Scene {
                 });
             }
         });
-    } checkDoorTrigger() {
+    }
+
+    hasItem(itemName) {
+        if (!this.backpack || !this.backpack.items) return false;
+        return this.backpack.items.some(
+            item => item.id === itemName || item.name === itemName || (item.name && item.name.toLowerCase() === itemName.toLowerCase())
+        );
+    }
+
+    triggerMapTransition(targetMap, targetX, targetY) {
+        this.isTransitioning = true;
+        this.player.anims.stop();
+        this.setIdleFrame();
+
+        this.cameras.main.fadeOut(250, 0, 0, 0, (camera, progress) => {
+            if (progress === 1) {
+                this.loadArea(targetMap, targetX, targetY).then(() => {
+                    this.cameras.main.fadeIn(250, 0, 0, 0, (cam, prog) => {
+                        if (prog === 1) {
+                            this.isTransitioning = false;
+                            const [dx, dy] = this.getDeltaFromDir(this.facing);
+                            this.tryMove(dx, dy);
+                        }
+                    });
+                });
+            }
+        });
+    }
+
+    checkDoorTrigger() {
         const currentTile = this.tileData[this.tileY][this.tileX];
 
         if (currentTile === 199) {
@@ -750,6 +797,34 @@ Game.GameScene = class GameScene extends Phaser.Scene {
         } else if (currentTile === 200) {
             this.teleportSameMap(this.tileX - 3, this.tileY);
             return true;
+        }
+
+        const areaName = this.currentArea ? this.currentArea.name : '';
+
+        if (areaName === 'savilahti') {
+            if (this.tileX === 14 && this.tileY === 22) {
+                const msg = this.hasItem('Nappi avain')
+                    ? ['Nappi avain fails to open the door']
+                    : ['Its locked'];
+                this.dialogue.show(msg);
+                return true;
+            }
+
+            if ((this.tileX === 14 && this.tileY === 36) || (this.tileX === 16 && this.tileY === 28)) {
+                if (this.hasItem('Nappi avain')) {
+                    this.triggerMapTransition('/puzzle-8/data/Laitos.csv', 5, 2);
+                } else {
+                    this.dialogue.show(['Its locked']);
+                }
+                return true;
+            }
+        }
+
+        if (areaName === 'Laitos') {
+            if (currentTile === 1765 || currentTile === 1767 || this.tileY === 0) {
+                this.triggerMapTransition('/puzzle-8/data/savilahti.csv', 14, 37);
+                return true;
+            }
         }
 
         const mapTransitions = {
@@ -771,27 +846,11 @@ Game.GameScene = class GameScene extends Phaser.Scene {
             }
         };
 
-        const areaTransitions = mapTransitions[this.currentArea.name] || {};
+        const areaTransitions = mapTransitions[areaName] || {};
         const transition = areaTransitions[currentTile];
 
         if (transition) {
-            this.isTransitioning = true;
-            this.player.anims.stop();
-            this.setIdleFrame();
-
-            this.cameras.main.fadeOut(250, 0, 0, 0, (camera, progress) => {
-                if (progress === 1) {
-                    this.loadArea(transition.targetMap, transition.targetX, transition.targetY).then(() => {
-                        this.cameras.main.fadeIn(250, 0, 0, 0, (cam, prog) => {
-                            if (prog === 1) {
-                                this.isTransitioning = false;
-                                const [dx, dy] = this.getDeltaFromDir(this.facing);
-                                this.tryMove(dx, dy);
-                            }
-                        });
-                    });
-                }
-            });
+            this.triggerMapTransition(transition.targetMap, transition.targetX, transition.targetY);
             return true;
         }
 
