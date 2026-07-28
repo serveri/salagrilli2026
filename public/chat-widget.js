@@ -231,6 +231,10 @@
     elements.closeBtn = closeBtn
     elements.newChatBtn = newChatBtn
 
+    panel.addEventListener('keydown', function (e) {
+      e.stopPropagation()
+    })
+
     bubble.addEventListener('click', toggleOpen)
     closeBtn.addEventListener('click', toggleOpen)
     newChatBtn.addEventListener('click', startNewChat)
