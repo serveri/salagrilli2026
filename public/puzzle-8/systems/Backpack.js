@@ -513,6 +513,13 @@ Game.Backpack = class Backpack {
             ],
             'default': [
                 { condition: () => true, x: -31, y: 90 }
+            ],
+            'snellmania': [
+                {
+                    // Starting region for snellmania
+                    condition: (x, y) => true,
+                    x: 72, y: -35
+                }
             ]
         };
 

@@ -125,7 +125,8 @@ Game.MAP_TRANSITIONS = {
         },
         byCoord: {
             '14,50': { targetMap: '/puzzle-8/data/Laitos.csv', targetX: 5, targetY: 2, requiredItem: 'Nappi avain' },
-            '16,42': { targetMap: '/puzzle-8/data/Laitos.csv', targetX: 5, targetY: 2, requiredItem: 'Nappi avain' }
+            '16,42': { targetMap: '/puzzle-8/data/Laitos.csv', targetX: 5, targetY: 2, requiredItem: 'Nappi avain' },
+            '53,0': { targetMap: '/puzzle-8/data/snellmania.csv', targetX: 52, targetY: 79 }
         }
     },
     'House': {
@@ -143,7 +144,12 @@ Game.MAP_TRANSITIONS = {
         edgeTransitions: {
             top: { targetMap: '/puzzle-8/data/savilahti.csv', targetX: 14, targetY: 51 }
         }
-    }
+    },
+    'snellmania': {
+        byCoord: {
+            '52,79': { targetMap: '/puzzle-8/data/savilahti.csv', targetX: 53, targetY: 0 }
+        }
+    },
 };
 
 Game.SAME_MAP_TELEPORTS = {
