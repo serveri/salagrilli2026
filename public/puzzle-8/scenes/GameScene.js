@@ -261,20 +261,9 @@ Game.GameScene = class GameScene extends Phaser.Scene {
                         }
                     });
                     interacted = true;
-                } else if (targetTileIndex === 4) {
+                } else if (targetTileIndex === 4 || targetTileIndex === 2756) {
                     const signKey = `${this.currentArea.name}_${targetX}_${targetY}`;
-                    const signMessages = {
-                        'serveriquest_66_24': ['Neulamäki karting', 'Open 10-19'],
-                        'serveriquest_75_48': ['Berries are a good snack!', 'Press I or E to open your inventory and eat collected berries.'],
-                        'serveriquest_54_21': ['Road to Neulamäki'],
-                        'serveriquest_55_4': ['Road to Savilahti'],
-                        'serveriquest_33_52': ['Serveri mouse house & grill', 'I live here!'],
-                        'savilahti_3_47': ['Novapolis\n \n↑ Main enterance', '→ Serveri enterance'],
-                        'savilahti_30_71': ['← Microkatu campus\n\n↓ Neulamäki']
-                        // Add more signs here as needed
-                    };
-
-                    const msg = signMessages[signKey] || [`[Sign at ${targetX}, ${targetY}]`, 'Edit GameScene.js to add text here!'];
+                    const msg = Game.SIGN_MESSAGES[signKey] || [`[Sign at ${targetX}, ${targetY}]`, 'Edit config.js to add text here!'];
                     this.dialogue.show(msg);
                     interacted = true;
                 }
@@ -402,7 +391,11 @@ Game.GameScene = class GameScene extends Phaser.Scene {
         const text = await response.text();
         const rows = text.trim().split('\n');
 
-        this.tileData = rows.map(r => r.split(',').map(Number));
+        const rawData = rows.map(r => r.split(',').map(Number));
+        
+        // Tiled stores flip/rotation flags in the top 3 bits, which makes numbers huge or negative
+        // We mask with 0x1FFFFFFF to get the real tile ID for our game logic (collisions, interactions)
+        this.tileData = rawData.map(row => row.map(val => val & 0x1FFFFFFF));
 
         this.currentArea = {
             name: csvPath.split('/').pop().replace('.csv', ''),
@@ -436,6 +429,26 @@ Game.GameScene = class GameScene extends Phaser.Scene {
         const tileset = this.tilemap.addTilesetImage('tiles', 'tiles', 16, 16, 0, 0);
         this.layer = this.tilemap.createLayer(0, tileset, 0, 0);
         this.layer.setDepth(0);
+
+        // Apply visual flips and rotations to the Phaser layer
+        this.layer.forEachTile(tile => {
+            const rawVal = rawData[tile.y][tile.x];
+            // If any of the top 3 bits are set
+            if (rawVal < 0 || rawVal > 0x1FFFFFFF) {
+                const flipH = (rawVal & 0x80000000) !== 0;
+                const flipV = (rawVal & 0x40000000) !== 0;
+                const flipD = (rawVal & 0x20000000) !== 0;
+                
+                if (flipD) {
+                    tile.rotation = Math.PI / 2;
+                    tile.flipX = flipV;
+                    tile.flipY = !flipH;
+                } else {
+                    tile.flipX = flipH;
+                    tile.flipY = flipV;
+                }
+            }
+        });
 
         this.overlayLayer = this.tilemap.createBlankLayer(
             'overlay',
@@ -858,10 +871,14 @@ Game.GameScene = class GameScene extends Phaser.Scene {
         if (!this.currentArea) return false;
         const areaName = this.currentArea.name;
 
-        if (areaName === 'savilahti') {
-            if (targetX === 14 && targetY === 35) return true;
-            if ((targetX === 14 && targetY === 50) || (targetX === 16 && targetY === 42)) {
-                return !this.hasItem('Nappi avain');
+        const lockedDoors = Game.LOCKED_DOORS[areaName];
+        if (lockedDoors) {
+            const door = lockedDoors.find(d => d.x === targetX && d.y === targetY);
+            if (door) {
+                if (door.requiredItem) {
+                    return !this.hasItem(door.requiredItem);
+                }
+                return true; // locked without an item to open it
             }
         }
         return false;
@@ -871,20 +888,16 @@ Game.GameScene = class GameScene extends Phaser.Scene {
         if (!this.currentArea) return false;
         const areaName = this.currentArea.name;
 
-        if (areaName === 'savilahti') {
-            if (targetX === 14 && targetY === 35) {
-                const msg = this.hasItem('Nappi avain')
-                    ? ['Nappi avain fails to open the door']
-                    : ['Its locked'];
-                this.dialogue.show(msg);
-                return true;
-            }
-
-            if ((targetX === 14 && targetY === 50) || (targetX === 16 && targetY === 42)) {
-                if (!this.hasItem('Nappi avain')) {
-                    this.dialogue.show(['Its locked']);
-                    return true;
+        const lockedDoors = Game.LOCKED_DOORS[areaName];
+        if (lockedDoors) {
+            const door = lockedDoors.find(d => d.x === targetX && d.y === targetY);
+            if (door) {
+                if ((door.requiredItem && this.hasItem(door.requiredItem)) || (door.failedItem && this.hasItem(door.failedItem))) {
+                    if (door.msgHasItem) this.dialogue.show(door.msgHasItem);
+                } else {
+                    if (door.msgMissing) this.dialogue.show(door.msgMissing);
                 }
+                return true;
             }
         }
         return false;
@@ -913,57 +926,43 @@ Game.GameScene = class GameScene extends Phaser.Scene {
     checkDoorTrigger() {
         const currentTile = this.tileData[this.tileY][this.tileX];
 
-        if (currentTile === 199) {
-            this.teleportSameMap(this.tileX + 3, this.tileY);
-            return true;
-        } else if (currentTile === 200) {
-            this.teleportSameMap(this.tileX - 3, this.tileY);
+        if (Game.SAME_MAP_TELEPORTS[currentTile]) {
+            const tp = Game.SAME_MAP_TELEPORTS[currentTile];
+            this.teleportSameMap(this.tileX + tp.dx, this.tileY + tp.dy);
             return true;
         }
 
         const areaName = this.currentArea ? this.currentArea.name : '';
-
-        if (areaName === 'savilahti') {
-            if ((this.tileX === 14 && this.tileY === 50) || (this.tileX === 16 && this.tileY === 42)) {
-                if (this.hasItem('Nappi avain')) {
-                    this.triggerMapTransition('/puzzle-8/data/Laitos.csv', 5, 2);
+        const areaTransitions = Game.MAP_TRANSITIONS[areaName] || {};
+        
+        // 1. Check by coordinate
+        if (areaTransitions.byCoord) {
+            const coordKey = `${this.tileX},${this.tileY}`;
+            const transition = areaTransitions.byCoord[coordKey];
+            if (transition) {
+                if (!transition.requiredItem || this.hasItem(transition.requiredItem)) {
+                    this.triggerMapTransition(transition.targetMap, transition.targetX, transition.targetY);
                     return true;
                 }
             }
         }
 
-        if (areaName === 'Laitos') {
-            if (currentTile === 1765 || currentTile === 1767 || this.tileY === 0) {
-                this.triggerMapTransition('/puzzle-8/data/savilahti.csv', 14, 51);
+        // 2. Check by edge transitions (like Laitos top edge)
+        if (areaTransitions.edgeTransitions) {
+            if (this.tileY === 0 && areaTransitions.edgeTransitions.top) {
+                const transition = areaTransitions.edgeTransitions.top;
+                this.triggerMapTransition(transition.targetMap, transition.targetX, transition.targetY);
                 return true;
             }
         }
 
-        const mapTransitions = {
-            'serveriquest': {
-                2631: { targetMap: '/puzzle-8/data/NeulamaenSale.csv', targetX: 1, targetY: 2 },
-                2633: { targetMap: '/puzzle-8/data/savilahti.csv', targetX: 26, targetY: 93 },
-                1370: { targetMap: '/puzzle-8/data/House.csv', targetX: 7, targetY: 11 }
-            },
-            'NeulamaenSale': {
-                2021: { targetMap: '/puzzle-8/data/serveriquest.csv', targetX: 13, targetY: 48 },
-                2023: { targetMap: '/puzzle-8/data/serveriquest.csv', targetX: 13, targetY: 48 }
-            },
-            'savilahti': {
-                2631: { targetMap: '/puzzle-8/data/serveriquest.csv', targetX: 57, targetY: 0 }
-            },
-            'House': {
-                1829: { targetMap: '/puzzle-8/data/serveriquest.csv', targetX: 38, targetY: 52 },
-                1831: { targetMap: '/puzzle-8/data/serveriquest.csv', targetX: 38, targetY: 52 }
+        // 3. Check by tile ID
+        if (areaTransitions.byTile) {
+            const transition = areaTransitions.byTile[currentTile];
+            if (transition) {
+                this.triggerMapTransition(transition.targetMap, transition.targetX, transition.targetY);
+                return true;
             }
-        };
-
-        const areaTransitions = mapTransitions[areaName] || {};
-        const transition = areaTransitions[currentTile];
-
-        if (transition) {
-            this.triggerMapTransition(transition.targetMap, transition.targetX, transition.targetY);
-            return true;
         }
 
         return false;
