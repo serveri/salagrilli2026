@@ -67,7 +67,7 @@ async function submit() {
 
 function openTask() {
   if (props.item) {
-    window.open(props.item.url, '_blank', 'noopener,noreferrer')
+    window.location.assign(props.item.url)
   }
 }
 

@@ -38,9 +38,7 @@ onMounted(() => {
       :class="mounted ? 'animate-fade-up' : 'opacity-0'"
     >
       <a
-        href="https://serveriry.fi/"
-        target="_blank"
-        rel="noopener noreferrer"
+        href="/"
         class="inline-block transition-transform duration-700 hover:scale-105"
       >
         <img
@@ -57,7 +55,7 @@ onMounted(() => {
 
     <main class="flex min-h-screen items-center justify-center px-6 py-28 sm:py-16">
       <section
-        class="flex flex-col lg:flex-row flex-wrap justify-center gap-6 sm:gap-10"
+        class="mx-auto flex flex-wrap items-center justify-center gap-6 sm:gap-8 xl:gap-5 max-w-xs sm:max-w-lg lg:max-w-4xl xl:max-w-none"
         :class="mounted ? 'animate-fade-in' : 'opacity-0'"
         style="animation-delay: 200ms"
       >

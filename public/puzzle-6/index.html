@@ -23,10 +23,8 @@
         gap: 22px;
       }
       .icon {
-        width: 220px;
-        max-width: 60vw;
-        border-radius: 16px;
-        box-shadow: 0 0 60px rgba(180, 200, 255, 0.25);
+        width: 260px;
+        max-width: 66vw;
         object-fit: contain;
       }
       .prayer {
@@ -48,27 +46,21 @@
       }
       .btn {
         margin-top: 8px;
-        padding: 14px 34px;
-        border: 1px solid rgba(247, 215, 116, 0.55);
-        border-radius: 999px;
-        background: linear-gradient(180deg, rgba(247, 215, 116, 0.18), rgba(247, 215, 116, 0.06));
+        padding: 12px 30px;
+        border: none;
+        background: none;
         color: #f7d774;
         font-family: system-ui, sans-serif;
-        font-size: 17px;
+        font-size: 20px;
         font-weight: 700;
-        letter-spacing: 0.08em;
+        letter-spacing: 0.06em;
         cursor: pointer;
-        transition: transform 0.1s, box-shadow 0.2s, background 0.2s;
       }
-      .btn:hover { box-shadow: 0 0 28px rgba(247, 215, 116, 0.35); background: rgba(247, 215, 116, 0.18); }
       .btn:active { transform: translateY(1px); }
-      .btn:disabled { opacity: 0.6; cursor: default; box-shadow: none; }
+      .btn:disabled { opacity: 0.7; cursor: default; }
       .flag {
         margin-top: 6px;
-        padding: 16px 22px;
-        border: 1px solid rgba(247, 215, 116, 0.5);
-        border-radius: 14px;
-        background: rgba(247, 215, 116, 0.1);
+        padding: 8px 0;
         font-family: ui-monospace, "SF Mono", Menlo, monospace;
         font-size: 20px;
         letter-spacing: 0.04em;
@@ -83,12 +75,13 @@
   <body>
     <img
       class="icon"
-      src="pray.png"
+      src="/god.png"
       alt="Pyhä hahmo"
       onerror="this.style.display='none'"
     />
 
-    <div class="prayer">Juvaste meidän,
+    <div class="prayer">
+Juvaste meidän,
 joka olet Joensuussa,
 
 Optimoitu olkoon algoritmisi,
@@ -103,7 +96,7 @@ vaan ohjaa meidät logaritmiseen.
 <span class="last">Sillä sinun on Java, viisaus ja Dokumentaatio, optimaalisesti.</span>
 <span class="amen">TRAamen</span></div>
 
-    <button class="btn" id="amenBtn" type="button">🙏 TRAamen</button>
+    <button class="btn" id="amenBtn" type="button">>🙏<</button>
 
     <div class="flag" id="flag">
       <small>Rukous kuultu. Tässä on lippusi:</small>
@@ -113,7 +106,7 @@ vaan ohjaa meidät logaritmiseen.
     <script>
       (function () {
         // Revealed once the seeker has prayed and pressed TRAamen.
-        const FLAG = 'SALA{045491bde0}';
+        const FLAG = 'SALA{H0LY_7R4C0D3}';
         const btn = document.getElementById('amenBtn');
         const flagEl = document.getElementById('flag');
         const flagTextEl = document.getElementById('flagText');
@@ -122,7 +115,6 @@ vaan ohjaa meidät logaritmiseen.
           flagTextEl.textContent = FLAG;
           flagEl.classList.add('show');
           btn.disabled = true;
-          btn.textContent = 'Aamen 🙏';
           flagEl.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
         });
       })();
