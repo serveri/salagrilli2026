@@ -18,7 +18,7 @@ Game.Backpack = class Backpack {
             { id: 'map', name: 'Town Map', desc: 'A map showing Kuopio. \nI live in Neulamäki.', canUse: true },
             { id: 'coffee', name: 'Hot Coffee', desc: 'Warm roasted coffee. Cures fatigue.', canUse: true },
             { id: 'badge', name: 'Puzzle Badge', desc: 'A shiny badge from solving Puzzle 8.', canUse: false },
-            { id: 'note', name: 'Reminder Note', desc: '"Remember to feed the cat.. \n Exam today at 10:00!" ..Can\'t forget!', canUse: false },
+            { id: 'note', name: 'Reminder Note', desc: ['"Remember to feed the cat.. "', '"Exam today at 10:00 in SN100!"', '..Can\'t forget!'], canUse: false },
             { id: 'watch', name: 'Watch', desc: 'It says 4:16 ..I think', canUse: false },
             { id: 'teleport', name: 'Teleport', desc: 'A strange device that teleports you to your House.', canUse: true }
         ];
@@ -338,10 +338,13 @@ Game.Backpack = class Backpack {
     _handleInspect(item) {
         this.close();
         if (this.scene.dialogue) {
-            // Displays in a single dialogue box page
-            this.scene.dialogue.show([
-                `${item.name}: ${item.desc}`
-            ], () => { this.open(); });
+            let pages = [];
+            if (Array.isArray(item.desc)) {
+                pages = item.desc.map((text, index) => index === 0 ? `${item.name}: ${text}` : text);
+            } else {
+                pages = [`${item.name}: ${item.desc}`];
+            }
+            this.scene.dialogue.show(pages, () => { this.open(); });
         }
     }
 

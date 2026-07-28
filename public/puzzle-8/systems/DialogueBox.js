@@ -15,6 +15,9 @@ Game.DialogueBox = class DialogueBox {
         this.onComplete = null;
         this.buttonsData = [];
         this.buttonElements = [];
+        this.isTyping = false;
+        this.typeTimer = null;
+        this.fullText = '';
 
         // UI elements (created once, reused)
         this.bgImage = null;
@@ -165,11 +168,73 @@ Game.DialogueBox = class DialogueBox {
             return;
         }
 
+        this._stopTyping();
         this.currentIndex = index;
-        this.textObj.setText(this.messages[index]);
+        this.fullText = this.messages[index];
+        this.textObj.setText('');
 
-        // Always show the arrow but fade it in with a delay
+        // Hide arrow while typing
         if (this.arrowImage) {
+            this.arrowImage.setVisible(false);
+            this.arrowImage.setAlpha(0);
+            if (this.arrowTween) {
+                this.arrowTween.stop();
+                this.arrowTween = null;
+            }
+        }
+
+        if (index === this.messages.length - 1 && this.buttonsData && this.buttonsData.length > 0) {
+            this._renderButtons();
+        } else {
+            this._clearButtons();
+        }
+
+        // Lock input briefly then start typing
+        this.inputLocked = true;
+        this.isTyping = true;
+        let charIndex = 0;
+
+        this.typeTimer = this.scene.time.addEvent({
+            delay: 20, // 25ms per character — fast typewriter
+            repeat: this.fullText.length - 1,
+            callback: () => {
+                charIndex++;
+                this.textObj.setText(this.fullText.substring(0, charIndex));
+
+                if (charIndex >= this.fullText.length) {
+                    this._completeTyping();
+                }
+            }
+        });
+
+        // Unlock input after a brief moment so player can skip typing
+        this.scene.time.delayedCall(250, () => {
+            this.inputLocked = false;
+        });
+    }
+
+    /** Instantly finish the typewriter and show the arrow */
+    _completeTyping() {
+        this._stopTyping();
+        this.textObj.setText(this.fullText);
+        this._updatePosition();
+
+        let lines = [];
+        if (typeof this.textObj.getWrappedText === 'function') {
+            lines = this.textObj.getWrappedText(this.textObj.text);
+        } else if (this.textObj._lines) {
+            lines = this.textObj._lines;
+        } else {
+            lines = this.textObj.text.split('\n');
+        }
+        if (lines.length > 0 && Array.isArray(lines[0])) {
+            lines = lines.flat();
+        }
+
+        const hasButtons = this.currentIndex === this.messages.length - 1 && this.buttonsData && this.buttonsData.length > 0;
+
+        // Fade in the arrow to indicate the player can advance, unless there are buttons to click
+        if (this.arrowImage && !hasButtons) {
             this.arrowImage.setVisible(true);
             this.arrowImage.setAlpha(0);
 
@@ -180,23 +245,22 @@ Game.DialogueBox = class DialogueBox {
             this.arrowTween = this.scene.tweens.add({
                 targets: this.arrowImage,
                 alpha: 1,
-                delay: 300, // Wait 300ms before showing
-                duration: 600, // Fade in over 300ms
+                delay: 420,
+                duration: 250,
                 ease: 'Linear'
             });
+        } else if (this.arrowImage) {
+            this.arrowImage.setVisible(false);
         }
+    }
 
-        if (index === this.messages.length - 1 && this.buttonsData && this.buttonsData.length > 0) {
-            this._renderButtons();
-        } else {
-            this._clearButtons();
+    /** Stop the typewriter timer if running */
+    _stopTyping() {
+        this.isTyping = false;
+        if (this.typeTimer) {
+            this.typeTimer.remove(false);
+            this.typeTimer = null;
         }
-
-        // Brief delay between message advances
-        this.inputLocked = true;
-        this.scene.time.delayedCall(250, () => {
-            this.inputLocked = false;
-        });
     }
 
     _renderButtons() {
@@ -246,6 +310,11 @@ Game.DialogueBox = class DialogueBox {
         this._keyHandler = (event) => {
             if (event.code !== 'Space' && event.code !== 'KeyE' && event.key !== 'e' && event.key !== 'E') return;
             if (!this.isActive || this.inputLocked) return;
+            // If still typing, skip to end of current message
+            if (this.isTyping) {
+                this._completeTyping();
+                return;
+            }
             if (this.currentIndex === this.messages.length - 1 && this.buttonsData && this.buttonsData.length > 0) {
                 return; // Require button click to proceed
             }
@@ -255,6 +324,11 @@ Game.DialogueBox = class DialogueBox {
         this._pointerHandler = (pointer) => {
             if (pointer.button !== 0) return;
             if (!this.isActive || this.inputLocked) return;
+            // If still typing, skip to end of current message
+            if (this.isTyping) {
+                this._completeTyping();
+                return;
+            }
             if (this.currentIndex === this.messages.length - 1 && this.buttonsData && this.buttonsData.length > 0) {
                 return; // Require button click to proceed
             }
@@ -266,6 +340,7 @@ Game.DialogueBox = class DialogueBox {
     }
 
     _close() {
+        this._stopTyping();
         this.isActive = false;
         this._clearButtons();
 
