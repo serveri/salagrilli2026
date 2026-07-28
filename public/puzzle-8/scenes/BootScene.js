@@ -34,8 +34,8 @@ Game.BootScene = class BootScene extends Phaser.Scene {
         // Backpack asset (198x150)
         this.load.image('backpack', 'backpack.png');
 
-        // Effects asset
-        this.load.image('effects', 'Effects.png');
+        // Effects asset (16x16 frames)
+        this.load.spritesheet('effects', 'Effects.png', { frameWidth: 16, frameHeight: 16 });
 
         // Quest Map asset
         this.load.image('questMap', 'ServeriQuestMap.png');

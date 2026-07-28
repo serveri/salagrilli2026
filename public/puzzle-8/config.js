@@ -47,7 +47,7 @@ Game.WALKABLE_TILES = new Set([
     2830, 2831, 2832, 2833, 2880, 2881, 2882, 2883, 2884, 2885, 2886, 2887, 2889, 2890, 2891, 2892, 2893, 2894, 2895, 2896,
     2944, 2945, 2946, 2947, 2948, 3008, 3009, 3010, 3011, 2631, 436, 1370, 451, 2633, 320, 321, 384, 385, 448, 449, 69, 70, 5, 6, 1829, 1831, 2021, 2023, 2024, 1317, 1318, 1319, 1320, 1445, 1446, 1447, 440, 439,
     2949, 2950, 2951, 2952, 3013, 3014, 3015, 3016, 3019, 3020, 2956, 2765, 2766, 2767, 2768, 2769, 2897, 2134, 2198, 1765, 1767, 2953, 2954, 2955, 3017, 3018, 2704, 2699, 2700, 2701, 2702, 2703, 2958, 2957,
-    2187, 2250, 2251, 2252, 2189, 2566, 2630, 2182, 2185
+    2187, 2250, 2251, 2252, 2189, 2566, 2630, 2182, 2185, 3021, 3022
 ]);
 
 Game.DOOR_BLACK_TILE = 780;
@@ -98,10 +98,13 @@ Game.SIGN_MESSAGES = {
 
 Game.LOCKED_DOORS = {
     'savilahti': [
-        { x: 14, y: 35, requiredItem: null, failedItem: 'Nappi avain', msgMissing: ['Its locked'], msgHasItem: ['Light on the lock is flashing red..', 'Nappi avain fails to open the door'] },
-        { x: 41, y: 32, requiredItem: null, failedItem: 'Nappi avain', msgMissing: ['Its locked'], msgHasItem: ['Light on the lock is flashing red..', 'Nappi avain fails to open the door'] },
+        { x: 14, y: 35, requiredItem: null, failedItem: 'Nappi avain', msgMissing: ['Its locked'], msgHasItem: ['Light on the lock is flashing red..', 'Nappiavain fails to open the door'] },
+        { x: 41, y: 32, requiredItem: null, failedItem: 'Nappi avain', msgMissing: ['Its locked'], msgHasItem: ['Light on the lock is flashing red..', 'Nappiavain fails to open the door'] },
         { x: 14, y: 50, requiredItem: 'Nappi avain', msgMissing: ['Its locked'], msgHasItem: null },
         { x: 16, y: 42, requiredItem: 'Nappi avain', msgMissing: ['Its locked'], msgHasItem: null }
+    ],
+    'snellmania': [
+        { x: 45, y: 58, requiredItem: null, failedItem: 'Nappi avain', msgMissing: ['Its locked', 'Let\'s try the other door'], msgHasItem: ['Light on the lock is flashing red..', 'Nappiavain does not in Snellmania'] },
     ]
 };
 

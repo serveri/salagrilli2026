@@ -80,6 +80,23 @@ Game.DialogueBox = class DialogueBox {
         this.textObj.setOrigin(0, 0);
         this.textObj.setDepth(2001);
         this.textObj.setResolution(2);
+
+        // Red arrow at the end of text
+        this.arrowImage = this.scene.add.sprite(0, 0, 'effects', 1);
+        this.arrowImage.setOrigin(0, 0.5); // Center vertically with the text line
+        this.arrowImage.setDepth(2001);
+        this.arrowImage.setVisible(false);
+        this.arrowImage.setScale(1.2); // Slightly larger to match text
+
+        if (!this.scene.anims.exists('dialogue-arrow')) {
+            this.scene.anims.create({
+                key: 'dialogue-arrow',
+                frames: this.scene.anims.generateFrameNumbers('effects', { frames: [1, 2, 3, 2] }),
+                frameRate: 4,
+                repeat: -1
+            });
+        }
+        this.arrowImage.play('dialogue-arrow');
     }
 
     /**
@@ -102,6 +119,36 @@ Game.DialogueBox = class DialogueBox {
         this.bgImage.setPosition(boxX, boxY);
         this.textObj.setPosition(boxX + 6, boxY + 10);
 
+        if (this.arrowImage && this.arrowImage.visible) {
+            // Find the last line of the text to place the arrow on the same line
+            let lines = [];
+            if (typeof this.textObj.getWrappedText === 'function') {
+                lines = this.textObj.getWrappedText(this.textObj.text);
+            } else if (this.textObj._lines) {
+                lines = this.textObj._lines;
+            } else {
+                lines = this.textObj.text.split('\n');
+            }
+
+            // Flatten if it returned an array of arrays (some Phaser versions)
+            if (lines.length > 0 && Array.isArray(lines[0])) {
+                lines = lines.flat();
+            }
+
+            const lastLine = lines.length > 0 ? lines[lines.length - 1] : '';
+
+            // Measure its width using the same canvas context
+            const ctx = this.textObj.canvas.getContext('2d');
+            ctx.font = this.textObj.style._font;
+            const lastLineWidth = ctx.measureText(lastLine).width;
+
+            const lineHeight = 10; // fontSize(8) + lineSpacing(2)
+            const arrowX = boxX + 6 + lastLineWidth + 1; // Pulled slightly more to the left
+            const arrowY = boxY + 10 + (lines.length - 1) * lineHeight + 6; // +5 to center on the 10px line
+
+            this.arrowImage.setPosition(arrowX, arrowY);
+        }
+
         if (this.buttonElements && this.buttonElements.length > 0) {
             const btnY = boxY + this.boxH - 26; // Raised higher
             let btnX = boxX + (this.boxW - (this.buttonElements.length * 75 - 5)) / 2 + 35;
@@ -120,6 +167,24 @@ Game.DialogueBox = class DialogueBox {
 
         this.currentIndex = index;
         this.textObj.setText(this.messages[index]);
+
+        // Always show the arrow but fade it in with a delay
+        if (this.arrowImage) {
+            this.arrowImage.setVisible(true);
+            this.arrowImage.setAlpha(0);
+
+            if (this.arrowTween) {
+                this.arrowTween.stop();
+            }
+
+            this.arrowTween = this.scene.tweens.add({
+                targets: this.arrowImage,
+                alpha: 1,
+                delay: 300, // Wait 300ms before showing
+                duration: 600, // Fade in over 300ms
+                ease: 'Linear'
+            });
+        }
 
         if (index === this.messages.length - 1 && this.buttonsData && this.buttonsData.length > 0) {
             this._renderButtons();
@@ -207,6 +272,7 @@ Game.DialogueBox = class DialogueBox {
         if (this.bgImage) {
             this.bgImage.setVisible(false);
             this.textObj.setVisible(false);
+            if (this.arrowImage) this.arrowImage.setVisible(false);
         }
 
         if (this._keyHandler) {
