@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>0</title>
+    <style>
+      html, body {
+        margin: 0;
+        min-height: 100%;
+        background: #111;
+        color: #eee;
+        font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+        line-height: 1.65;
+      }
+      body {
+        max-width: 640px;
+        margin: 0 auto;
+        padding: 84px 22px 96px;
+      }
+      h1 {
+        font-size: 26px;
+        margin: 0 0 6px;
+      }
+      .lead {
+        color: #aaa;
+        margin: 0 0 32px;
+        font-size: 15px;
+      }
+      h2 {
+        font-size: 17px;
+        margin: 32px 0 8px;
+        color: #fff;
+      }
+      p { margin: 0 0 14px; color: #ddd; }
+      ol { padding-left: 22px; color: #ddd; }
+      li { margin-bottom: 8px; }
+      code {
+        font-family: ui-monospace, "SF Mono", Menlo, monospace;
+        background: #1d1d1d;
+        padding: 2px 6px;
+        border-radius: 4px;
+        font-size: 0.92em;
+        color: #f7e3a8;
+      }
+      .flagbox {
+        margin: 18px 0 6px;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        flex-wrap: wrap;
+      }
+      .flagbox code {
+        font-size: 18px;
+        padding: 10px 16px;
+        background: #17170f;
+        color: #f7d774;
+      }
+      .copy {
+        border: none;
+        background: #2a2a2a;
+        color: #eee;
+        font: inherit;
+        font-size: 14px;
+        padding: 9px 16px;
+        border-radius: 6px;
+        cursor: pointer;
+      }
+      .copy:hover { background: #333; }
+      .copy.done { color: #7fd18a; }
+      .hint { color: #999; font-size: 14px; }
+    </style>
+  </head>
+  <body>
+    <h1>Task 0, Start here</h1>
+    <p class="lead">New to this? Read on. It takes a minute and then the rest makes sense.</p>
+
+    <h2>What is this?</h2>
+    <p>
+      This is a small <strong>CTF</strong>, "Capture The Flag". Each task is a puzzle
+      that hides a secret piece of text called a <strong>flag</strong>. Solve the puzzle,
+      find the flag, and you unlock a reward. Collect the rewards from all the tasks and
+      you'll learn where and when Salagrillit happens.
+    </p>
+
+    <h2>What does a flag look like?</h2>
+    <p>Every flag has the same shape:</p>
+    <p><code>SALA{s0m3_t3xt}</code></p>
+    <p>
+      When a task is solved you'll spot something in that format, in a picture, a sound,
+      some code, a game, or hidden in the page itself. That whole thing, curly braces and
+      all, is what you submit.
+    </p>
+
+    <h2>How do I play?</h2>
+    <ol>
+      <li>On the main page, click a numbered circle to open a task.</li>
+      <li>Hit <strong>Open task</strong> and work out the puzzle.</li>
+      <li>Find the flag, type it into the <strong>Enter the flag</strong> box, and Submit.</li>
+      <li>Right flag → the circle turns green and your reward appears.</li>
+    </ol>
+
+    <h2>Stuck?</h2>
+    <p>
+      See the chat bubble in the bottom-right corner? That's a hint bot. Ask it for a nudge
+      on any task, it gives hints, not answers, so you still get to solve it yourself. Please don't burn all of the sausage and <code>Jaloviina</code> budget on AI tokens.
+    </p>
+
+    <h2>Try it now</h2>
+    <p>Here is your very first flag. Grab it and go submit it for Task 0:</p>
+    <div class="flagbox">
+      <code id="flag">SALA{W3LC0M3_HUN73R}</code>
+      <button class="copy" id="copyBtn" type="button">Copy</button>
+    </div>
+    <p class="hint">
+      Copy it, go back to the Salagrilli page, paste it into Task 0's flag box, and Submit.
+      That's the whole loop, now the other eight tasks are yours to crack.
+    </p>
+
+    <script>
+      (function () {
+        var btn = document.getElementById('copyBtn');
+        var flag = document.getElementById('flag').textContent;
+        btn.addEventListener('click', function () {
+          navigator.clipboard.writeText(flag).then(function () {
+            btn.textContent = 'Copied';
+            btn.classList.add('done');
+            setTimeout(function () {
+              btn.textContent = 'Copy';
+              btn.classList.remove('done');
+            }, 1500);
+          }).catch(function () {});
+        });
+      })();
+    </script>
+
+    <script
+      src="/chat-widget.js"
+      data-puzzle="0"
+      data-api-base="https://salagrillitchat.serveriry.fi"
+      defer
+    ></script>
+  </body>
+</html>

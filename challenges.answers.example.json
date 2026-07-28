@@ -1,4 +1,8 @@
 {
+  "0": {
+    "flag": "SALA{453c5edc23}",
+    "reward": "REWARD 0 — replace with the value this task reveals"
+  },
   "1": {
     "flag": "SALA{O(n^3)}",
     "reward": "REWARD 1 — replace with the value this task reveals"

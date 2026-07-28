@@ -78,8 +78,27 @@
       'cursor:pointer;transition:transform .15s ease;}' +
       '.sg-chat-send:hover:not(:disabled){transform:scale(1.06);}' +
       '.sg-chat-send:disabled{opacity:.4;cursor:default;}' +
-      '@media (min-width:420px){.sg-chat-panel{left:auto;right:20px;width:380px;}}'
+      '@media (min-width:420px){.sg-chat-panel{left:auto;right:20px;width:380px;}}' +
+      '.sg-logo{position:fixed;left:16px;top:16px;z-index:2147483000;display:block;' +
+      'width:52px;height:52px;line-height:0;}' +
+      '.sg-logo img{width:100%;height:100%;filter:invert(1);opacity:.9;' +
+      'transition:opacity .15s ease,transform .15s ease;}' +
+      '.sg-logo:hover img{opacity:1;transform:scale(1.06);}'
     document.head.appendChild(style)
+  }
+
+  // The site logo, shown fixed top-left on every puzzle page (mirroring the chat
+  // bubble). Skipped on the landing page ('general'), which renders its own logo.
+  function buildLogo() {
+    var link = document.createElement('a')
+    link.className = 'sg-logo'
+    link.href = '/'
+    link.setAttribute('aria-label', 'Back to all tasks')
+    var img = document.createElement('img')
+    img.src = '/logo.svg'
+    img.alt = 'Serveri'
+    link.appendChild(img)
+    document.body.appendChild(link)
   }
 
   function escapeHtml(str) {
@@ -380,4 +399,5 @@
 
   injectStyles()
   buildDom()
+  if (puzzleId !== 'general') buildLogo()
 })()

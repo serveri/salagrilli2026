@@ -1,5 +1,9 @@
 export const puzzles = [
   {
+    id: 0,
+    url: '/puzzle-0/index.html',
+  },
+  {
     id: 1,
     url: '/puzzle-1/index.html',
   },
