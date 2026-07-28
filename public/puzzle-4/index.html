@@ -5,23 +5,58 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>4</title>
     <style>
-      html,
-      body {
+      html, body {
         margin: 0;
         min-height: 100%;
-        background: #000;
-        color: #fff;
-        font-family: system-ui, sans-serif;
-        display: grid;
-        place-items: center;
-        text-align: center;
+        background: #111;
+        color: #eee;
+        font-family: Georgia, "Times New Roman", serif;
+      }
+      body {
+        max-width: 680px;
+        margin: 0 auto;
+        padding: 84px 20px 80px;
+        line-height: 1.6;
+      }
+      h1 {
+        font-size: 26px;
+        font-weight: normal;
+        margin: 0 0 24px;
+      }
+      img {
+        display: block;
+        width: 100%;
+        height: auto;
+        margin: 0 0 12px;
+      }
+      figcaption {
+        font-size: 13px;
+        color: #888;
+        font-style: italic;
+        margin-bottom: 32px;
+      }
+      p { margin: 0 0 16px; }
+      .format {
+        font-family: monospace;
+        font-size: 15px;
+        color: #bbb;
       }
     </style>
   </head>
   <body>
-    <!-- TODO: replace with puzzle 4 content. See README "Adding a puzzle" section. -->
-    <p>Puzzle 4 — coming soon.</p>
+    <h1>Who designed this place?</h1>
 
+    <figure style="margin:0">
+      <img src="uimaranta.png" alt="A lakeside beach" />
+      <figcaption>uimaranta.png</figcaption>
+    </figure>
+
+    <p>Find the architect who designed it.</p>
+    <p class="format">Answer format: SALA{FIRSTNAME_LASTNAME}</p>
+
+<!--Context: Will be removed before release
+    Heti sotien 1939–1945 jälkeen alettiin kuopiolaisen uintiväen keskuudessa puhua uuden ja paremman uimalan saamista Kuopioon. Vuonna 1950 kaupunginvaltuusto hyväksyi arkkitehti Einari Teräsvirran suunnitelman Väinölänniemen avouimalasta. Laitos, johon tuli betoninen hyppytorni, kaksi ponnahduslautaa, kaksi kappaletta 25 metrin uimarataa, katsomo 700 henkilölle, sauna ja pukeutumisrakennus ja auringonottajille hiekkaranta, valmistui vuonna 1951. Turistinähtävyytenäkin tutuksi tullut uimalaitos maksoi sen ajan rahassa 15 miljoonaa markkaa. Väinölänniemen uusi uimala valmistui vuonna 1951.
+-->
     <script
       src="/chat-widget.js"
       data-puzzle="4"

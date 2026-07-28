@@ -37,7 +37,11 @@ const PBKDF2_ITERATIONS = 150000
 // replace the placeholders with the real hint / piece of the final answer.
 // Leave `flag` out to auto-generate a random one (recommended).
 // ---------------------------------------------------------------------------
+// NOTE: never put `flag:` values here — this file is committed to git. Flags live
+// only in challenges.answers.json (git-ignored); the generator reuses them from
+// there, and mints a fresh random one for any id that doesn't have one yet.
 const CONFIG = [
+  { id: 0, reward: 'REWARD 0 — replace with the value this task reveals' },
   { id: 1, reward: 'REWARD 1 — replace with the value this task reveals' },
   { id: 2, reward: 'REWARD 2 — replace with the value this task reveals' },
   { id: 3, reward: 'REWARD 3 — replace with the value this task reveals' },

@@ -2,51 +2,57 @@
 // Ciphertext is safe to commit; the flags live in challenges.answers.json (git-ignored).
 export const challenges = [
   {
+    "id": 0,
+    "salt": "Mbc7nRDRpq8d6mzmrZNjjQ==",
+    "iv": "QX5M9DrwkOFeMRBc",
+    "ct": "DJ9FvpP4L+o6xyyevdisv6gQR80wmxyRJoH51Ddb57R1xIpODiZBjPzl8Cr3hfi/l7dVpwsdDGaTwK7SaNY/sNrzm5U4vV5xCmQ/qRCrVWNt7NnoBJ/j/pUt6UgJ9hdF5ln/0H5e0Kd0aWhzLpF/3gqo0pJMGfGSxA1BfcVycFOp+Q1g2IALmHTgn7vcENDY0QNNBW6au4N1SsjOdgM08QtQyt74whP9GohNzHRVRrsie37B+K4x"
+  },
+  {
     "id": 1,
-    "salt": "4WIjbPi9R1LfMFdjOvp3Ng==",
-    "iv": "YIbRVaKaOq5KZKjX",
-    "ct": "a/aZKrhnE9L87ry9Vc/KlIlrJMdJLabA5Fjtz/Xy/dxSmOEiXvTqtS132aDklBX4Gbh8kALe6iWB+eheayHKsaE8i172"
+    "salt": "a0MvEGUwkcXT8En9TnIdVA==",
+    "iv": "vJQMsV+e7tklx1Lr",
+    "ct": "/azETTY+zoJUTKp+szMZFQXKPHMIEfcqje6lQ1yxHLSeAeyJShtK2tNSqUaTBl3O3f+impN54HSoXH8FB+2bhAmzBgOR"
   },
   {
     "id": 2,
-    "salt": "+pDA8DIe41GvcdbTKn8wmQ==",
-    "iv": "UHU0EZ+769aIxqoq",
-    "ct": "ZtU6Jr8YyMbe61IDUoNHzR4E+kCwRg/CSehzqpB0DKB4Wu+TXlNEL+tojwox1FIK7jk1xn8KftgznyR9EbcLg/cJY2WS"
+    "salt": "9Q/08VZU+LqJes1mcpTxFg==",
+    "iv": "B804lCtmPUpOddyy",
+    "ct": "8o3R1vRO6miTBedMYuyNuPlr2/0D3dAMkUiFbHCdymwmrNnKXtM8udF7Wdina/xluedWzz6kQTcxyBybRnmoUgOLmGnB"
   },
   {
     "id": 3,
-    "salt": "GKzlEDSOtkwMdVdAk1Sx7g==",
-    "iv": "9pUNy0mI9W6bbSTV",
-    "ct": "Ir8u5wapCRzF2Z868K9xg3U/4e1fd5JJsOYU9CmgEeep3zvU/CP0yR5Zkwz83pznJHv7jBfNY66ZPCAwVwMPC014Nk/n"
+    "salt": "bDu9oADAP6NLQ6Aouw/C/Q==",
+    "iv": "qZJGr+BThHXIiUEO",
+    "ct": "mlFnlheI3uCyXLCDntjoIwML2WKSd/KhV9Rf9XttznygkMuwbTWgQCtAt0ZAWj2gfsWLxVn2owyPzFmUnKxWE+Q6NNDQ"
   },
   {
     "id": 4,
-    "salt": "P4EmhJkuwxEr4e38a24EEQ==",
-    "iv": "3J8cp5ZMn2Rujx11",
-    "ct": "3f70pNA13HPAhG19fM0KFu8XuOpfKOyqRTHvb5UcCvYwzKleJL3CzFLBUjijeqG6CNcphJKXJf3E53wd9YQDH5bMLyyT"
+    "salt": "+kCrNW6JsYDoLOPeE+F3ig==",
+    "iv": "yOd4nMhFUzaHG5kA",
+    "ct": "0bXdzD8NVthUB/z7XUM1sWEi80pslejH1jTxfgvR0+3W69kFXfHuFu3S0vKwW+kESoyegO+qMkk8Xr+nEZ2HXQQQq3yz"
   },
   {
     "id": 5,
-    "salt": "3jkk9auWst0t1FfN8EU9Lg==",
-    "iv": "aBSnSXDNzziYyNor",
-    "ct": "MwJoYDNNrCmu4o38qbtUba29cxH/hxveydlZUQudujbTfZQFSxB2AA+EtYPxSSg8fL+RMxG/gYqNblEJz7PN7JHlf636"
+    "salt": "4J3Up6yZObCWKTN/xW7rNQ==",
+    "iv": "diBpVBj4IzkAzldv",
+    "ct": "jq8TlQdGbcLwrU+uX6dn0gpe6+z1BTDKI2NcwIe4iFKk/e8RAGA+DkGBPx5Ykb+ygZgb61dDo4ZOOZgT2kaULS2xnEgT"
   },
   {
     "id": 6,
-    "salt": "ztquhVTjp2sIEan+vi8m3A==",
-    "iv": "UJAVRPZgfhH5FPCd",
-    "ct": "7tTWFzZOKy3ciw+PqksPR6gt9jj8duOvgadKRPZmKxBK6aA17GkTbSruVKmbc52cjgyok47odjwngZFoxMT6m79DkMJR"
+    "salt": "/3CNe59TeO/1Le9wenKivw==",
+    "iv": "gescG2USyJX+7GVV",
+    "ct": "o9/XDl+DWgwZ2uFipYSV572iLf/ptszyMk5V0ofnxowrQcb4UBGlq6CpZJn8W4z7Pf2Aya+hCb9kWbuwHnnErl4clNdU"
   },
   {
     "id": 7,
-    "salt": "DCypO22r8yyvQzmSR/WS1A==",
-    "iv": "XGeoUAXSJP7QYTI9",
-    "ct": "pMaKecIA+l9f+1UMnDdbEOjuO5omYeid98p0GIbLEL1iaTaKOWskfb1bt9MSg3Eyjw3Ea6h3DVQ3pYOwfFCvv7As42To"
+    "salt": "X2ay+vOXy90x+xk/zjrppg==",
+    "iv": "NkckrzXvtb7NX59+",
+    "ct": "27yoiPDueejrRDdtChCDxKvRgsfdqds2Fhqx8LuO5d70V/E8REfeAT0owdTv0121L0Urv2ofshY1sOVTQvWH4shvUiGp"
   },
   {
     "id": 8,
-    "salt": "LxO7ysA7c5iSPtsnrjguPw==",
-    "iv": "3AF/KUFVx4+diB8w",
-    "ct": "v3PU6ScSlM1naLyeZAADauz6UyPOOnaQMURPEWIr4RmRpzHoabEfMK3peHU9FEox9RME/my7/CbG3W/FM/DpG29cihQo"
+    "salt": "dYevFbVFuih99dWrqkoA9g==",
+    "iv": "H6OlifgPCv1PutXP",
+    "ct": "II6pnr3jacFYLG5QTJ04sVoVlnqkdwaaaOZh8HnFP7KVe6nhigV37znJmGOYKwLcdGf2AwOAkkptJHMwTZD4NwHiFBCm"
   }
 ]
