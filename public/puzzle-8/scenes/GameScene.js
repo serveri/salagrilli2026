@@ -269,8 +269,8 @@ Game.GameScene = class GameScene extends Phaser.Scene {
                         'serveriquest_54_21': ['Road to Neulamäki'],
                         'serveriquest_55_4': ['Road to Savilahti'],
                         'serveriquest_33_52': ['Serveri mouse house & grill', 'I live here!'],
-                        'savilahti_3_33': ['Novapolis\n \n↑ Main enterance', '→ Serveri enterance'],
-                        'savilahti_30_57': ['← Microkatu campus\n\n↓ Neulamäki']
+                        'savilahti_3_47': ['Novapolis\n \n↑ Main enterance', '→ Serveri enterance'],
+                        'savilahti_30_71': ['← Microkatu campus\n\n↓ Neulamäki']
                         // Add more signs here as needed
                     };
 
@@ -859,8 +859,8 @@ Game.GameScene = class GameScene extends Phaser.Scene {
         const areaName = this.currentArea.name;
 
         if (areaName === 'savilahti') {
-            if (targetX === 14 && targetY === 21) return true;
-            if ((targetX === 14 && targetY === 36) || (targetX === 16 && targetY === 28)) {
+            if (targetX === 14 && targetY === 35) return true;
+            if ((targetX === 14 && targetY === 50) || (targetX === 16 && targetY === 42)) {
                 return !this.hasItem('Nappi avain');
             }
         }
@@ -872,7 +872,7 @@ Game.GameScene = class GameScene extends Phaser.Scene {
         const areaName = this.currentArea.name;
 
         if (areaName === 'savilahti') {
-            if (targetX === 14 && targetY === 21) {
+            if (targetX === 14 && targetY === 35) {
                 const msg = this.hasItem('Nappi avain')
                     ? ['Nappi avain fails to open the door']
                     : ['Its locked'];
@@ -880,7 +880,7 @@ Game.GameScene = class GameScene extends Phaser.Scene {
                 return true;
             }
 
-            if ((targetX === 14 && targetY === 36) || (targetX === 16 && targetY === 28)) {
+            if ((targetX === 14 && targetY === 50) || (targetX === 16 && targetY === 42)) {
                 if (!this.hasItem('Nappi avain')) {
                     this.dialogue.show(['Its locked']);
                     return true;
@@ -924,7 +924,7 @@ Game.GameScene = class GameScene extends Phaser.Scene {
         const areaName = this.currentArea ? this.currentArea.name : '';
 
         if (areaName === 'savilahti') {
-            if ((this.tileX === 14 && this.tileY === 36) || (this.tileX === 16 && this.tileY === 28)) {
+            if ((this.tileX === 14 && this.tileY === 50) || (this.tileX === 16 && this.tileY === 42)) {
                 if (this.hasItem('Nappi avain')) {
                     this.triggerMapTransition('/puzzle-8/data/Laitos.csv', 5, 2);
                     return true;
@@ -934,7 +934,7 @@ Game.GameScene = class GameScene extends Phaser.Scene {
 
         if (areaName === 'Laitos') {
             if (currentTile === 1765 || currentTile === 1767 || this.tileY === 0) {
-                this.triggerMapTransition('/puzzle-8/data/savilahti.csv', 14, 37);
+                this.triggerMapTransition('/puzzle-8/data/savilahti.csv', 14, 51);
                 return true;
             }
         }
@@ -942,7 +942,7 @@ Game.GameScene = class GameScene extends Phaser.Scene {
         const mapTransitions = {
             'serveriquest': {
                 2631: { targetMap: '/puzzle-8/data/NeulamaenSale.csv', targetX: 1, targetY: 2 },
-                2633: { targetMap: '/puzzle-8/data/savilahti.csv', targetX: 26, targetY: 79 },
+                2633: { targetMap: '/puzzle-8/data/savilahti.csv', targetX: 26, targetY: 93 },
                 1370: { targetMap: '/puzzle-8/data/House.csv', targetX: 7, targetY: 11 }
             },
             'NeulamaenSale': {
@@ -1013,7 +1013,7 @@ Game.GameScene = class GameScene extends Phaser.Scene {
             this.dialogue.show(['You are under arrest'], () => {
                 this.cameras.main.fadeOut(250, 0, 0, 0, (camera, progress) => {
                     if (progress === 1) {
-                        this.loadArea('/puzzle-8/data/savilahti.csv', 4, 6).then(() => {
+                        this.loadArea('/puzzle-8/data/savilahti.csv', 4, 20).then(() => {
                             const old = this.energy;
                             this.energy = Math.min(200, this.energy + 15);
                             this.addEnergyDiff(this.energy - old);
