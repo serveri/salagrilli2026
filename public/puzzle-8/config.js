@@ -151,7 +151,7 @@ Game.MAP_TRANSITIONS = {
     'snellmania': {
         byCoord: {
             '52,79': { targetMap: '/puzzle-8/data/savilahti.csv', targetX: 53, targetY: 0 },
-            '17,47': { targetMap: '/puzzle-8/data/Exam.csv', targetX: 0, targetY: 38 },
+            '17,47': { targetMap: '/puzzle-8/data/Exam.csv', targetX: 0, targetY: 37 },
             '46,25': { targetMap: '/puzzle-8/data/Exam.csv', targetX: 30, targetY: 38 },
             '46,26': { targetMap: '/puzzle-8/data/Exam.csv', targetX: 30, targetY: 38 }
         }
