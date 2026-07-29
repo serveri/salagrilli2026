@@ -9,8 +9,14 @@ Game.BootScene = class BootScene extends Phaser.Scene {
     preload() {
         this.load.setPath('/puzzle-8/assets/');
 
-        // Player spritesheet (16x16 frames, 3 cols x 4 rows)
+        // Player spritesheet (16x16 frames, 4 cols x 4 rows)
         this.load.spritesheet('player', 'ServeriHiiri.png', {
+            frameWidth: 16,
+            frameHeight: 16
+        });
+        
+        // Player extra animations (sleeping, shadows etc.)
+        this.load.spritesheet('playerextra', 'PlayerExtra.png', {
             frameWidth: 16,
             frameHeight: 16
         });
@@ -19,6 +25,12 @@ Game.BootScene = class BootScene extends Phaser.Scene {
         this.load.spritesheet('poliisi', 'Poliisi.png', {
             frameWidth: 16,
             frameHeight: 18
+        });
+
+        // Assistant spritesheet (16x20 frames, 4 cols x 4 rows)
+        this.load.spritesheet('opetusavustaja', 'Opetusavustaja.png', {
+            frameWidth: 16,
+            frameHeight: 20
         });
 
         // Tileset (1024x1024, 64 tiles per row)

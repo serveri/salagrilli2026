@@ -47,7 +47,7 @@ Game.WALKABLE_TILES = new Set([
     2830, 2831, 2832, 2833, 2880, 2881, 2882, 2883, 2884, 2885, 2886, 2887, 2889, 2890, 2891, 2892, 2893, 2894, 2895, 2896,
     2944, 2945, 2946, 2947, 2948, 3008, 3009, 3010, 3011, 2631, 436, 1370, 451, 2633, 320, 321, 384, 385, 448, 449, 69, 70, 5, 6, 1829, 1831, 2021, 2023, 2024, 1317, 1318, 1319, 1320, 1445, 1446, 1447, 440, 439,
     2949, 2950, 2951, 2952, 3013, 3014, 3015, 3016, 3019, 3020, 2956, 2765, 2766, 2767, 2768, 2769, 2897, 2134, 2198, 1765, 1767, 2953, 2954, 2955, 3017, 3018, 2704, 2699, 2700, 2701, 2702, 2703, 2958, 2957,
-    2187, 2250, 2251, 2252, 2189, 2566, 2630, 2182, 2185, 3021, 3022, 2694, 689, 1381, 1383, 685, 1637, 1575, 1703, 1573, 1701, 177, 351
+    2187, 2250, 2251, 2252, 2189, 2566, 2630, 2182, 2185, 3021, 3022, 2694, 689, 1381, 1383, 685, 1637, 1575, 1703, 1573, 1701, 177, 351, 3082, 686, 439, 1320, 1448, 745, 687, 2078, 2014
 ]);
 
 Game.DOOR_BLACK_TILE = 780;
@@ -55,10 +55,11 @@ Game.DOOR_BLACK_TILES = {
     199: 781,
     200: 781,
     2182: 1036,
-    2185: 1037
+    2185: 1037,
+    2134: 782
 };
 Game.DOOR_FRAMES = {
-    2134: 782,
+    2134: 844,
     2198: 908,
     1370: 909,
     199: 910,
@@ -81,7 +82,7 @@ Game.INSPECT_MESSAGES = {
     3273: ['Toyota Corolla', 'Definitely not compensating for anything'], 3274: ['Toyota Corolla', 'Definitely not compensating for anything'], 3211: ['Toyota Corolla', 'Definitely not compensating for anything'], 3275: ['Toyota Corolla', 'Definitely not compensating for anything'], 2824: ['Construction around here seems to never finish'], 2888: ['Construction around here seems to never finish'],
     1750: ['Locked, I should have guessed'], 3072: ['The light bulb is burning into my eyes!'], 3136: ['Put that light away!'], 612: ['Books: Java 101: The importance of programming socks,', '..How to craft a nuclear device, in Minecraft'], 676: ['Books: Java 101: The importance of programming socks,', '..How to craft a nuclear device, in Minecraft'],
     3012: ['Its a barrel, or a pipe maybe?'], 519: ['I sniff my rose this morning, yes'], 584: ['I sniff my rose this morning, yes'], 3081: ['A flimsy bike rack'], 290: ['I sniff my rose this morning, yes'], 1056: ['That hat must have been left by one of the bussiness students'], 1120: ['That hat must have been left by one of the bussiness students'], 1057: ['M\'lady'], 1121: ['I found him!'], 1122: ['Mice don\'t wear hats'],
-    1058: ['Mice don\'t wear hats']
+    1058: ['Mice don\'t wear hats'], 662: ['Restaurant Hunter has closed down for good', '*You shed a small tear*'], 113: ['Locked', 'I\'m not gonna break into the offices of our nice staff!']
 };
 
 Game.SIGN_MESSAGES = {
@@ -90,11 +91,16 @@ Game.SIGN_MESSAGES = {
     'serveriquest_54_21': ['Road to Neulamäki'],
     'serveriquest_55_4': ['Road to Savilahti'],
     'serveriquest_33_52': ['Serveri mouse house & grill', 'I live here!'],
+    'serveriquest_83_23': ['Serveri tip: Check you backbag by pressing E or I', 'Some items can help you!'],
+    'serveriquest_11_34': ['Serveri tip: conserve some energy by jumping down cliffs!'],
     'savilahti_3_47': ['Novapolis\n \n↑ Main enterance', '→ Serveri enterance'],
     'savilahti_30_71': ['← Microkatu campus\n\n↓ Neulamäki'],
     'savilahti_5_9': ['↑ Snellmania'],
     'savilahti_51_7': ['Snellmania ↑'],
-    'savilahti_37_23': ['Savonia has been closed due to too destructive AMK final projects']
+    'savilahti_37_23': ['Savonia has been closed due to too destructive AMK final projects'],
+    'snellmania_11_45': ['↑ Snellmania lobby'],
+    'snellmania_42_22': ['University of eastern finland'],
+    'snellmania_46_47': ['Serveri tip: preparing for the exam makes it easier to pass!'],
     // Add more signs here as needed
 };
 
@@ -106,7 +112,9 @@ Game.LOCKED_DOORS = {
         { x: 16, y: 42, requiredItem: 'Nappi avain', msgMissing: ['Its locked'], msgHasItem: null }
     ],
     'snellmania': [
-        { x: 45, y: 58, requiredItem: null, failedItem: 'Nappi avain', msgMissing: ['Its locked', 'Let\'s try the other door'], msgHasItem: ['Light on the lock is flashing red..', 'Nappiavain does not in Snellmania'] },
+        { x: 39, y: 52, requiredItem: null, failedItem: 'Nappi avain', msgMissing: ['Its locked', 'Let\'s try the other door'], msgHasItem: ['Light on the lock is flashing red..', 'Nappiavain does not in Snellmania'] },
+        { x: 7, y: 55, requiredItem: null, failedItem: 'Nappi avain', msgMissing: ['Its locked', 'Let\'s try the other door'], msgHasItem: ['Light on the lock is flashing red..', 'Nappiavain does not in Snellmania'] },
+        { x: 15, y: 52, requiredItem: null, failedItem: 'Nappi avain', msgMissing: ['Its locked', 'Let\'s try the other door'], msgHasItem: ['Light on the lock is flashing red..', 'Nappiavain does not in Snellmania'] },
     ]
 };
 
@@ -129,9 +137,10 @@ Game.MAP_TRANSITIONS = {
             2631: { targetMap: '/puzzle-8/data/serveriquest.csv', targetX: 57, targetY: 0 }
         },
         byCoord: {
-            '14,50': { targetMap: '/puzzle-8/data/Laitos.csv', targetX: 43, targetY: 9, requiredItem: 'Nappi avain' },
-            '16,42': { targetMap: '/puzzle-8/data/Laitos.csv', targetX: 45, targetY: 18, requiredItem: 'Nappi avain' },
-            '53,0': { targetMap: '/puzzle-8/data/snellmania.csv', targetX: 52, targetY: 79 }
+            '14,50': { targetMap: '/puzzle-8/data/Laitos.csv', targetX: 45, targetY: 18, requiredItem: 'Nappi avain' },
+            '16,42': { targetMap: '/puzzle-8/data/Laitos.csv', targetX: 43, targetY: 9, requiredItem: 'Nappi avain' },
+            '53,0': { targetMap: '/puzzle-8/data/snellmania.csv', targetX: 46, targetY: 73 },
+            '0,6': { targetMap: '/puzzle-8/data/snellmania.csv', targetX: 8, targetY: 66 }
         }
     },
     'House': {
@@ -142,27 +151,28 @@ Game.MAP_TRANSITIONS = {
     },
     'Laitos': {
         byCoord: {
-            '43,9': { targetMap: '/puzzle-8/data/savilahti.csv', targetX: 14, targetY: 51 },
-            '43,10': { targetMap: '/puzzle-8/data/savilahti.csv', targetX: 14, targetY: 51 },
-            '45,18': { targetMap: '/puzzle-8/data/savilahti.csv', targetX: 16, targetY: 42 },
-            '46,17': { targetMap: '/puzzle-8/data/savilahti.csv', targetX: 16, targetY: 42 }
+            '43,9': { targetMap: '/puzzle-8/data/savilahti.csv', targetX: 16, targetY: 42 },
+            '43,10': { targetMap: '/puzzle-8/data/savilahti.csv', targetX: 16, targetY: 42 },
+            '45,18': { targetMap: '/puzzle-8/data/savilahti.csv', targetX: 14, targetY: 50 },
+            '46,18': { targetMap: '/puzzle-8/data/savilahti.csv', targetX: 14, targetY: 50 }
         }
     },
     'snellmania': {
         byCoord: {
-            '52,79': { targetMap: '/puzzle-8/data/savilahti.csv', targetX: 53, targetY: 0 },
-            '17,47': { targetMap: '/puzzle-8/data/Exam.csv', targetX: 0, targetY: 37 },
-            '46,25': { targetMap: '/puzzle-8/data/Exam.csv', targetX: 30, targetY: 38 },
-            '46,26': { targetMap: '/puzzle-8/data/Exam.csv', targetX: 30, targetY: 38 }
+            '46,73': { targetMap: '/puzzle-8/data/savilahti.csv', targetX: 53, targetY: 0 },
+            '8,66': { targetMap: '/puzzle-8/data/savilahti.csv', targetX: 0, targetY: 6 },
+            '11,41': { targetMap: '/puzzle-8/data/Exam.csv', targetX: 0, targetY: 37 },
+            '40,19': { targetMap: '/puzzle-8/data/Exam.csv', targetX: 30, targetY: 38 },
+            '40,20': { targetMap: '/puzzle-8/data/Exam.csv', targetX: 30, targetY: 38 }
         }
     },
     'Exam': {
         byCoord: {
-            '30,37': { targetMap: '/puzzle-8/data/snellmania.csv', targetX: 46, targetY: 26 },
-            '30,38': { targetMap: '/puzzle-8/data/snellmania.csv', targetX: 46, targetY: 26 },
-            '30,39': { targetMap: '/puzzle-8/data/snellmania.csv', targetX: 46, targetY: 26 },
-            '0,38': { targetMap: '/puzzle-8/data/snellmania.csv', targetX: 17, targetY: 47 },
-            '0,37': { targetMap: '/puzzle-8/data/snellmania.csv', targetX: 17, targetY: 47 }
+            '30,37': { targetMap: '/puzzle-8/data/snellmania.csv', targetX: 40, targetY: 20 },
+            '30,38': { targetMap: '/puzzle-8/data/snellmania.csv', targetX: 40, targetY: 20 },
+            '30,39': { targetMap: '/puzzle-8/data/snellmania.csv', targetX: 40, targetY: 20 },
+            '0,38': { targetMap: '/puzzle-8/data/snellmania.csv', targetX: 11, targetY: 41 },
+            '0,37': { targetMap: '/puzzle-8/data/snellmania.csv', targetX: 11, targetY: 41 }
         }
     }
 };
