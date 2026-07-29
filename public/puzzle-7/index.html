@@ -669,7 +669,7 @@
         <p class="endnote">Kaikki 15 kysymystä oikein. Olet ansainnut Jallu shotin</p>
         <div class="flagbox">
             <small>Lippu</small>
-            SALA{1T_M1LJ0N44R1}
+            <span id="flagText"></span>
         </div>
     </div>
 </section>
@@ -681,9 +681,6 @@
 
 <script>
     (function () {
-        // Revealed only after all 15 questions are answered correctly.
-        var FLAG = 'SALA{1T_M1LJ0N44R1}';
-
         var PRIZES = [
             '100 bits', '200 bits', '300 bits', '500 bits', '1 000 bits',
             '2 000 bits', '4 000 bits', '8 000 bits', '16 000 bits', '32 000 bits',
@@ -758,6 +755,7 @@
         ];
 
         var LETTERS = ['A', 'B', 'C', 'D'];
+        var FLAG_B64 = 'U0FMQXsxVF9NMUxKME40NFIxfQ==';
 
         var el = function (id) {
             return document.getElementById(id);
@@ -827,6 +825,7 @@
                     setTimeout(function () {
                         state.level++;
                         if (state.level >= QUESTIONS.length) {
+                            el('flagText').textContent = atob(FLAG_B64);
                             show('win');
                         } else {
                             state.locked = false;
@@ -904,17 +903,16 @@
             state.lifelines.audience = true;
             updateLifelineButtons();
             var Q = QUESTIONS[state.level];
-            var visible = [];
-            for (var i = 0; i < 4; i++) if (state.hidden.indexOf(i) === -1) visible.push(i);
+            var options = [0, 1, 2, 3];
             // Weight the correct answer highest, but leave room for doubt.
             var weights = {};
             var total = 0;
-            visible.forEach(function (i) {
+            options.forEach(function (i) {
                 var w = i === Q.c ? 45 + Math.random() * 25 : 5 + Math.random() * 20;
                 weights[i] = w;
                 total += w;
             });
-            var rows = visible.map(function (i) {
+            var rows = options.map(function (i) {
                 return {i: i, pct: Math.round((weights[i] / total) * 100)};
             });
             // fix rounding to 100
