@@ -755,7 +755,6 @@
         ];
 
         var LETTERS = ['A', 'B', 'C', 'D'];
-        var FLAG_B64 = 'U0FMQXsxVF9NMUxKME40NFIxfQ==';
 
         var el = function (id) {
             return document.getElementById(id);
@@ -765,6 +764,7 @@
             lose: el('screen-lose'), win: el('screen-win'),
         };
 
+        const C = 'U0FMQXsxVF9NMUxKME40NFIxfQ==';
         function show(name) {
             Object.keys(screens).forEach(function (k) {
                 screens[k].classList.toggle('active', k === name);
@@ -825,7 +825,7 @@
                     setTimeout(function () {
                         state.level++;
                         if (state.level >= QUESTIONS.length) {
-                            el('flagText').textContent = atob(FLAG_B64);
+                            el('flagText').textContent = atob(C);
                             show('win');
                         } else {
                             state.locked = false;
