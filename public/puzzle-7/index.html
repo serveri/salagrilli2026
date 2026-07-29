@@ -1,657 +1,989 @@
 <!DOCTYPE html>
 <html lang="fi">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
     <title>7</title>
     <style>
-      :root {
-        --gold: #f4c430;
-        --gold-2: #ffe9a8;
-        --blue: #0a1e4f;
-        --blue-2: #123a8a;
-        --edge: #3b7bd6;
-        --green: #1faf5a;
-        --red: #d6323a;
-      }
-      * { box-sizing: border-box; }
-      html, body {
-        margin: 0;
-        min-height: 100%;
-        background: #02030a;
-        color: #eef3ff;
-        font-family: "Trebuchet MS", "Segoe UI", system-ui, sans-serif;
-        -webkit-font-smoothing: antialiased;
-      }
-      body {
-        min-height: 100vh;
-        display: flex;
-        flex-direction: column;
-        overflow-x: hidden;
-        position: relative;
-      }
-      /* Stage lighting */
-      body::before {
-        content: "";
-        position: fixed;
-        inset: 0;
-        background:
-          radial-gradient(120% 80% at 50% -10%, rgba(60, 110, 220, 0.35), transparent 60%),
-          radial-gradient(60% 50% at 15% 0%, rgba(90, 60, 200, 0.25), transparent 70%),
-          radial-gradient(60% 50% at 85% 0%, rgba(20, 130, 200, 0.22), transparent 70%),
-          linear-gradient(180deg, #05132e 0%, #030718 55%, #01030a 100%);
-        z-index: -2;
-      }
-      body::after {
-        content: "";
-        position: fixed;
-        inset: 0;
-        background:
-          conic-gradient(from 200deg at 50% -5%, transparent 0deg, rgba(120,170,255,0.06) 20deg, transparent 40deg),
-          conic-gradient(from 320deg at 50% -5%, transparent 0deg, rgba(120,170,255,0.06) 20deg, transparent 40deg);
-        z-index: -1;
-        pointer-events: none;
-      }
+        :root {
+            --gold: #f4c430;
+            --gold-2: #ffe9a8;
+            --blue: #0a1e4f;
+            --blue-2: #123a8a;
+            --edge: #3b7bd6;
+            --green: #1faf5a;
+            --red: #d6323a;
+        }
 
-      .screen { flex: 1; display: none; flex-direction: column; }
-      .screen.active { display: flex; }
+        * {
+            box-sizing: border-box;
+        }
 
-      /* ---------- Start & end screens ---------- */
-      .center {
-        flex: 1;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-        text-align: center;
-        padding: 96px 22px 64px;
-        gap: 22px;
-      }
-      .logo-title {
-        font-weight: 800;
-        line-height: 1.05;
-        letter-spacing: 0.01em;
-        margin: 0;
-        font-size: clamp(30px, 7vw, 62px);
-        background: linear-gradient(180deg, #fff 0%, var(--gold-2) 40%, var(--gold) 75%, #b8860b 100%);
-        -webkit-background-clip: text;
-        background-clip: text;
-        color: transparent;
-        text-shadow: 0 2px 30px rgba(244, 196, 48, 0.25);
-      }
-      .logo-title span { display: block; font-size: 0.62em; color: transparent; }
-      .tagline { max-width: 480px; color: #b9c8ec; font-size: 16px; line-height: 1.6; margin: 0; }
+        html, body {
+            margin: 0;
+            min-height: 100%;
+            background: #02030a;
+            color: #eef3ff;
+            font-family: "Trebuchet MS", "Segoe UI", system-ui, sans-serif;
+            -webkit-font-smoothing: antialiased;
+        }
 
-      .cta {
-        margin-top: 8px;
-        padding: 15px 42px;
-        border: 1px solid rgba(244, 196, 48, 0.6);
-        border-radius: 999px;
-        background: linear-gradient(180deg, rgba(244,196,48,0.22), rgba(244,196,48,0.05));
-        color: var(--gold-2);
-        font-family: inherit;
-        font-size: 18px;
-        font-weight: 700;
-        letter-spacing: 0.06em;
-        text-transform: uppercase;
-        cursor: pointer;
-        transition: transform 0.12s, box-shadow 0.25s, background 0.25s;
-      }
-      .cta:hover { background: rgba(244,196,48,0.2); box-shadow: 0 0 32px rgba(244,196,48,0.4); }
-      .cta:active { transform: translateY(1px); }
+        body {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow-x: hidden;
+            position: relative;
+        }
 
-      .endnote { font-size: 15px; color: #9fb2dc; max-width: 460px; line-height: 1.6; }
-      .endnote b { color: #fff; }
+        /* Stage lighting */
+        body::before {
+            content: "";
+            position: fixed;
+            inset: 0;
+            background: radial-gradient(120% 80% at 50% -10%, rgba(60, 110, 220, 0.35), transparent 60%),
+            radial-gradient(60% 50% at 15% 0%, rgba(90, 60, 200, 0.25), transparent 70%),
+            radial-gradient(60% 50% at 85% 0%, rgba(20, 130, 200, 0.22), transparent 70%),
+            linear-gradient(180deg, #05132e 0%, #030718 55%, #01030a 100%);
+            z-index: -2;
+        }
 
-      .flagbox {
-        margin-top: 6px;
-        padding: 18px 26px;
-        border: 1px solid rgba(244, 196, 48, 0.55);
-        border-radius: 14px;
-        background: rgba(244, 196, 48, 0.08);
-        font-family: ui-monospace, "SF Mono", Menlo, monospace;
-        font-size: 22px;
-        letter-spacing: 0.05em;
-        color: var(--gold-2);
-      }
-      .flagbox small { display: block; font-family: inherit; font-size: 12px; color: #cdb978; letter-spacing: 0.12em; text-transform: uppercase; margin-bottom: 8px; }
+        body::after {
+            content: "";
+            position: fixed;
+            inset: 0;
+            background: conic-gradient(from 200deg at 50% -5%, transparent 0deg, rgba(120, 170, 255, 0.06) 20deg, transparent 40deg),
+            conic-gradient(from 320deg at 50% -5%, transparent 0deg, rgba(120, 170, 255, 0.06) 20deg, transparent 40deg);
+            z-index: -1;
+            pointer-events: none;
+        }
 
-      /* ---------- Game layout ---------- */
-      .topbar {
-        display: flex;
-        justify-content: center;
-        padding: 18px 16px 6px;
-      }
-      .lifelines { display: flex; gap: 14px; }
-      .ll {
-        width: 76px;
-        height: 46px;
-        border-radius: 30px / 24px;
-        border: 2px solid var(--edge);
-        background: radial-gradient(120% 160% at 50% -30%, #1b48a8, #06122e 80%);
-        color: #eaf1ff;
-        font-family: inherit;
-        font-weight: 700;
-        font-size: 15px;
-        cursor: pointer;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        gap: 4px;
-        box-shadow: 0 4px 14px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.15);
-        transition: transform 0.12s, box-shadow 0.2s, border-color 0.2s;
-        position: relative;
-      }
-      .ll .ic { font-size: 17px; }
-      .ll:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 8px 20px rgba(40,90,200,0.5); border-color: var(--gold); }
-      .ll:disabled { cursor: default; opacity: 0.45; }
-      .ll.used::after {
-        content: "";
-        position: absolute;
-        left: 8%; right: 8%; top: 50%;
-        height: 3px;
-        background: var(--red);
-        transform: rotate(-12deg);
-        border-radius: 3px;
-        box-shadow: 0 0 8px rgba(214,50,58,0.8);
-      }
-      .ll-label { text-align: center; font-size: 10px; color: #8fa6d6; margin-top: 4px; letter-spacing: 0.04em; }
+        .screen {
+            flex: 1;
+            display: none;
+            flex-direction: column;
+        }
 
-      .stage {
-        flex: 1;
-        display: flex;
-        gap: 26px;
-        align-items: center;
-        justify-content: center;
-        padding: 8px 22px 40px;
-        max-width: 1120px;
-        margin: 0 auto;
-        width: 100%;
-      }
-      .qwrap { flex: 1; max-width: 720px; display: flex; flex-direction: column; align-items: center; gap: 22px; }
+        .screen.active {
+            display: flex;
+        }
 
-      .qcounter {
-        font-size: 13px;
-        letter-spacing: 0.18em;
-        text-transform: uppercase;
-        color: var(--gold);
-        font-weight: 700;
-      }
-      .qcounter b { color: #fff; }
+        /* ---------- Start & end screens ---------- */
+        .center {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            padding: 96px 22px 64px;
+            gap: 22px;
+        }
 
-      /* Hexagon lozenges */
-      .hex { position: relative; width: 100%; border: none; background: none; padding: 0; font-family: inherit; }
-      .hex::before {
-        content: "";
-        position: absolute;
-        inset: 0;
-        clip-path: polygon(3% 0, 97% 0, 100% 50%, 97% 100%, 3% 100%, 0 50%);
-        background: linear-gradient(90deg, #2f6fe0, #7fd3ff 50%, #2f6fe0);
-        transition: background 0.35s;
-      }
-      .hex .fill {
-        position: absolute;
-        inset: 3px;
-        clip-path: polygon(3% 0, 97% 0, 100% 50%, 97% 100%, 3% 100%, 0 50%);
-        background: radial-gradient(120% 200% at 50% -40%, #143a86, #061431 70%, #030b20);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        transition: background 0.35s;
-      }
+        .logo-title {
+            font-weight: 800;
+            line-height: 1.05;
+            letter-spacing: 0.01em;
+            margin: 0;
+            font-size: clamp(30px, 7vw, 62px);
+            background: linear-gradient(180deg, #fff 0%, var(--gold-2) 40%, var(--gold) 75%, #b8860b 100%);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            text-shadow: 0 2px 30px rgba(244, 196, 48, 0.25);
+        }
 
-      .question {
-        height: clamp(84px, 15vw, 108px);
-        width: 100%;
-      }
-      .question .fill { padding: 12px 44px; }
-      .question .fill span {
-        color: #fff;
-        font-size: clamp(16px, 2.4vw, 22px);
-        font-weight: 600;
-        line-height: 1.35;
-        text-align: center;
-        text-shadow: 0 1px 6px rgba(0,0,0,0.6);
-      }
+        .logo-title span {
+            display: block;
+            font-size: 0.62em;
+            color: transparent;
+        }
 
-      .answers {
-        width: 100%;
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        gap: 14px 20px;
-      }
-      .opt { height: 62px; cursor: pointer; }
-      .opt .fill { padding: 8px 20px; justify-content: flex-start; gap: 12px; }
-      .opt .letter { color: var(--gold); font-weight: 800; font-size: 18px; flex-shrink: 0; }
-      .opt .txt { color: #eef3ff; font-size: 16px; font-weight: 600; text-align: left; line-height: 1.2; }
-      .opt:hover:not(.locked)::before { background: linear-gradient(90deg, var(--gold), var(--gold-2) 50%, var(--gold)); }
-      .opt:hover:not(.locked) .fill { background: radial-gradient(120% 200% at 50% -40%, #1c4ea0, #08214d 70%); }
+        .tagline {
+            max-width: 480px;
+            color: #b9c8ec;
+            font-size: 16px;
+            line-height: 1.6;
+            margin: 0;
+        }
 
-      .opt.selected::before { background: linear-gradient(90deg, #ffb700, #ffe9a8 50%, #ffb700); }
-      .opt.selected .fill { background: radial-gradient(120% 200% at 50% -40%, #d99b12, #a3720a 80%); }
-      .opt.selected .txt, .opt.selected .letter { color: #1a1200; text-shadow: none; }
+        .cta {
+            margin-top: 8px;
+            padding: 15px 42px;
+            border: 1px solid rgba(244, 196, 48, 0.6);
+            border-radius: 999px;
+            background: linear-gradient(180deg, rgba(244, 196, 48, 0.22), rgba(244, 196, 48, 0.05));
+            color: var(--gold-2);
+            font-family: inherit;
+            font-size: 18px;
+            font-weight: 700;
+            letter-spacing: 0.06em;
+            text-transform: uppercase;
+            cursor: pointer;
+            transition: transform 0.12s, box-shadow 0.25s, background 0.25s;
+        }
 
-      .opt.correct::before { background: linear-gradient(90deg, #17c667, #b6ffcf 50%, #17c667); }
-      .opt.correct .fill { background: radial-gradient(120% 200% at 50% -40%, #1faf5a, #0c6b34 80%); }
-      .opt.correct .txt, .opt.correct .letter { color: #fff; }
+        .cta:hover {
+            background: rgba(244, 196, 48, 0.2);
+            box-shadow: 0 0 32px rgba(244, 196, 48, 0.4);
+        }
 
-      .opt.wrong::before { background: linear-gradient(90deg, #ff5a60, #ffd0d2 50%, #ff5a60); }
-      .opt.wrong .fill { background: radial-gradient(120% 200% at 50% -40%, #d6323a, #7d151b 80%); }
-      .opt.wrong .txt, .opt.wrong .letter { color: #fff; }
+        .cta:active {
+            transform: translateY(1px);
+        }
 
-      .opt.hidden-opt { opacity: 0.12; pointer-events: none; }
-      .opt.locked { cursor: default; }
+        .endnote {
+            font-size: 15px;
+            color: #9fb2dc;
+            max-width: 460px;
+            line-height: 1.6;
+        }
 
-      @keyframes flash { 0%, 100% { filter: brightness(1); } 50% { filter: brightness(1.6); } }
-      .opt.blink { animation: flash 0.5s ease-in-out 3; }
+        .endnote b {
+            color: #fff;
+        }
 
-      /* Money ladder */
-      .ladder {
-        width: 232px;
-        flex-shrink: 0;
-        background: linear-gradient(180deg, rgba(10,30,79,0.7), rgba(4,10,30,0.7));
-        border: 1px solid rgba(90,140,230,0.35);
-        border-radius: 14px;
-        padding: 12px 10px;
-        box-shadow: 0 12px 40px rgba(0,0,0,0.5);
-      }
-      .rung {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        padding: 6px 14px;
-        border-radius: 8px;
-        font-size: 15px;
-        font-weight: 700;
-        color: #cdb978;
-        letter-spacing: 0.02em;
-      }
-      .rung .n { color: #6f86bb; font-size: 12px; width: 26px; }
-      .rung.safe { color: #fff; }
-      .rung.passed { color: #7ea0dd; }
-      .rung.current {
-        background: linear-gradient(90deg, rgba(244,196,48,0.9), rgba(244,196,48,0.5));
-        color: #1a1200;
-      }
-      .rung.current .n { color: #4a3a00; }
+        .flagbox {
+            margin-top: 6px;
+            padding: 18px 26px;
+            border: 1px solid rgba(244, 196, 48, 0.55);
+            border-radius: 14px;
+            background: rgba(244, 196, 48, 0.08);
+            font-family: ui-monospace, "SF Mono", Menlo, monospace;
+            font-size: 22px;
+            letter-spacing: 0.05em;
+            color: var(--gold-2);
+        }
 
-      .lose-title { color: #ff8a8f; font-size: clamp(24px, 5vw, 38px); font-weight: 800; margin: 0; }
-      .win-title { font-size: clamp(26px, 6vw, 48px); }
+        .flagbox small {
+            display: block;
+            font-family: inherit;
+            font-size: 12px;
+            color: #cdb978;
+            letter-spacing: 0.12em;
+            text-transform: uppercase;
+            margin-bottom: 8px;
+        }
 
-      @media (max-width: 820px) {
-        .ladder { display: none; }
-        .stage { padding: 4px 16px 32px; }
-      }
-      @media (max-width: 520px) {
-        .answers { grid-template-columns: 1fr; }
-        .lifelines { gap: 10px; }
-        .ll { width: 66px; height: 42px; font-size: 14px; }
-      }
+        /* ---------- Game layout ---------- */
+        .topbar {
+            display: flex;
+            justify-content: center;
+            padding: 18px 16px 6px;
+        }
 
-      /* Popup (audience / phone) */
-      .overlay {
-        position: fixed;
-        inset: 0;
-        background: rgba(2, 5, 16, 0.72);
-        backdrop-filter: blur(3px);
-        display: none;
-        align-items: center;
-        justify-content: center;
-        padding: 22px;
-        z-index: 2147482000;
-      }
-      .overlay.show { display: flex; }
-      .card {
-        width: min(94vw, 420px);
-        background: linear-gradient(180deg, #0b2050, #061127);
-        border: 1px solid rgba(120,160,240,0.4);
-        border-radius: 16px;
-        padding: 22px;
-        box-shadow: 0 20px 60px rgba(0,0,0,0.7);
-        text-align: center;
-      }
-      .card h3 { margin: 0 0 4px; color: var(--gold-2); font-size: 18px; }
-      .card .sub { margin: 0 0 16px; font-size: 12px; color: #8fa6d6; letter-spacing: 0.06em; text-transform: uppercase; }
-      .bars { display: flex; flex-direction: column; gap: 10px; text-align: left; }
-      .bar-row { display: flex; align-items: center; gap: 10px; }
-      .bar-row .bl { width: 20px; font-weight: 800; color: var(--gold); }
-      .bar-track { flex: 1; height: 22px; background: rgba(255,255,255,0.08); border-radius: 6px; overflow: hidden; }
-      .bar-fill { height: 100%; width: 0; background: linear-gradient(90deg, #2f6fe0, #7fd3ff); border-radius: 6px; transition: width 0.7s ease; }
-      .bar-row .pct { width: 42px; text-align: right; font-variant-numeric: tabular-nums; color: #cfe0ff; font-size: 14px; }
-      .quote { font-size: 17px; line-height: 1.6; color: #eaf1ff; margin: 6px 0 16px; }
-      .quote b { color: var(--gold-2); }
-      .who { font-size: 12px; color: #8fa6d6; letter-spacing: 0.05em; }
-      .card .close {
-        margin-top: 16px;
-        padding: 10px 26px;
-        border: 1px solid rgba(244,196,48,0.5);
-        border-radius: 999px;
-        background: rgba(244,196,48,0.1);
-        color: var(--gold-2);
-        font-family: inherit;
-        font-weight: 700;
-        cursor: pointer;
-      }
-      .card .close:hover { background: rgba(244,196,48,0.2); }
+        .lifelines {
+            display: flex;
+            gap: 14px;
+        }
+
+        .ll {
+            width: 76px;
+            height: 46px;
+            border-radius: 30px / 24px;
+            border: 2px solid var(--edge);
+            background: radial-gradient(120% 160% at 50% -30%, #1b48a8, #06122e 80%);
+            color: #eaf1ff;
+            font-family: inherit;
+            font-weight: 700;
+            font-size: 15px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 4px;
+            box-shadow: 0 4px 14px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.15);
+            transition: transform 0.12s, box-shadow 0.2s, border-color 0.2s;
+            position: relative;
+        }
+
+        .ll .ic {
+            font-size: 17px;
+        }
+
+        .ll:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(40, 90, 200, 0.5);
+            border-color: var(--gold);
+        }
+
+        .ll:disabled {
+            cursor: default;
+            opacity: 0.45;
+        }
+
+        .ll.used::after {
+            content: "";
+            position: absolute;
+            left: 8%;
+            right: 8%;
+            top: 50%;
+            height: 3px;
+            background: var(--red);
+            transform: rotate(-12deg);
+            border-radius: 3px;
+            box-shadow: 0 0 8px rgba(214, 50, 58, 0.8);
+        }
+
+        .ll-label {
+            text-align: center;
+            font-size: 10px;
+            color: #8fa6d6;
+            margin-top: 4px;
+            letter-spacing: 0.04em;
+        }
+
+        .stage {
+            flex: 1;
+            display: flex;
+            gap: 26px;
+            align-items: center;
+            justify-content: center;
+            padding: 8px 22px 40px;
+            max-width: 1120px;
+            margin: 0 auto;
+            width: 100%;
+        }
+
+        .qwrap {
+            flex: 1;
+            max-width: 720px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 22px;
+        }
+
+        .qcounter {
+            font-size: 13px;
+            letter-spacing: 0.18em;
+            text-transform: uppercase;
+            color: var(--gold);
+            font-weight: 700;
+        }
+
+        .qcounter b {
+            color: #fff;
+        }
+
+        /* Hexagon lozenges */
+        .hex {
+            position: relative;
+            width: 100%;
+            border: none;
+            background: none;
+            padding: 0;
+            font-family: inherit;
+        }
+
+        .hex::before {
+            content: "";
+            position: absolute;
+            inset: 0;
+            clip-path: polygon(3% 0, 97% 0, 100% 50%, 97% 100%, 3% 100%, 0 50%);
+            background: linear-gradient(90deg, #2f6fe0, #7fd3ff 50%, #2f6fe0);
+            transition: background 0.35s;
+        }
+
+        .hex .fill {
+            position: absolute;
+            inset: 3px;
+            clip-path: polygon(3% 0, 97% 0, 100% 50%, 97% 100%, 3% 100%, 0 50%);
+            background: radial-gradient(120% 200% at 50% -40%, #143a86, #061431 70%, #030b20);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background 0.35s;
+        }
+
+        .question {
+            height: clamp(84px, 15vw, 108px);
+            width: 100%;
+        }
+
+        .question .fill {
+            padding: 12px 44px;
+        }
+
+        .question .fill span {
+            color: #fff;
+            font-size: clamp(16px, 2.4vw, 22px);
+            font-weight: 600;
+            line-height: 1.35;
+            text-align: center;
+            text-shadow: 0 1px 6px rgba(0, 0, 0, 0.6);
+        }
+
+        .answers {
+            width: 100%;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 14px 20px;
+        }
+
+        .opt {
+            height: 62px;
+            cursor: pointer;
+        }
+
+        .opt .fill {
+            padding: 8px 20px;
+            justify-content: flex-start;
+            gap: 12px;
+        }
+
+        .opt .letter {
+            color: var(--gold);
+            font-weight: 800;
+            font-size: 18px;
+            flex-shrink: 0;
+        }
+
+        .opt .txt {
+            color: #eef3ff;
+            font-size: 16px;
+            font-weight: 600;
+            text-align: left;
+            line-height: 1.2;
+        }
+
+        .opt:hover:not(.locked)::before {
+            background: linear-gradient(90deg, var(--gold), var(--gold-2) 50%, var(--gold));
+        }
+
+        .opt:hover:not(.locked) .fill {
+            background: radial-gradient(120% 200% at 50% -40%, #1c4ea0, #08214d 70%);
+        }
+
+        .opt.selected::before {
+            background: linear-gradient(90deg, #ffb700, #ffe9a8 50%, #ffb700);
+        }
+
+        .opt.selected .fill {
+            background: radial-gradient(120% 200% at 50% -40%, #d99b12, #a3720a 80%);
+        }
+
+        .opt.selected .txt, .opt.selected .letter {
+            color: #1a1200;
+            text-shadow: none;
+        }
+
+        .opt.correct::before {
+            background: linear-gradient(90deg, #17c667, #b6ffcf 50%, #17c667);
+        }
+
+        .opt.correct .fill {
+            background: radial-gradient(120% 200% at 50% -40%, #1faf5a, #0c6b34 80%);
+        }
+
+        .opt.correct .txt, .opt.correct .letter {
+            color: #fff;
+        }
+
+        .opt.wrong::before {
+            background: linear-gradient(90deg, #ff5a60, #ffd0d2 50%, #ff5a60);
+        }
+
+        .opt.wrong .fill {
+            background: radial-gradient(120% 200% at 50% -40%, #d6323a, #7d151b 80%);
+        }
+
+        .opt.wrong .txt, .opt.wrong .letter {
+            color: #fff;
+        }
+
+        .opt.hidden-opt {
+            opacity: 0.12;
+            pointer-events: none;
+        }
+
+        .opt.locked {
+            cursor: default;
+        }
+
+        @keyframes flash {
+            0%, 100% {
+                filter: brightness(1);
+            }
+            50% {
+                filter: brightness(1.6);
+            }
+        }
+
+        .opt.blink {
+            animation: flash 0.5s ease-in-out 3;
+        }
+
+        /* Money ladder */
+        .ladder {
+            width: 232px;
+            flex-shrink: 0;
+            background: linear-gradient(180deg, rgba(10, 30, 79, 0.7), rgba(4, 10, 30, 0.7));
+            border: 1px solid rgba(90, 140, 230, 0.35);
+            border-radius: 14px;
+            padding: 12px 10px;
+            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.5);
+        }
+
+        .rung {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 6px 14px;
+            border-radius: 8px;
+            font-size: 15px;
+            font-weight: 700;
+            color: #cdb978;
+            letter-spacing: 0.02em;
+        }
+
+        .rung .n {
+            color: #6f86bb;
+            font-size: 12px;
+            width: 26px;
+        }
+
+        .rung.safe {
+            color: #fff;
+        }
+
+        .rung.passed {
+            color: #7ea0dd;
+        }
+
+        .rung.current {
+            background: linear-gradient(90deg, rgba(244, 196, 48, 0.9), rgba(244, 196, 48, 0.5));
+            color: #1a1200;
+        }
+
+        .rung.current .n {
+            color: #4a3a00;
+        }
+
+        .lose-title {
+            color: #ff8a8f;
+            font-size: clamp(24px, 5vw, 38px);
+            font-weight: 800;
+            margin: 0;
+        }
+
+        .win-title {
+            font-size: clamp(26px, 6vw, 48px);
+        }
+
+        @media (max-width: 820px) {
+            .ladder {
+                display: none;
+            }
+
+            .stage {
+                padding: 4px 16px 32px;
+            }
+        }
+
+        @media (max-width: 520px) {
+            .answers {
+                grid-template-columns: 1fr;
+            }
+
+            .lifelines {
+                gap: 10px;
+            }
+
+            .ll {
+                width: 66px;
+                height: 42px;
+                font-size: 14px;
+            }
+        }
+
+        /* Popup (audience / phone) */
+        .overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(2, 5, 16, 0.72);
+            backdrop-filter: blur(3px);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            padding: 22px;
+            z-index: 2147482000;
+        }
+
+        .overlay.show {
+            display: flex;
+        }
+
+        .card {
+            width: min(94vw, 420px);
+            background: linear-gradient(180deg, #0b2050, #061127);
+            border: 1px solid rgba(120, 160, 240, 0.4);
+            border-radius: 16px;
+            padding: 22px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.7);
+            text-align: center;
+        }
+
+        .card h3 {
+            margin: 0 0 4px;
+            color: var(--gold-2);
+            font-size: 18px;
+        }
+
+        .card .sub {
+            margin: 0 0 16px;
+            font-size: 12px;
+            color: #8fa6d6;
+            letter-spacing: 0.06em;
+            text-transform: uppercase;
+        }
+
+        .bars {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            text-align: left;
+        }
+
+        .bar-row {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .bar-row .bl {
+            width: 20px;
+            font-weight: 800;
+            color: var(--gold);
+        }
+
+        .bar-track {
+            flex: 1;
+            height: 22px;
+            background: rgba(255, 255, 255, 0.08);
+            border-radius: 6px;
+            overflow: hidden;
+        }
+
+        .bar-fill {
+            height: 100%;
+            width: 0;
+            background: linear-gradient(90deg, #2f6fe0, #7fd3ff);
+            border-radius: 6px;
+            transition: width 0.7s ease;
+        }
+
+        .bar-row .pct {
+            width: 42px;
+            text-align: right;
+            font-variant-numeric: tabular-nums;
+            color: #cfe0ff;
+            font-size: 14px;
+        }
+
+        .quote {
+            font-size: 17px;
+            line-height: 1.6;
+            color: #eaf1ff;
+            margin: 6px 0 16px;
+        }
+
+        .quote b {
+            color: var(--gold-2);
+        }
+
+        .who {
+            font-size: 12px;
+            color: #8fa6d6;
+            letter-spacing: 0.05em;
+        }
+
+        .card .close {
+            margin-top: 16px;
+            padding: 10px 26px;
+            border: 1px solid rgba(244, 196, 48, 0.5);
+            border-radius: 999px;
+            background: rgba(244, 196, 48, 0.1);
+            color: var(--gold-2);
+            font-family: inherit;
+            font-weight: 700;
+            cursor: pointer;
+        }
+
+        .card .close:hover {
+            background: rgba(244, 196, 48, 0.2);
+        }
     </style>
-  </head>
-  <body>
-    <!-- START -->
-    <section class="screen active" id="screen-start">
-      <div class="center">
+</head>
+<body>
+<!-- START -->
+<section class="screen active" id="screen-start">
+    <div class="center">
         <h1 class="logo-title">Haluatko<span>IT&#8209;miljonääriksi?</span></h1>
         <p class="tagline">
-          15 kysymystä. 3 oljenkortta. Yksi väärä vastaus, ja lähdet kotiin.
-          Vastaa kaikkiin oikein ja voitat lipun.
+            15 kysymystä. 3 oljenkortta. Yksi väärä vastaus, ja lähdet kotiin.
+            Vastaa kaikkiin oikein ja voitat lipun.
         </p>
         <button class="cta" id="startBtn">Aloita peli</button>
-      </div>
-    </section>
+    </div>
+</section>
 
-    <!-- GAME -->
-    <section class="screen" id="screen-game">
-      <div class="topbar">
+<!-- GAME -->
+<section class="screen" id="screen-game">
+    <div class="topbar">
         <div style="text-align:center">
-          <div class="lifelines">
-            <button class="ll" id="ll-fifty" title="Puolita: poistaa kaksi väärää vastausta">50:50</button>
-            <button class="ll" id="ll-audience" title="StackOverflow-äänestys"><span class="ic">📊</span></button>
-            <button class="ll" id="ll-phone" title="Soita seniorille"><span class="ic">📞</span></button>
-          </div>
-          <div class="ll-label">oljenkorret</div>
+            <div class="lifelines">
+                <button class="ll" id="ll-fifty" title="Puolita: poistaa kaksi väärää vastausta">50:50</button>
+                <button class="ll" id="ll-audience" title="StackOverflow-äänestys"><span class="ic">📊</span></button>
+                <button class="ll" id="ll-phone" title="Soita seniorille"><span class="ic">📞</span></button>
+            </div>
+            <div class="ll-label">oljenkorret</div>
         </div>
-      </div>
+    </div>
 
-      <div class="stage">
+    <div class="stage">
         <div class="qwrap">
-          <div class="qcounter" id="qcounter"></div>
-          <div class="hex question"><div class="fill"><span id="qtext"></span></div></div>
-          <div class="answers" id="answers"></div>
+            <div class="qcounter" id="qcounter"></div>
+            <div class="hex question">
+                <div class="fill"><span id="qtext"></span></div>
+            </div>
+            <div class="answers" id="answers"></div>
         </div>
         <aside class="ladder" id="ladder"></aside>
-      </div>
-    </section>
+    </div>
+</section>
 
-    <!-- LOSE -->
-    <section class="screen" id="screen-lose">
-      <div class="center">
+<!-- LOSE -->
+<section class="screen" id="screen-lose">
+    <div class="center">
         <p class="lose-title">Väärin meni!</p>
         <p class="endnote" id="loseText"></p>
         <button class="cta" id="retryBtn">Yritä uudelleen</button>
-      </div>
-    </section>
+    </div>
+</section>
 
-    <!-- WIN -->
-    <section class="screen" id="screen-win">
-      <div class="center">
+<!-- WIN -->
+<section class="screen" id="screen-win">
+    <div class="center">
         <h1 class="logo-title win-title">Olet IT&#8209;miljonääri! 🏆</h1>
         <p class="endnote">Kaikki 15 kysymystä oikein. Olet ansainnut Jallu shotin</p>
         <div class="flagbox">
-          <small>Lippu</small>
-          SALA{1T_M1LJ0N44R1}
+            <small>Lippu</small>
+            SALA{1T_M1LJ0N44R1}
         </div>
-      </div>
-    </section>
-
-    <!-- Overlay for audience / phone -->
-    <div class="overlay" id="overlay">
-      <div class="card" id="overlayCard"></div>
     </div>
+</section>
 
-    <script>
-      (function () {
+<!-- Overlay for audience / phone -->
+<div class="overlay" id="overlay">
+    <div class="card" id="overlayCard"></div>
+</div>
+
+<script>
+    (function () {
         // Revealed only after all 15 questions are answered correctly.
-        var FLAG = 'SALA{1T_M1LJ0N44R1T}';
+        var FLAG = 'SALA{1T_M1LJ0N44R1}';
 
         var PRIZES = [
-          '100 €', '200 €', '300 €', '500 €', '1 000 €',
-          '2 000 €', '4 000 €', '8 000 €', '16 000 €', '32 000 €',
-          '64 000 €', '125 000 €', '250 000 €', '500 000 €', '1 000 000 €',
+            '100 bits', '200 bits', '300 bits', '500 bits', '1 000 bits',
+            '2 000 bits', '4 000 bits', '8 000 bits', '16 000 bits', '32 000 bits',
+            '64 000 bits', '125 000 bits', '250 000 bits', '500 000 bits', '1 000 000 bits',
         ];
-        var SAFE = [4, 9]; // indices that are guaranteed levels (1 000 €, 32 000 €)
+        var SAFE = [4, 9]; // indices that are guaranteed levels (1 000 bits, 32 000 bits)
 
         // c = index of the correct option (0..3)
         var QUESTIONS = [
-          { q: 'Mitä lyhenne "HTML" tarkoittaa?',
-            a: ['HyperText Markup Language', 'High Tech Modern Language', 'Home Tool Markup Logic', 'Hyperlink Text Machine Language'], c: 0 },
-          { q: 'Kuinka monta bittiä on yhdessä tavussa (engl. byte)?',
-            a: ['4', '8', '16', '32'], c: 1 },
-          { q: 'Mikä näistä on ohjelmointikieli?',
-            a: ['Kobra', 'Mamba', 'Python', 'Anaconda'], c: 2 },
-          { q: 'Mitä binäärilukua 1010 vastaa desimaalijärjestelmässä?',
-            a: ['5', '8', '10', '12'], c: 2 },
-          { q: 'Mikä protokolla ladataan verkkosivuja selaimeen?',
-            a: ['SMTP', 'HTTP', 'FTP', 'SSH'], c: 1 },
-          { q: 'Mikä on maailman käytetyin versionhallintajärjestelmä?',
-            a: ['SVN', 'Mercurial', 'Git', 'CVS'], c: 2 },
-          { q: 'Kuka aloitti Linux-ytimen kehittämisen vuonna 1991?',
-            a: ['Richard Stallman', 'Linus Torvalds', 'Dennis Ritchie', 'Ken Thompson'], c: 1 },
-          { q: 'Mikä tietorakenne toimii periaatteella LIFO (Last In, First Out)?',
-            a: ['Jono (queue)', 'Pino (stack)', 'Linkitetty lista', 'Hajautustaulu'], c: 1 },
-          { q: 'Montako bittiä on IPv4-osoitteessa?',
-            a: ['16', '32', '64', '128'], c: 1 },
-          { q: 'Mikä on binäärihaun (binary search) pahimman tapauksen aikavaativuus?',
-            a: ['O(1)', 'O(log n)', 'O(n)', 'O(n log n)'], c: 1 },
-          { q: 'Mikä näistä on epäsymmetrinen (julkisen avaimen) salausalgoritmi?',
-            a: ['AES', 'RSA', 'DES', 'ChaCha20'], c: 1 },
-          { q: 'Kuka kirjoitti teossarjan "The Art of Computer Programming"?',
-            a: ['Edsger Dijkstra', 'Donald Knuth', 'Alan Turing', 'John von Neumann'], c: 1 },
-          { q: 'Mihin lukuun HTTP-virhekoodi "I\'m a teapot" viittaa?',
-            a: ['200', '404', '418', '500'], c: 2 },
-          { q: 'Kuka kirjoitti ensimmäisenä pidetyn tietokonealgoritmin 1800-luvulla?',
-            a: ['Ada Lovelace', 'Grace Hopper', 'Charles Babbage', 'Margaret Hamilton'], c: 0 },
-          { q: 'Minkä nimisen teoreettisen laskennan mallin Alan Turing esitteli vuonna 1936?',
-            a: ['von Neumann -arkkitehtuuri', 'Turingin kone', 'Lambda-kalkyyli', 'Äärellinen automaatti'], c: 1 },
+            {
+                q: 'Mitä lyhenne "HTML" tarkoittaa?',
+                a: ['HyperText Markup Language', 'High Tech Modern Language', 'Home Tool Markup Logic', 'Hyperlink Text Machine Language'],
+                c: 0
+            },
+            {
+                q: 'Kuinka monta bittiä on yhdessä tavussa (engl. byte)?',
+                a: ['4', '8', '16', '32'], c: 1
+            },
+            {
+                q: 'Mikä näistä on ohjelmointikieli?',
+                a: ['Kobra', 'Mamba', 'Python', 'Anaconda'], c: 2
+            },
+            {
+                q: 'Mitä binäärilukua 1010 vastaa desimaalijärjestelmässä?',
+                a: ['5', '8', '10', '12'], c: 2
+            },
+            {
+                q: 'Millä protokolla ladataan verkkosivuja selaimeen?',
+                a: ['SMTP', 'HTTP', 'FTP', 'SSH'], c: 1
+            },
+            {
+                q: 'Mitä ohjelmaa Linus Torvalds EI ole kehittänyt?',
+                a: ['Linux', 'Subsurface', 'Git', 'MySQL'], c: 3
+            },
+            {
+                q: 'Missä yliopistossa Linux Torvalds opiskeli vuonna 1991?',
+                a: ['Kuopion Yliopisto', 'Hensingin Yliopisto', 'Oulun yliopisto', 'Turun yliopisto'], c: 1
+            },
+            {
+                q: 'Mikä tietorakenne toimii periaatteella LIFO (Last In, First Out)?',
+                a: ['Jono (queue)', 'Pino (stack)', 'Linkitetty lista', 'Hajautustaulu'], c: 1
+            },
+            {
+                q: 'Mikä seuraavista on tunnetun julkisen DNS-palvelimen IPv4-osoite?',
+                a: ['192.168.0.0', '255.255.255.255', '1.0.0.1', '127.0.0.1'], c: 2
+            },
+            {
+                q: 'Mikä on binäärihaun (binary search) pahimman tapauksen aikavaativuus?',
+                a: ['O(1)', 'O(log n)', 'O(n)', 'O(n log n)'], c: 1
+            },
+            {
+                q: 'Minkä eläimen raato aiheutti historian ensimmäisen virallisen tietokonebugin vuonna 1947?',
+                a: ['Torakan', 'Yöperhosen', 'Hiiren', 'Sudenkorennon'], c: 1
+            },
+            {
+                q: 'Mille yritykselle Linus Torvalds sanoi "___, FUCK YOU"',
+                a: ['Apple', 'Microsoft', 'Nvidia', 'Intel'], c: 2
+            },
+            {
+                q: 'Mihin lukuun HTTP-virhekoodi "I\'m a teapot" viittaa?',
+                a: ['200', '404', '418', '500'], c: 2
+            },
+            {
+                q: 'Minä vuonna Serveri ry perustettiin?',
+                a: ['1998', '1985', '1991', '1987'], c: 3
+            },
+            {
+                q: 'Mitä nimitystä käytetään algoritmeista, jotka eivät välttämättä löydä teoreettisesti parasta mahdollista ratkaisua, vaan pyrkivät löytämään "riittävän hyvän" ratkaisun kohtuullisessa ajassa (esim. reitityksessä)?',
+                a: ['Heuristiset algoritmit', 'Deterministiset algoritmit', 'Rekursiiviset algoritmit', 'Symmetriset algoritmit'],
+                c: 0
+            },
         ];
 
         var LETTERS = ['A', 'B', 'C', 'D'];
 
-        var el = function (id) { return document.getElementById(id); };
-        var screens = {
-          start: el('screen-start'), game: el('screen-game'),
-          lose: el('screen-lose'), win: el('screen-win'),
+        var el = function (id) {
+            return document.getElementById(id);
         };
+        var screens = {
+            start: el('screen-start'), game: el('screen-game'),
+            lose: el('screen-lose'), win: el('screen-win'),
+        };
+
         function show(name) {
-          Object.keys(screens).forEach(function (k) {
-            screens[k].classList.toggle('active', k === name);
-          });
+            Object.keys(screens).forEach(function (k) {
+                screens[k].classList.toggle('active', k === name);
+            });
         }
 
         var state = {};
+
         function reset() {
-          state = { level: 0, locked: false, hidden: [], lifelines: { fifty: false, audience: false, phone: false } };
+            state = {level: 0, locked: false, hidden: [], lifelines: {fifty: false, audience: false, phone: false}};
         }
 
         function renderLadder() {
-          var out = '';
-          for (var i = PRIZES.length - 1; i >= 0; i--) {
-            var cls = 'rung';
-            if (i === state.level) cls += ' current';
-            else if (i < state.level) cls += ' passed';
-            if (SAFE.indexOf(i) !== -1) cls += ' safe';
-            out += '<div class="' + cls + '"><span class="n">' + (i + 1) + '</span><span>' + PRIZES[i] + '</span></div>';
-          }
-          el('ladder').innerHTML = out;
+            var out = '';
+            for (var i = PRIZES.length - 1; i >= 0; i--) {
+                var cls = 'rung';
+                if (i === state.level) cls += ' current';
+                else if (i < state.level) cls += ' passed';
+                if (SAFE.indexOf(i) !== -1) cls += ' safe';
+                out += '<div class="' + cls + '"><span class="n">' + (i + 1) + '</span><span>' + PRIZES[i] + '</span></div>';
+            }
+            el('ladder').innerHTML = out;
         }
 
         function renderQuestion() {
-          var Q = QUESTIONS[state.level];
-          el('qcounter').innerHTML = 'Kysymys <b>' + (state.level + 1) + '</b> / 15 &nbsp;·&nbsp; ' + PRIZES[state.level];
-          el('qtext').textContent = Q.q;
-          var html = '';
-          for (var i = 0; i < 4; i++) {
-            html += '<button class="hex opt" data-i="' + i + '">' +
-              '<div class="fill"><span class="letter">' + LETTERS[i] + ':</span>' +
-              '<span class="txt"></span></div></button>';
-          }
-          var ans = el('answers');
-          ans.innerHTML = html;
-          // set text safely
-          ans.querySelectorAll('.opt').forEach(function (btn) {
-            var i = Number(btn.dataset.i);
-            btn.querySelector('.txt').textContent = Q.a[i];
-            btn.addEventListener('click', function () { choose(i, btn); });
-          });
-          renderLadder();
-          updateLifelineButtons();
+            var Q = QUESTIONS[state.level];
+            el('qcounter').innerHTML = 'Kysymys <b>' + (state.level + 1) + '</b> / 15 &nbsp;·&nbsp; ' + PRIZES[state.level];
+            el('qtext').textContent = Q.q;
+            var html = '';
+            for (var i = 0; i < 4; i++) {
+                html += '<button class="hex opt" data-i="' + i + '">' +
+                    '<div class="fill"><span class="letter">' + LETTERS[i] + ':</span>' +
+                    '<span class="txt"></span></div></button>';
+            }
+            var ans = el('answers');
+            ans.innerHTML = html;
+            // set text safely
+            ans.querySelectorAll('.opt').forEach(function (btn) {
+                var i = Number(btn.dataset.i);
+                btn.querySelector('.txt').textContent = Q.a[i];
+                btn.addEventListener('click', function () {
+                    choose(i, btn);
+                });
+            });
+            renderLadder();
+            updateLifelineButtons();
         }
 
         function choose(i, btn) {
-          if (state.locked || btn.classList.contains('hidden-opt')) return;
-          state.locked = true;
-          btn.classList.add('selected', 'locked');
-          var correct = QUESTIONS[state.level].c;
-          setTimeout(function () {
-            if (i === correct) {
-              btn.classList.remove('selected');
-              btn.classList.add('correct', 'blink');
-              setTimeout(function () {
-                state.level++;
-                if (state.level >= QUESTIONS.length) {
-                  show('win');
+            if (state.locked || btn.classList.contains('hidden-opt')) return;
+            state.locked = true;
+            btn.classList.add('selected', 'locked');
+            var correct = QUESTIONS[state.level].c;
+            setTimeout(function () {
+                if (i === correct) {
+                    btn.classList.remove('selected');
+                    btn.classList.add('correct', 'blink');
+                    setTimeout(function () {
+                        state.level++;
+                        if (state.level >= QUESTIONS.length) {
+                            show('win');
+                        } else {
+                            state.locked = false;
+                            renderQuestion();
+                        }
+                    }, 1200);
                 } else {
-                  state.locked = false;
-                  renderQuestion();
+                    btn.classList.remove('selected');
+                    btn.classList.add('wrong');
+                    // reveal the correct one
+                    var right = el('answers').querySelector('.opt[data-i="' + correct + '"]');
+                    if (right) right.classList.add('correct', 'blink');
+                    setTimeout(function () {
+                        gameOver(correct);
+                    }, 1600);
                 }
-              }, 1200);
-            } else {
-              btn.classList.remove('selected');
-              btn.classList.add('wrong');
-              // reveal the correct one
-              var right = el('answers').querySelector('.opt[data-i="' + correct + '"]');
-              if (right) right.classList.add('correct', 'blink');
-              setTimeout(function () { gameOver(correct); }, 1600);
-            }
-          }, 1200);
+            }, 1200);
         }
 
         function gameOver(correctIdx) {
-          var reached = 0;
-          for (var s = 0; s < SAFE.length; s++) {
-            if (state.level > SAFE[s]) reached = SAFE[s] + 1;
-          }
-          var safeMsg = reached
-            ? 'Turvaraja piti: pääsit <b>' + PRIZES[reached - 1] + '</b> asti. '
-            : '';
-          el('loseText').innerHTML =
-            safeMsg + 'Oikea vastaus oli <b>' + LETTERS[correctIdx] + '</b>. ' +
-            'Lippu irtoaa vain menemällä kaikki 15 oikein — kelaa alusta ja yritä uudelleen.';
-          show('lose');
+            var reached = 0;
+            for (var s = 0; s < SAFE.length; s++) {
+                if (state.level > SAFE[s]) reached = SAFE[s] + 1;
+            }
+            var safeMsg = reached
+                ? 'Turvaraja piti: pääsit <b>' + PRIZES[reached - 1] + '</b> asti. '
+                : '';
+            el('loseText').innerHTML =
+                safeMsg + 'Oikea vastaus oli <b>' + LETTERS[correctIdx] + '</b>. ' +
+                'Lippu irtoaa vain saamalla kaikki 15 oikein, yritä uudelleen.';
+            show('lose');
         }
 
         /* ---------------- Lifelines ---------------- */
         function updateLifelineButtons() {
-          [['fifty', 'll-fifty'], ['audience', 'll-audience'], ['phone', 'll-phone']].forEach(function (p) {
-            var b = el(p[1]);
-            var used = state.lifelines[p[0]];
-            b.disabled = used || state.locked;
-            b.classList.toggle('used', used);
-          });
+            [['fifty', 'll-fifty'], ['audience', 'll-audience'], ['phone', 'll-phone']].forEach(function (p) {
+                var b = el(p[1]);
+                var used = state.lifelines[p[0]];
+                b.disabled = used || state.locked;
+                b.classList.toggle('used', used);
+            });
         }
 
         function wrongIndices() {
-          var Q = QUESTIONS[state.level];
-          var arr = [];
-          for (var i = 0; i < 4; i++) {
-            if (i !== Q.c && state.hidden.indexOf(i) === -1) arr.push(i);
-          }
-          return arr;
+            var Q = QUESTIONS[state.level];
+            var arr = [];
+            for (var i = 0; i < 4; i++) {
+                if (i !== Q.c && state.hidden.indexOf(i) === -1) arr.push(i);
+            }
+            return arr;
         }
 
         el('ll-fifty').addEventListener('click', function () {
-          if (state.lifelines.fifty || state.locked) return;
-          state.lifelines.fifty = true;
-          var wrong = wrongIndices();
-          // shuffle, keep one, hide two
-          for (var k = wrong.length - 1; k > 0; k--) {
-            var j = Math.floor(Math.random() * (k + 1));
-            var t = wrong[k]; wrong[k] = wrong[j]; wrong[j] = t;
-          }
-          var hide = wrong.slice(0, 2);
-          hide.forEach(function (i) {
-            state.hidden.push(i);
-            var o = el('answers').querySelector('.opt[data-i="' + i + '"]');
-            if (o) o.classList.add('hidden-opt');
-          });
-          updateLifelineButtons();
+            if (state.lifelines.fifty || state.locked) return;
+            state.lifelines.fifty = true;
+            var wrong = wrongIndices();
+            // shuffle, keep one, hide two
+            for (var k = wrong.length - 1; k > 0; k--) {
+                var j = Math.floor(Math.random() * (k + 1));
+                var t = wrong[k];
+                wrong[k] = wrong[j];
+                wrong[j] = t;
+            }
+            var hide = wrong.slice(0, 2);
+            hide.forEach(function (i) {
+                state.hidden.push(i);
+                var o = el('answers').querySelector('.opt[data-i="' + i + '"]');
+                if (o) o.classList.add('hidden-opt');
+            });
+            updateLifelineButtons();
         });
 
         el('ll-audience').addEventListener('click', function () {
-          if (state.lifelines.audience || state.locked) return;
-          state.lifelines.audience = true;
-          updateLifelineButtons();
-          var Q = QUESTIONS[state.level];
-          var visible = [];
-          for (var i = 0; i < 4; i++) if (state.hidden.indexOf(i) === -1) visible.push(i);
-          // Weight the correct answer highest, but leave room for doubt.
-          var weights = {};
-          var total = 0;
-          visible.forEach(function (i) {
-            var w = i === Q.c ? 45 + Math.random() * 25 : 5 + Math.random() * 20;
-            weights[i] = w; total += w;
-          });
-          var rows = visible.map(function (i) {
-            return { i: i, pct: Math.round((weights[i] / total) * 100) };
-          });
-          // fix rounding to 100
-          var sum = rows.reduce(function (a, r) { return a + r.pct; }, 0);
-          rows[0].pct += 100 - sum;
-          var bars = rows.map(function (r) {
-            return '<div class="bar-row"><span class="bl">' + LETTERS[r.i] + '</span>' +
-              '<div class="bar-track"><div class="bar-fill" data-w="' + r.pct + '"></div></div>' +
-              '<span class="pct">' + r.pct + '%</span></div>';
-          }).join('');
-          openOverlay(
-            '<h3>StackOverflow-äänestys</h3><p class="sub">Näin kehittäjäyhteisö äänesti</p>' +
-            '<div class="bars">' + bars + '</div>'
-          );
-          requestAnimationFrame(function () {
-            document.querySelectorAll('#overlayCard .bar-fill').forEach(function (f) {
-              f.style.width = f.dataset.w + '%';
+            if (state.lifelines.audience || state.locked) return;
+            state.lifelines.audience = true;
+            updateLifelineButtons();
+            var Q = QUESTIONS[state.level];
+            var visible = [];
+            for (var i = 0; i < 4; i++) if (state.hidden.indexOf(i) === -1) visible.push(i);
+            // Weight the correct answer highest, but leave room for doubt.
+            var weights = {};
+            var total = 0;
+            visible.forEach(function (i) {
+                var w = i === Q.c ? 45 + Math.random() * 25 : 5 + Math.random() * 20;
+                weights[i] = w;
+                total += w;
             });
-          });
+            var rows = visible.map(function (i) {
+                return {i: i, pct: Math.round((weights[i] / total) * 100)};
+            });
+            // fix rounding to 100
+            var sum = rows.reduce(function (a, r) {
+                return a + r.pct;
+            }, 0);
+            rows[0].pct += 100 - sum;
+            var bars = rows.map(function (r) {
+                return '<div class="bar-row"><span class="bl">' + LETTERS[r.i] + '</span>' +
+                    '<div class="bar-track"><div class="bar-fill" data-w="' + r.pct + '"></div></div>' +
+                    '<span class="pct">' + r.pct + '%</span></div>';
+            }).join('');
+            openOverlay(
+                '<h3>StackOverflow-äänestys</h3><p class="sub">Näin kehittäjäyhteisö äänesti</p>' +
+                '<div class="bars">' + bars + '</div>'
+            );
+            requestAnimationFrame(function () {
+                document.querySelectorAll('#overlayCard .bar-fill').forEach(function (f) {
+                    f.style.width = f.dataset.w + '%';
+                });
+            });
         });
 
         el('ll-phone').addEventListener('click', function () {
-          if (state.lifelines.phone || state.locked) return;
-          state.lifelines.phone = true;
-          updateLifelineButtons();
-          var Q = QUESTIONS[state.level];
-          var sure = Math.random() < 0.7;
-          var line = sure
-            ? 'Tää on helppo — se on <b>' + LETTERS[Q.c] + '</b>. Laita se lukkoon.'
-            : 'En oo satavarma, mut mun vaisto sanoo <b>' + LETTERS[Q.c] + '</b>. Ottaisin sen.';
-          openOverlay(
-            '<h3>Soitit seniorille ☎️</h3><p class="sub">30 sekuntia aikaa</p>' +
-            '<p class="quote">"' + line + '"</p><p class="who">— Senior Dev, 15v kokemusta</p>'
-          );
+            if (state.lifelines.phone || state.locked) return;
+            state.lifelines.phone = true;
+            updateLifelineButtons();
+            var Q = QUESTIONS[state.level];
+            var sure = Math.random() < 0.7;
+            var line = sure
+                ? 'Tää on helppo — se on <b>' + LETTERS[Q.c] + '</b>. Laita se lukkoon.'
+                : 'En oo satavarma, mut mun vaisto sanoo <b>' + LETTERS[Q.c] + '</b>. Ottaisin sen.';
+            openOverlay(
+                '<h3>Soitit seniorille ☎️</h3><p class="sub">30 sekuntia aikaa</p>' +
+                '<p class="quote">"' + line + '"</p><p class="who">— Senior Dev, 15v kokemusta</p>'
+            );
         });
 
         function openOverlay(html) {
-          el('overlayCard').innerHTML = html +
-            '<button class="close" id="ovClose">Selvä</button>';
-          el('overlay').classList.add('show');
-          el('ovClose').addEventListener('click', closeOverlay);
+            el('overlayCard').innerHTML = html +
+                '<button class="close" id="ovClose">Selvä</button>';
+            el('overlay').classList.add('show');
+            el('ovClose').addEventListener('click', closeOverlay);
         }
-        function closeOverlay() { el('overlay').classList.remove('show'); }
+
+        function closeOverlay() {
+            el('overlay').classList.remove('show');
+        }
+
         el('overlay').addEventListener('click', function (e) {
-          if (e.target === el('overlay')) closeOverlay();
+            if (e.target === el('overlay')) closeOverlay();
         });
 
         function startGame() {
-          reset();
-          show('game');
-          renderQuestion();
+            reset();
+            show('game');
+            renderQuestion();
         }
+
         el('startBtn').addEventListener('click', startGame);
         el('retryBtn').addEventListener('click', startGame);
-      })();
-    </script>
+    })();
+</script>
 
-    <script
-      src="/chat-widget.js"
-      data-puzzle="7"
-      data-api-base="https://salagrillitchat.serveriry.fi"
-      defer
-    ></script>
-  </body>
+<script
+        src="/chat-widget.js"
+        data-puzzle="7"
+        data-api-base="https://salagrillitchat.serveriry.fi"
+        defer
+></script>
+</body>
 </html>
