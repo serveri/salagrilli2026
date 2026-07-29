@@ -47,7 +47,7 @@ Game.WALKABLE_TILES = new Set([
     2830, 2831, 2832, 2833, 2880, 2881, 2882, 2883, 2884, 2885, 2886, 2887, 2889, 2890, 2891, 2892, 2893, 2894, 2895, 2896,
     2944, 2945, 2946, 2947, 2948, 3008, 3009, 3010, 3011, 2631, 436, 1370, 451, 2633, 320, 321, 384, 385, 448, 449, 69, 70, 5, 6, 1829, 1831, 2021, 2023, 2024, 1317, 1318, 1319, 1320, 1445, 1446, 1447, 440, 439,
     2949, 2950, 2951, 2952, 3013, 3014, 3015, 3016, 3019, 3020, 2956, 2765, 2766, 2767, 2768, 2769, 2897, 2134, 2198, 1765, 1767, 2953, 2954, 2955, 3017, 3018, 2704, 2699, 2700, 2701, 2702, 2703, 2958, 2957,
-    2187, 2250, 2251, 2252, 2189, 2566, 2630, 2182, 2185, 3021, 3022
+    2187, 2250, 2251, 2252, 2189, 2566, 2630, 2182, 2185, 3021, 3022, 2694, 689, 1381, 1383, 685, 1637, 1575, 1703, 1573, 1701, 177, 351
 ]);
 
 Game.DOOR_BLACK_TILE = 780;
@@ -58,13 +58,14 @@ Game.DOOR_BLACK_TILES = {
     2185: 1037
 };
 Game.DOOR_FRAMES = {
-    2134: 844,
+    2134: 782,
     2198: 908,
     1370: 909,
     199: 910,
     200: 911,
     2182: 972,
-    2185: 973
+    2185: 973,
+    177: 845
 };
 
 Game.INSPECT_MESSAGES = {
@@ -79,7 +80,8 @@ Game.INSPECT_MESSAGES = {
     418: ['Poster of my favourite game!', 'I play it with my friends'], 377: ['I don\'t like this weird plant'], 3209: ['BMW E36 Cabrio', 'Clearly compensating for something'], 3210: ['BMW E36 Cabrio', 'Clearly compensating for something'], 3276: ['BMW E36 Cabrio', 'Clearly compensating for something'], 3212: ['BMW E36 Cabrio', 'Clearly compensating for something'],
     3273: ['Toyota Corolla', 'Definitely not compensating for anything'], 3274: ['Toyota Corolla', 'Definitely not compensating for anything'], 3211: ['Toyota Corolla', 'Definitely not compensating for anything'], 3275: ['Toyota Corolla', 'Definitely not compensating for anything'], 2824: ['Construction around here seems to never finish'], 2888: ['Construction around here seems to never finish'],
     1750: ['Locked, I should have guessed'], 3072: ['The light bulb is burning into my eyes!'], 3136: ['Put that light away!'], 612: ['Books: Java 101: The importance of programming socks,', '..How to craft a nuclear device, in Minecraft'], 676: ['Books: Java 101: The importance of programming socks,', '..How to craft a nuclear device, in Minecraft'],
-    3012: ['Its a barrel, or a pipe maybe?']
+    3012: ['Its a barrel, or a pipe maybe?'], 519: ['I sniff my rose this morning, yes'], 584: ['I sniff my rose this morning, yes'], 3081: ['A flimsy bike rack'], 290: ['I sniff my rose this morning, yes'], 1056: ['That hat must have been left by one of the bussiness students'], 1120: ['That hat must have been left by one of the bussiness students'], 1057: ['M\'lady'], 1121: ['I found him!'], 1122: ['Mice don\'t wear hats'],
+    1058: ['Mice don\'t wear hats']
 };
 
 Game.SIGN_MESSAGES = {
@@ -90,7 +92,7 @@ Game.SIGN_MESSAGES = {
     'serveriquest_33_52': ['Serveri mouse house & grill', 'I live here!'],
     'savilahti_3_47': ['Novapolis\n \n↑ Main enterance', '→ Serveri enterance'],
     'savilahti_30_71': ['← Microkatu campus\n\n↓ Neulamäki'],
-    'savilahti_4_18': ['↑ Snellmania'],
+    'savilahti_5_9': ['↑ Snellmania'],
     'savilahti_51_7': ['Snellmania ↑'],
     'savilahti_37_23': ['Savonia has been closed due to too destructive AMK final projects']
     // Add more signs here as needed
@@ -113,7 +115,7 @@ Game.MAP_TRANSITIONS = {
         byTile: {
             2631: { targetMap: '/puzzle-8/data/NeulamaenSale.csv', targetX: 1, targetY: 2 },
             2633: { targetMap: '/puzzle-8/data/savilahti.csv', targetX: 26, targetY: 93 },
-            1370: { targetMap: '/puzzle-8/data/House.csv', targetX: 7, targetY: 11 }
+            1370: { targetMap: '/puzzle-8/data/House.csv', targetX: 9, targetY: 12 }
         }
     },
     'NeulamaenSale': {
@@ -127,8 +129,8 @@ Game.MAP_TRANSITIONS = {
             2631: { targetMap: '/puzzle-8/data/serveriquest.csv', targetX: 57, targetY: 0 }
         },
         byCoord: {
-            '14,50': { targetMap: '/puzzle-8/data/Laitos.csv', targetX: 5, targetY: 2, requiredItem: 'Nappi avain' },
-            '16,42': { targetMap: '/puzzle-8/data/Laitos.csv', targetX: 5, targetY: 2, requiredItem: 'Nappi avain' },
+            '14,50': { targetMap: '/puzzle-8/data/Laitos.csv', targetX: 43, targetY: 9, requiredItem: 'Nappi avain' },
+            '16,42': { targetMap: '/puzzle-8/data/Laitos.csv', targetX: 45, targetY: 18, requiredItem: 'Nappi avain' },
             '53,0': { targetMap: '/puzzle-8/data/snellmania.csv', targetX: 52, targetY: 79 }
         }
     },
@@ -139,27 +141,60 @@ Game.MAP_TRANSITIONS = {
         }
     },
     'Laitos': {
-        byTile: {
-            1765: { targetMap: '/puzzle-8/data/savilahti.csv', targetX: 14, targetY: 51 },
-            1767: { targetMap: '/puzzle-8/data/savilahti.csv', targetX: 14, targetY: 51 }
-        },
-        byCoord: {},
-        edgeTransitions: {
-            top: { targetMap: '/puzzle-8/data/savilahti.csv', targetX: 14, targetY: 51 }
+        byCoord: {
+            '43,9': { targetMap: '/puzzle-8/data/savilahti.csv', targetX: 14, targetY: 51 },
+            '43,10': { targetMap: '/puzzle-8/data/savilahti.csv', targetX: 14, targetY: 51 },
+            '45,18': { targetMap: '/puzzle-8/data/savilahti.csv', targetX: 16, targetY: 42 },
+            '46,17': { targetMap: '/puzzle-8/data/savilahti.csv', targetX: 16, targetY: 42 }
         }
     },
     'snellmania': {
         byCoord: {
-            '52,79': { targetMap: '/puzzle-8/data/savilahti.csv', targetX: 53, targetY: 0 }
+            '52,79': { targetMap: '/puzzle-8/data/savilahti.csv', targetX: 53, targetY: 0 },
+            '17,47': { targetMap: '/puzzle-8/data/Exam.csv', targetX: 0, targetY: 37 },
+            '46,25': { targetMap: '/puzzle-8/data/Exam.csv', targetX: 30, targetY: 38 },
+            '46,26': { targetMap: '/puzzle-8/data/Exam.csv', targetX: 30, targetY: 38 }
         }
     },
+    'Exam': {
+        byCoord: {
+            '30,37': { targetMap: '/puzzle-8/data/snellmania.csv', targetX: 46, targetY: 26 },
+            '30,38': { targetMap: '/puzzle-8/data/snellmania.csv', targetX: 46, targetY: 26 },
+            '30,39': { targetMap: '/puzzle-8/data/snellmania.csv', targetX: 46, targetY: 26 },
+            '0,38': { targetMap: '/puzzle-8/data/snellmania.csv', targetX: 17, targetY: 47 },
+            '0,37': { targetMap: '/puzzle-8/data/snellmania.csv', targetX: 17, targetY: 47 }
+        }
+    }
 };
 
 Game.SAME_MAP_TELEPORTS = {
-    199: { dx: 3, dy: 0 },
-    200: { dx: -3, dy: 0 },
-    2566: { dx: -15, dy: 0 },
-    2630: { dx: 15, dy: 0 },
-    2185: { dx: -5, dy: 0 },
-    2182: { dx: 5, dy: 0 }
+    'serveriquest': {
+        '30,36': { targetX: 33, targetY: 36 },
+        '33,36': { targetX: 30, targetY: 36 }
+    },
+    'snellmania': {
+        '56,73': { targetX: 59, targetY: 73 }
+    },
+    'savilahti': {
+        '40,9': { targetX: 25, targetY: 9 },
+        '26,10': { targetX: 41, targetY: 10 },
+        '56,13': { targetX: 61, targetY: 13 },
+        '61,13': { targetX: 56, targetY: 13 },
+        '56,14': { targetX: 61, targetY: 14 },
+        '61,14': { targetX: 56, targetY: 14 },
+        '56,15': { targetX: 61, targetY: 15 },
+        '61,15': { targetX: 56, targetY: 15 },
+        '56,16': { targetX: 61, targetY: 16 },
+        '61,16': { targetX: 56, targetY: 16 },
+        '56,17': { targetX: 61, targetY: 17 },
+        '61,17': { targetX: 56, targetY: 17 },
+        '56,18': { targetX: 61, targetY: 18 },
+        '61,18': { targetX: 56, targetY: 18 },
+        '56,19': { targetX: 61, targetY: 19 },
+        '61,19': { targetX: 56, targetY: 19 }
+    },
+    'Laitos': {
+        '43,13': { targetX: 1, targetY: 9, exitDir: 'right' },
+        '1,9': { targetX: 43, targetY: 13, exitDir: 'right' }
+    }
 };

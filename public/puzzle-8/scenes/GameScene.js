@@ -825,7 +825,7 @@ Game.GameScene = class GameScene extends Phaser.Scene {
         });
     }
 
-    teleportSameMap(x, y) {
+    teleportSameMap(x, y, exitDir) {
         this.isTransitioning = true;
         this.player.anims.stop();
         this.setIdleFrame();
@@ -836,6 +836,7 @@ Game.GameScene = class GameScene extends Phaser.Scene {
                 this.tileX = x;
                 this.tileY = y;
                 this.player.setPosition(x * Game.TILE_SIZE, y * Game.TILE_SIZE);
+                if (exitDir) this.facing = exitDir;
                 this.cameras.main.fadeIn(250, 0, 0, 0, (cam, prog) => {
                     if (prog === 1) {
                         this.isTransitioning = false;
@@ -926,13 +927,17 @@ Game.GameScene = class GameScene extends Phaser.Scene {
     checkDoorTrigger() {
         const currentTile = this.tileData[this.tileY][this.tileX];
 
-        if (Game.SAME_MAP_TELEPORTS[currentTile]) {
-            const tp = Game.SAME_MAP_TELEPORTS[currentTile];
-            this.teleportSameMap(this.tileX + tp.dx, this.tileY + tp.dy);
-            return true;
+        const areaName = this.currentArea ? this.currentArea.name : '';
+        const sameMapTeleports = Game.SAME_MAP_TELEPORTS[areaName];
+        if (sameMapTeleports) {
+            const coordKey = `${this.tileX},${this.tileY}`;
+            const tp = sameMapTeleports[coordKey];
+            if (tp) {
+                this.teleportSameMap(tp.targetX, tp.targetY, tp.exitDir);
+                return true;
+            }
         }
 
-        const areaName = this.currentArea ? this.currentArea.name : '';
         const areaTransitions = Game.MAP_TRANSITIONS[areaName] || {};
         
         // 1. Check by coordinate
