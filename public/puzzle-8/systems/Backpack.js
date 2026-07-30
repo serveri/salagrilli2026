@@ -13,11 +13,10 @@ Game.Backpack = class Backpack {
 
         // Sample Inventory Items
         this.items = [
-            { id: 'jallu', name: 'Jallu', desc: 'Restores HP to full health.', canUse: true },
+            { id: 'jallu', name: 'Jallu', desc: 'Some kind of liquor', canUse: true },
             { id: 'key', name: 'Nappi avain', desc: 'A key found in the grass.', canUse: false },
             { id: 'map', name: 'Town Map', desc: 'A map showing Kuopio. \nI live in Neulamäki.', canUse: true },
-            { id: 'coffee', name: 'Hot Coffee', desc: 'Warm roasted coffee. Cures fatigue.', canUse: true },
-            { id: 'badge', name: 'Puzzle Badge', desc: 'A shiny badge from solving Puzzle 8.', canUse: false },
+            { id: 'energy_drink', name: 'Energy drink', desc: 'Classic ES energy drink, what a throwback!', canUse: true },
             { id: 'note', name: 'Reminder Note', desc: ['"Remember to feed the cat.. "', '"Exam today at 10:00 in SN100!"', '..Can\'t forget!'], canUse: false },
             { id: 'watch', name: 'Watch', desc: 'It says 4:16 ..I think', canUse: false },
             { id: 'teleport', name: 'Teleport', desc: 'A strange device that teleports you to your House.', canUse: true },
@@ -362,18 +361,46 @@ Game.Backpack = class Backpack {
     _handleUse(item) {
         this.close();
 
-        if (item.id === 'coffee') {
+        if (item.id === 'energy_drink') {
             if (this.scene && typeof this.scene.energy !== 'undefined') {
                 const old = this.scene.energy;
-                this.scene.energy = 200;
+                this.scene.energy = Math.min(200, this.scene.energy + 100);
                 if (this.scene.addEnergyDiff) {
                     this.scene.addEnergyDiff(this.scene.energy - old);
                 }
+                this.scene.speedModifier = 0.85;
+                this.scene.speedModifierSteps = 35;
             }
+
+            // Remove from backpack
+            this.items = this.items.filter(i => i.id !== item.id);
+            this.selectedItem = null;
+
             if (this.scene.dialogue) {
                 this.scene.dialogue.show([
                     `You drank the ${item.name}!`,
-                    `Your energy was restored to 200.`
+                    `Restored 100 energy.`
+                ], () => { this.open(); });
+            }
+        } else if (item.id === 'jallu') {
+            if (this.scene && typeof this.scene.energy !== 'undefined') {
+                const old = this.scene.energy;
+                this.scene.energy = Math.min(200, this.scene.energy + 6);
+                if (this.scene.addEnergyDiff) {
+                    this.scene.addEnergyDiff(this.scene.energy - old);
+                }
+                this.scene.reverseControlsSteps = 15;
+                this.scene.speedModifier = 1.15;
+                this.scene.speedModifierSteps = 15;
+            }
+
+            // Jallu has infinite uses, so we do not remove it
+            this.selectedItem = null;
+
+            if (this.scene.dialogue) {
+                this.scene.dialogue.show([
+                    `You take a sip of raw Jallu`,
+                    `It makes you dizzy..`
                 ], () => { this.open(); });
             }
         } else if (item.id.startsWith('berry')) {
