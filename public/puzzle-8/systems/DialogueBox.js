@@ -246,7 +246,7 @@ Game.DialogueBox = class DialogueBox {
                 targets: this.arrowImage,
                 alpha: 1,
                 delay: 420,
-                duration: 250,
+                duration: 200,
                 ease: 'Linear'
             });
         } else if (this.arrowImage) {
@@ -279,8 +279,8 @@ Game.DialogueBox = class DialogueBox {
 
             btnText.on('pointerdown', () => {
                 if (this.inputLocked) return;
-                btn.onClick();
                 this._close();
+                btn.onClick();
             });
             btnText.on('pointerover', () => btnText.setColor(hoverColor));
             btnText.on('pointerout', () => btnText.setColor(defaultColor));
