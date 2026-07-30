@@ -224,7 +224,7 @@ Game.GameScene = class GameScene extends Phaser.Scene {
                                         id: 'cup_of_coffee',
                                         name: 'Cup of coffee',
                                         desc: 'Freshly made coffee.',
-                                        canUse: false
+                                        canUse: true
                                     });
                                     Game.state.serveriWoken = true;
 
@@ -252,6 +252,82 @@ Game.GameScene = class GameScene extends Phaser.Scene {
                     } else {
                         this.dialogue.show(['The coffee pot is empty.']);
                     }
+                    interacted = true;
+                }
+
+                if (!interacted && targetTileIndex === 699) {
+                    this.dialogue.show(['You found your home key!', 'I probably lost it last night and some kind soul brought it here'], () => {
+                        this.backpack.items.push({
+                            id: 'home_key',
+                            name: 'Home Key',
+                            desc: 'A shiny key to your house.',
+                            canUse: false
+                        });
+                        this.tileData[targetY][targetX] = 34;
+                        if (this.layer) {
+                            this.layer.putTileAt(34, targetX, targetY);
+                        }
+                        Game.state = Game.state || {};
+                        Game.state.homeKeyCollected = true;
+                    });
+                    interacted = true;
+                }
+
+                if (!interacted && targetTileIndex === 546) {
+                    this.dialogue.show(['You found a pencil!'], () => {
+                        this.backpack.items.push({
+                            id: 'pencil',
+                            name: 'Pencil',
+                            desc: 'A trusty pencil. Needed for the exam.',
+                            canUse: false
+                        });
+                        this.tileData[targetY][targetX] = 33;
+                        if (this.layer) {
+                            this.layer.putTileAt(33, targetX, targetY);
+                        }
+                        Game.state = Game.state || {};
+                        Game.state.pencilCollected = true;
+                    });
+                    interacted = true;
+                }
+
+                if (!interacted && targetTileIndex === 261) {
+                    Game.state = Game.state || {};
+                    Game.state.collectedShoes = (Game.state.collectedShoes || 0) + 1;
+                    
+                    this.tileData[targetY][targetX] = 0; // grass
+                    if (this.layer) {
+                        this.layer.putTileAt(0, targetX, targetY);
+                    }
+                    
+                    Game.state.collectedShoesLocations = Game.state.collectedShoesLocations || [];
+                    Game.state.collectedShoesLocations.push({ area: this.currentArea.name, x: targetX, y: targetY });
+                    
+                    if (Game.state.collectedShoes === 1) {
+                        this.backpack.items.push({
+                            id: 'single_shoe',
+                            name: 'Single shoe',
+                            desc: 'Just one shoe. Pretty useless.',
+                            canUse: false
+                        });
+                        this.dialogue.show(['You found your shoe!', 'How the hell did I even lose this?']);
+                    } else if (Game.state.collectedShoes === 2) {
+                        const shoeItem = this.backpack.items.find(i => i.id === 'single_shoe');
+                        if (shoeItem) {
+                            shoeItem.id = 'walking_shoes';
+                            shoeItem.name = 'Walking shoes';
+                            shoeItem.desc = 'Comfortable walking shoes. Less energy used.';
+                        } else {
+                            this.backpack.items.push({
+                                id: 'walking_shoes',
+                                name: 'Walking shoes',
+                                desc: 'Comfortable walking shoes. Less energy used.',
+                                canUse: false
+                            });
+                        }
+                        this.dialogue.show(['You found your other shoe!', 'Now I have a full pair! Walking uses less energy.']);
+                    }
+                    
                     interacted = true;
                 }
 
@@ -375,7 +451,81 @@ Game.GameScene = class GameScene extends Phaser.Scene {
                         this.layer.putTileAt(132, targetX, targetY);
                     }
 
+                    Game.state = Game.state || {};
+                    Game.state.collectedBerries = Game.state.collectedBerries || [];
+                    Game.state.collectedBerries.push({
+                        area: this.currentArea.name,
+                        x: targetX,
+                        y: targetY
+                    });
+
                     this.dialogue.show(['You found a berry!']);
+                    interacted = true;
+                } else if (targetTileIndex === 478 || targetTileIndex === 414) {
+                    Game.state = Game.state || {};
+                    if (!Game.state.hasSlept) {
+                        this.isTransitioning = true;
+                        this.player.play(`walk-${this.facing}`, true);
+                        this.tweens.add({
+                            targets: this.player,
+                            x: targetX * Game.TILE_SIZE,
+                            y: targetY * Game.TILE_SIZE,
+                            duration: Game.TWEEN_DURATION,
+                            ease: 'Linear',
+                            onComplete: () => {
+                                this.player.anims.stop();
+                                this.player.setTexture('playerextra', 1);
+
+                                this.cameras.main.fadeOut(1000, 0, 0, 0, (camera, progress) => {
+                                    if (progress === 1) {
+                                        const old = this.energy;
+                                        this.energy = 200;
+                                        this.addEnergyDiff(this.energy - old);
+                                        Game.state.hasSlept = true;
+
+                                        if (this.backpack) {
+                                            const watch = this.backpack.items.find(i => i.id === 'watch');
+                                            if (watch) {
+                                                watch.desc = 'The time is 9:05. You are late.';
+                                            }
+                                        }
+
+                                        let sleepEl = document.getElementById('game-sleep-text');
+                                        if (!sleepEl) {
+                                            sleepEl = document.createElement('div');
+                                            sleepEl.id = 'game-sleep-text';
+                                            sleepEl.style.position = 'absolute';
+                                            sleepEl.style.top = '50%';
+                                            sleepEl.style.left = '50%';
+                                            sleepEl.style.transform = 'translate(-50%, -50%)';
+                                            sleepEl.style.color = '#ffffff';
+                                            sleepEl.style.fontFamily = "'Pokemon Classic', 'Courier New', monospace";
+                                            sleepEl.style.fontSize = '24px';
+                                            sleepEl.style.textShadow = '2px 2px 0 #000';
+                                            sleepEl.style.textAlign = 'center';
+                                            sleepEl.style.zIndex = '9999';
+                                            sleepEl.style.pointerEvents = 'none';
+                                            sleepEl.style.lineHeight = '2';
+                                            document.body.appendChild(sleepEl);
+                                        }
+                                        sleepEl.innerText = 'Zzz...\n\nThe clock advances to 9:05';
+                                        sleepEl.style.display = 'block';
+
+                                        this.time.delayedCall(4000, () => {
+                                            sleepEl.style.display = 'none';
+                                            this.cameras.main.fadeIn(1000, 0, 0, 0, (cam, prog) => {
+                                                if (prog === 1) {
+                                                    this.walkBackFromBench(this.tileX, this.tileY);
+                                                }
+                                            });
+                                        });
+                                    }
+                                });
+                            }
+                        });
+                    } else {
+                        this.dialogue.show(['You have already slept. You don\'t want to oversleep!']);
+                    }
                     interacted = true;
                 } else if ([2, 3, 133, 197, 134, 198].includes(targetTileIndex)) {
                     this.isTransitioning = true;
@@ -558,6 +708,46 @@ Game.GameScene = class GameScene extends Phaser.Scene {
                     }
                 }
             });
+        }
+
+        if (Game.state && Game.state.collectedBerries) {
+            Game.state.collectedBerries.forEach(berry => {
+                if (berry.area === this.currentArea.name) {
+                    if (this.tileData[berry.y] && (this.tileData[berry.y][berry.x] === 196 || this.tileData[berry.y][berry.x] === 68)) {
+                        this.tileData[berry.y][berry.x] = 132;
+                    }
+                }
+            });
+        }
+
+        if (Game.state && Game.state.collectedShoesLocations) {
+            Game.state.collectedShoesLocations.forEach(loc => {
+                if (loc.area === this.currentArea.name) {
+                    if (this.tileData[loc.y] && this.tileData[loc.y][loc.x] === 261) {
+                        this.tileData[loc.y][loc.x] = 0;
+                    }
+                }
+            });
+        }
+
+        if (Game.state && Game.state.homeKeyCollected && this.currentArea.name === 'Laitos') {
+            for (let y = 0; y < this.tileData.length; y++) {
+                for (let x = 0; x < this.tileData[y].length; x++) {
+                    if (this.tileData[y][x] === 699) {
+                        this.tileData[y][x] = 34;
+                    }
+                }
+            }
+        }
+
+        if (Game.state && Game.state.pencilCollected && this.currentArea.name === 'House') {
+            for (let y = 0; y < this.tileData.length; y++) {
+                for (let x = 0; x < this.tileData[y].length; x++) {
+                    if (this.tileData[y][x] === 546) {
+                        this.tileData[y][x] = 33;
+                    }
+                }
+            }
         }
 
         // Rebuild Tilemap
@@ -1048,8 +1238,28 @@ Game.GameScene = class GameScene extends Phaser.Scene {
 
                 // Decrease energy for each tile moved
                 const old = this.energy;
-                this.energy = Math.max(0, this.energy - 1);
-                this.addEnergyDiff(this.energy - old);
+                
+                Game.state = Game.state || {};
+                Game.state.totalSteps = (Game.state.totalSteps || 0) + 1;
+                
+                let shouldDecrease = true;
+                if (Game.state.collectedShoes >= 2 && Game.state.totalSteps % 3 === 0) {
+                    shouldDecrease = false;
+                }
+                
+                if (shouldDecrease) {
+                    this.energy = Math.max(0, this.energy - 1);
+                    this.addEnergyDiff(this.energy - old);
+                }
+
+                if ((Game.state.startedSteps || 0) < 5) {
+                    Game.state.startedSteps = (Game.state.startedSteps || 0) + 1;
+                    if (Game.state.startedSteps === 5) {
+                        if (this.dialogue) {
+                            this.dialogue.show(['And where have my keys gone..?']);
+                        }
+                    }
+                }
 
                 if (this.reverseControlsSteps > 0) {
                     this.reverseControlsSteps--;

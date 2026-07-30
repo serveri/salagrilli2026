@@ -102,11 +102,12 @@ Game.GameOverScene = class GameOverScene extends Phaser.Scene {
                 'Thanks for playing!',
                 {
                     fontFamily: "'Pokemon Classic', 'Courier New', monospace",
-                    fontSize: '7px',
+                    fontSize: '32px',
                     color: '#FFD700',
-                    align: 'center'
+                    align: 'center',
+                    padding: { top: 4, bottom: 4 }
                 }
-            ).setOrigin(0.5).setResolution(10);
+            ).setOrigin(0.5).setScale(7/32).setResolution(2);
             overlay.add(thanksText);
 
             const scoreText = this.add.text(
@@ -115,11 +116,12 @@ Game.GameOverScene = class GameOverScene extends Phaser.Scene {
                 `Score: ${this.score}/100`,
                 {
                     fontFamily: "'Pokemon Classic', 'Courier New', monospace",
-                    fontSize: '5px',
+                    fontSize: '32px',
                     color: '#cccccc',
-                    align: 'center'
+                    align: 'center',
+                    padding: { top: 4, bottom: 4 }
                 }
-            ).setOrigin(0.5).setResolution(10);
+            ).setOrigin(0.5).setScale(5/32).setResolution(2);
             overlay.add(scoreText);
 
             // Hardcoded flag for now
@@ -131,25 +133,27 @@ Game.GameOverScene = class GameOverScene extends Phaser.Scene {
                 `Your flag: ${flagValue}`,
                 {
                     fontFamily: "'Pokemon Classic', 'Courier New', monospace",
-                    fontSize: '5px',
+                    fontSize: '32px',
                     color: '#00ff88',
-                    align: 'center'
+                    align: 'center',
+                    padding: { top: 4, bottom: 4 }
                 }
-            ).setOrigin(0.5, 0.5).setResolution(10);
+            ).setOrigin(0.5, 0.5).setScale(5/32).setResolution(2);
             overlay.add(flagText);
 
             // Copy button
             const copyBtn = this.add.text(
-                flagText.x + flagText.width / 2 + 8,
+                flagText.x + flagText.displayWidth / 2 + 8,
                 uiCenterY + 8,
                 '[Copy]',
                 {
                     fontFamily: "'Pokemon Classic', 'Courier New', monospace",
-                    fontSize: '4px',
+                    fontSize: '32px',
                     color: '#aaaaaa',
-                    align: 'center'
+                    align: 'center',
+                    padding: { top: 4, bottom: 4 }
                 }
-            ).setOrigin(0, 0.5).setResolution(10).setInteractive({ useHandCursor: true }).setDepth(9999);
+            ).setOrigin(0, 0.5).setScale(4/32).setResolution(2).setInteractive({ useHandCursor: true }).setDepth(9999);
             copyBtn.on('pointerover', () => copyBtn.setColor('#ffffff'));
             copyBtn.on('pointerout', () => copyBtn.setColor('#aaaaaa'));
             copyBtn.on('pointerdown', () => {
