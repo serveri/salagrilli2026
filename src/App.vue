@@ -48,9 +48,20 @@ onMounted(() => {
         />
       </a>
 
-      <span class="font-mono text-sm tabular-nums text-white/50">
-        {{ solvedCount }} / {{ items.length }}
-      </span>
+      <div class="flex items-center gap-4 sm:gap-6">
+        <span class="font-mono text-sm tabular-nums text-white/50">
+          {{ solvedCount }} / {{ items.length }}
+        </span>
+
+        <a
+          href="https://forms.cloud.microsoft/e/AyR0xBFGBP"
+          target="_blank"
+          rel="noopener noreferrer"
+          class="rounded-full border border-white/20 px-4 py-1.5 font-mono text-sm text-white/70 transition-colors duration-300 hover:border-white/40 hover:text-white"
+        >
+          Palaute
+        </a>
+      </div>
     </header>
 
     <main class="flex min-h-screen items-center justify-center px-6 py-28 sm:py-16">
