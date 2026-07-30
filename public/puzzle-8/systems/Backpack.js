@@ -20,7 +20,7 @@ Game.Backpack = class Backpack {
             { id: 'badge', name: 'Puzzle Badge', desc: 'A shiny badge from solving Puzzle 8.', canUse: false },
             { id: 'note', name: 'Reminder Note', desc: ['"Remember to feed the cat.. "', '"Exam today at 10:00 in SN100!"', '..Can\'t forget!'], canUse: false },
             { id: 'watch', name: 'Watch', desc: 'It says 4:16 ..I think', canUse: false },
-            { id: 'teleport', name: 'Teleport', desc: 'A strange device that teleports you to your House.', canUse: true }
+            { id: 'teleport', name: 'Teleport', desc: 'A strange device that teleports you to your House.', canUse: true },
         ];
 
         // UI Element References
@@ -446,7 +446,7 @@ Game.Backpack = class Backpack {
                 ], () => {
                     this.scene.cameras.main.fadeOut(250, 0, 0, 0, (camera, progress) => {
                         if (progress === 1) {
-                            this.scene.loadArea('/puzzle-8/data/House.csv', 7, 8).then(() => {
+                            this.scene.loadArea('/puzzle-8/data/Exam.csv', 28, 38).then(() => {
                                 this.scene.cameras.main.fadeIn(250, 0, 0, 0, (cam, prog) => {
                                     if (prog === 1) {
                                         this.scene.isTransitioning = false;

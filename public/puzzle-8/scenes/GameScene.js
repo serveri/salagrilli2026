@@ -15,31 +15,40 @@ Game.GameScene = class GameScene extends Phaser.Scene {
         this.dialogue = null;
         this.energy = 150;
         this.isMapOpen = false;
+        this.isExamOpen = false;
     }
 
     create() {
         // Walk Animations
         this.anims.create({
             key: 'walk-down',
-            frames: this.anims.generateFrameNumbers('player', { frames: [1, 0, 1, 2] }),
+            frames: this.anims.generateFrameNumbers('player', { frames: [0, 1, 2, 3] }),
             frameRate: 10,
             repeat: -1
         });
         this.anims.create({
-            key: 'walk-right',
-            frames: this.anims.generateFrameNumbers('player', { frames: [4, 3] }),
-            frameRate: 8,
+            key: 'walk-up',
+            frames: this.anims.generateFrameNumbers('player', { frames: [4, 5, 6, 7] }),
+            frameRate: 10,
             repeat: -1
         });
         this.anims.create({
             key: 'walk-left',
-            frames: this.anims.generateFrameNumbers('player', { frames: [6, 5] }),
-            frameRate: 8,
+            frames: this.anims.generateFrameNumbers('player', { frames: [8, 9, 10, 11] }),
+            frameRate: 9,
             repeat: -1
         });
         this.anims.create({
-            key: 'walk-up',
-            frames: this.anims.generateFrameNumbers('player', { frames: [8, 7, 8, 9] }),
+            key: 'walk-right',
+            frames: this.anims.generateFrameNumbers('player', { frames: [12, 13, 14, 15] }),
+            frameRate: 9,
+            repeat: -1
+        });
+
+        // Pencil spin animation (6 frames)
+        this.anims.create({
+            key: 'pencil-spin',
+            frames: this.anims.generateFrameNumbers('pencil', { frames: [0, 1, 2, 3, 4, 5] }),
             frameRate: 10,
             repeat: -1
         });
@@ -95,7 +104,7 @@ Game.GameScene = class GameScene extends Phaser.Scene {
         this.shadow = this.add.sprite(
             this.tileX * Game.TILE_SIZE,
             this.tileY * Game.TILE_SIZE,
-            'player', 10
+            'playerextra', 0
         );
         this.shadow.setOrigin(0, 0);
         this.shadow.setDepth(9); // Below player
@@ -113,7 +122,7 @@ Game.GameScene = class GameScene extends Phaser.Scene {
             this.cameras.main.fadeIn(900, 0, 0, 0);
 
             // Show intro dialogue
-            this.player.setFrame(11);
+            this.player.setTexture('playerextra', 1);
             this.dialogue.show([
                 'You woke up \n \n \n Press space to continue..',
                 'You feel tired..\n \n \n Press E or I to open backpack'
@@ -129,6 +138,9 @@ Game.GameScene = class GameScene extends Phaser.Scene {
         this.backpack = new Game.Backpack(this);
         this.pendingBackpackOpen = false;
 
+        // Exam system
+        this.exam = new Game.Exam(this);
+
         this.openBackpackSafely = () => {
             if (this.player.anims.isPlaying) {
                 this.player.anims.stop();
@@ -140,7 +152,7 @@ Game.GameScene = class GameScene extends Phaser.Scene {
         // Toggle backpack with 'E' or 'I' key
         const toggleBag = () => {
             if (this.dialogue && this.dialogue.active) return;
-            if (this.isMapOpen) return;
+            if (this.isMapOpen || this.isExamOpen) return;
 
             if (this.backpack && this.backpack.active) {
                 this.backpack.close();
@@ -164,7 +176,7 @@ Game.GameScene = class GameScene extends Phaser.Scene {
 
         // Inspect interaction
         this.input.keyboard.on('keydown-SPACE', () => {
-            if (this.isTransitioning || this.isMoving || this.isMapOpen) return;
+            if (this.isTransitioning || this.isMoving || this.isMapOpen || this.isExamOpen) return;
             if (this.dialogue && this.dialogue.active) return;
             if (this.backpack && this.backpack.active) return;
 
@@ -179,7 +191,121 @@ Game.GameScene = class GameScene extends Phaser.Scene {
 
                 let interacted = false;
 
-                if (this.isDoorLocked(targetX, targetY)) {
+                if (this.sleepingServeri && targetX === this.sleepingServeri.tileX && targetY === this.sleepingServeri.tileY) {
+                    Game.state = Game.state || {};
+                    if (!Game.state.serveriWoken) {
+                        this.dialogue.show(['The serveri is fast asleep']);
+                    } else {
+                        if (!Game.state.cheatSheetGiven) {
+                            this.dialogue.show(['That delicous smell of coffee woke me up!', 'Look, I got this cheat sheet..', 'Take it, I\'m probably not gonna make it to the exam anyway..'], () => {
+                                this.backpack.items.push({
+                                    id: 'cheat_sheet',
+                                    name: 'Cheat sheet',
+                                    desc: 'Looks useful for the exam.',
+                                    canUse: false
+                                });
+                                Game.state.cheatSheetGiven = true;
+                            });
+                        } else {
+                            this.dialogue.show(['Good luck on the exam!']);
+                        }
+                    }
+                    interacted = true;
+                }
+
+                if (!interacted && targetTileIndex === 700) {
+                    Game.state = Game.state || {};
+                    if (!Game.state.serveriWoken) {
+                        this.dialogue.show(['Make coffee?'], null, [
+                            {
+                                text: 'Yes', color: '#006600', hoverColor: '#00cc00', onClick: () => {
+                                    this.backpack.items.push({
+                                        id: 'cup_of_coffee',
+                                        name: 'Cup of coffee',
+                                        desc: 'Freshly made coffee.',
+                                        canUse: false
+                                    });
+                                    Game.state.serveriWoken = true;
+
+                                    this.dialogue.show(['You made a cup of coffee. The smell fills the room.'], () => {
+                                        if (this.currentArea.name === 'Laitos' && this.sleepingServeri) {
+                                            this.sleepingServeri.tileY = 8;
+                                            this.sleepingServeri.sprite.setTexture('player');
+                                            this.sleepingServeri.sprite.play('walk-down', true);
+                                            this.tweens.add({
+                                                targets: this.sleepingServeri.sprite,
+                                                y: 8 * Game.TILE_SIZE - 2,
+                                                duration: Game.TWEEN_DURATION * 2,
+                                                ease: 'Linear',
+                                                onComplete: () => {
+                                                    this.sleepingServeri.sprite.anims.stop();
+                                                    this.sleepingServeri.sprite.setFrame(0);
+                                                }
+                                            });
+                                        }
+                                    });
+                                }
+                            },
+                            { text: 'No', onClick: () => { } }
+                        ]);
+                    } else {
+                        this.dialogue.show(['The coffee pot is empty.']);
+                    }
+                    interacted = true;
+                }
+
+                if (!interacted && this.assistant && targetX === this.assistant.tileX && targetY === this.assistant.tileY) {
+                    if (this.facing === 'up') this.assistant.facing = 'down';
+                    else if (this.facing === 'down') this.assistant.facing = 'up';
+                    else if (this.facing === 'left') this.assistant.facing = 'right';
+                    else if (this.facing === 'right') this.assistant.facing = 'left';
+
+                    switch (this.assistant.facing) {
+                        case 'down': this.assistant.sprite.setFrame(0); break;
+                        case 'up': this.assistant.sprite.setFrame(4); break;
+                        case 'left': this.assistant.sprite.setFrame(8); break;
+                        case 'right': this.assistant.sprite.setFrame(12); break;
+                    }
+
+                    const stories = [
+                        [
+                            'Do you know what happened to Niilo22?',
+                            'He bought a new bike, and immediately lost the keys...',
+                            'Then he complained about it on video for 20 minutes.',
+                            'Classic Niilo!'
+                        ],
+                        [
+                            'Have you heard? Niilo22 tried to make coffee..',
+                            'He broke a hole in the bottom of his coffee pot!',
+                            'Then he blamed the coffee maker manufacturer.',
+                            'Never change, Niilo!'
+                        ],
+                        [
+                            'Did you see the latest Niilo22 video?',
+                            'He reviewed a frozen pizza...',
+                            'But forgot to take the plastic off before putting it in the oven!',
+                            'What a legend!'
+                        ]
+                    ];
+                    const story = stories[Math.floor(Math.random() * stories.length)];
+
+                    this.dialogue.show(story, () => {
+                        if (!this.assistantEnergyGiven) {
+                            this.dialogue.show(['The funny story lifts your spirits!'], () => {
+                                const old = this.energy;
+                                this.energy = Math.min(200, this.energy + 50);
+                                this.addEnergyDiff(this.energy - old);
+                                this.assistantEnergyGiven = true;
+                            });
+                        } else {
+                            this.dialogue.show(['Niilo22 stories don\'t entertain you anymore.']);
+                        }
+                    });
+
+                    interacted = true;
+                }
+
+                if (!interacted && this.isDoorLocked(targetX, targetY)) {
                     this.handleLockedDoor(targetX, targetY);
                     interacted = true;
                 }
@@ -194,12 +320,12 @@ Game.GameScene = class GameScene extends Phaser.Scene {
                                     desc: 'Might be related to triangle man.',
                                     canUse: false
                                 });
-                                
+
                                 this.tileData[targetY][targetX] = 3008;
                                 if (this.layer) {
                                     this.layer.putTileAt(3008, targetX, targetY);
                                 }
-                                
+
                                 Game.state = Game.state || {};
                                 Game.state.takenSigns = Game.state.takenSigns || [];
                                 Game.state.takenSigns.push({
@@ -215,7 +341,23 @@ Game.GameScene = class GameScene extends Phaser.Scene {
                         }
                     ]);
                     interacted = true;
-                } else if (!interacted && Game.INSPECT_MESSAGES[targetTileIndex]) {
+                }
+                
+                if (!interacted && targetTileIndex === 1055) {
+                    this.dialogue.show(['Sit down for the exam?'], null, [
+                        {
+                            text: 'Yes', color: '#006600', hoverColor: '#00cc00', onClick: () => {
+                                this.exam.open();
+                            }
+                        },
+                        {
+                            text: 'No', color: '#880000', hoverColor: '#cc0000', onClick: () => { }
+                        }
+                    ]);
+                    interacted = true;
+                }
+
+                if (!interacted && Game.INSPECT_MESSAGES[targetTileIndex]) {
                     this.dialogue.show(Game.INSPECT_MESSAGES[targetTileIndex]);
                     interacted = true;
                 } else if (targetTileIndex === 196 || targetTileIndex === 68) {
@@ -245,7 +387,7 @@ Game.GameScene = class GameScene extends Phaser.Scene {
                         ease: 'Linear',
                         onComplete: () => {
                             this.player.anims.stop();
-                            this.player.setFrame(11);
+                            this.player.setTexture('playerextra', 1);
                             if (this.energy < 50) {
                                 const old = this.energy;
                                 this.energy = 50;
@@ -392,7 +534,7 @@ Game.GameScene = class GameScene extends Phaser.Scene {
         const rows = text.trim().split('\n');
 
         const rawData = rows.map(r => r.split(',').map(Number));
-        
+
         // Tiled stores flip/rotation flags in the top 3 bits, which makes numbers huge or negative
         // We mask with 0x1FFFFFFF to get the real tile ID for our game logic (collisions, interactions)
         this.tileData = rawData.map(row => row.map(val => val & 0x1FFFFFFF));
@@ -438,7 +580,7 @@ Game.GameScene = class GameScene extends Phaser.Scene {
                 const flipH = (rawVal & 0x80000000) !== 0;
                 const flipV = (rawVal & 0x40000000) !== 0;
                 const flipD = (rawVal & 0x20000000) !== 0;
-                
+
                 if (flipD) {
                     tile.rotation = Math.PI / 2;
                     tile.flipX = flipV;
@@ -488,6 +630,38 @@ Game.GameScene = class GameScene extends Phaser.Scene {
             };
         }
 
+        // Spawn Assistant if in Laitos
+        if (this.assistant) {
+            this.assistant.sprite.destroy();
+            this.assistant = null;
+        }
+        if (this.sleepingServeri) {
+            this.sleepingServeri.sprite.destroy();
+            this.sleepingServeri = null;
+        }
+
+        if (this.currentArea.name === 'Laitos') {
+            const ax = 20;
+            const ay = 9;
+            this.assistant = {
+                tileX: ax,
+                tileY: ay,
+                facing: 'down',
+                sprite: this.add.sprite(ax * Game.TILE_SIZE, ay * Game.TILE_SIZE - 4, 'opetusavustaja', 0).setOrigin(0, 0).setDepth(10)
+            };
+
+            Game.state = Game.state || {};
+            const sy = Game.state.serveriWoken ? 8 : 7;
+            const tex = Game.state.serveriWoken ? 'player' : 'playerextra';
+            const frame = Game.state.serveriWoken ? 0 : 1;
+            this.sleepingServeri = {
+                tileX: 28,
+                tileY: sy,
+                facing: 'down',
+                sprite: this.add.sprite(28 * Game.TILE_SIZE, sy * Game.TILE_SIZE - 2, tex, frame).setOrigin(0, 0).setDepth(10)
+            };
+        }
+
         // Camera bounds — center small areas
         const areaWidthPx = this.currentArea.width * Game.TILE_SIZE;
         const areaHeightPx = this.currentArea.height * Game.TILE_SIZE;
@@ -525,7 +699,11 @@ Game.GameScene = class GameScene extends Phaser.Scene {
 
         this.updatePolice(time, delta);
 
-        if (this.isTransitioning || (this.dialogue && this.dialogue.active) || (this.backpack && this.backpack.active) || this.isMapOpen || this.pendingBackpackOpen) {
+        if (this.exam && this.exam.isOpen) {
+            this.exam.update(time, delta);
+        }
+
+        if (this.isTransitioning || (this.dialogue && this.dialogue.active) || (this.backpack && this.backpack.active) || this.isMapOpen || this.isExamOpen || this.pendingBackpackOpen) {
             this.resetEnergyLostStack();
             return;
         }
@@ -599,20 +777,23 @@ Game.GameScene = class GameScene extends Phaser.Scene {
     }
 
     setIdleFrame() {
+        if (this.player.texture.key !== 'player') {
+            this.player.setTexture('player');
+        }
         switch (this.facing) {
-            case 'down': this.player.setFrame(1); break;
-            case 'right': this.player.setFrame(4); break;
-            case 'left': this.player.setFrame(6); break;
-            case 'up': this.player.setFrame(8); break;
+            case 'down': this.player.setFrame(0); break;
+            case 'up': this.player.setFrame(4); break;
+            case 'left': this.player.setFrame(8); break;
+            case 'right': this.player.setFrame(12); break;
         }
     }
 
     setSteppingFrame() {
         switch (this.facing) {
-            case 'down': this.player.setFrame(0); break;
-            case 'right': this.player.setFrame(3); break;
-            case 'left': this.player.setFrame(5); break;
-            case 'up': this.player.setFrame(7); break;
+            case 'down': this.player.setFrame(1); break;
+            case 'up': this.player.setFrame(5); break;
+            case 'left': this.player.setFrame(9); break;
+            case 'right': this.player.setFrame(13); break;
         }
     }
 
@@ -643,6 +824,16 @@ Game.GameScene = class GameScene extends Phaser.Scene {
 
         if (targetX < 0 || targetX >= this.currentArea.width ||
             targetY < 0 || targetY >= this.currentArea.height) {
+            this.player.play(`walk-${this.facing}`, true);
+            return;
+        }
+
+        if (this.assistant && targetX === this.assistant.tileX && targetY === this.assistant.tileY) {
+            this.player.play(`walk-${this.facing}`, true);
+            return;
+        }
+
+        if (this.sleepingServeri && targetX === this.sleepingServeri.tileX && targetY === this.sleepingServeri.tileY) {
             this.player.play(`walk-${this.facing}`, true);
             return;
         }
@@ -939,7 +1130,7 @@ Game.GameScene = class GameScene extends Phaser.Scene {
         }
 
         const areaTransitions = Game.MAP_TRANSITIONS[areaName] || {};
-        
+
         // 1. Check by coordinate
         if (areaTransitions.byCoord) {
             const coordKey = `${this.tileX},${this.tileY}`;
