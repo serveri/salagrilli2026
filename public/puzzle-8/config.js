@@ -80,7 +80,7 @@ Game.INSPECT_MESSAGES = {
     2759: ['Damn construction!'], 225: ['It\'s locked'], 226: ['It\'s locked'], 227: ['It\'s locked'], 291: ['It\'s locked'], 671: ['It\'s a computer! I love computers :)'], 673: ['Nothing interesting ever on TV..'], 674: ['Nothing interesting ever on TV..'],
     418: ['Poster of my favourite game!', 'I play it with my friends'], 377: ['I don\'t like this weird plant'], 3209: ['BMW E36 Cabrio', 'Clearly compensating for something'], 3210: ['BMW E36 Cabrio', 'Clearly compensating for something'], 3276: ['BMW E36 Cabrio', 'Clearly compensating for something'], 3212: ['BMW E36 Cabrio', 'Clearly compensating for something'],
     3273: ['Toyota Corolla', 'Definitely not compensating for anything'], 3274: ['Toyota Corolla', 'Definitely not compensating for anything'], 3211: ['Toyota Corolla', 'Definitely not compensating for anything'], 3275: ['Toyota Corolla', 'Definitely not compensating for anything'], 2824: ['Construction around here seems to never finish'], 2888: ['Construction around here seems to never finish'],
-    1750: ['Locked, I should have guessed'], 3072: ['The light bulb is burning into my eyes!'], 3136: ['Put that light away!'], 612: ['Books: Java 101: The importance of programming socks,', '..How to craft a nuclear device, in Minecraft'], 676: ['Books: Java 101: The importance of programming socks,', '..How to craft a nuclear device, in Minecraft'],
+    1750: ['Locked, I should have guessed'], 3072: ['The light bulb is burning into my eyes!'], 3136: ['Put that light away!'], 612: ['Books: Java 101: The importance of programming socks,', '..How to craft a nuclear device, in Minecraft'], 676: ['Books: S.Javasteel - Programming 101: The importance of programming socks,', '.. Chad.Gepede - How to craft a nuclear device, in Minecraft'],
     3012: ['Its a barrel, or a pipe maybe?'], 519: ['I sniff my rose this morning, yes'], 584: ['I sniff my rose this morning, yes'], 3081: ['A flimsy bike rack'], 290: ['I sniff my rose this morning, yes'], 1056: ['That hat must have been left by one of the bussiness students'], 1120: ['That hat must have been left by one of the bussiness students'], 1057: ['M\'lady'], 1121: ['I found him!'], 1122: ['Mice don\'t wear hats'],
     1058: ['Mice don\'t wear hats'], 662: ['Restaurant Hunter has closed down for good', '*You shed a small tear*'], 113: ['Locked', 'I\'m not gonna break into the offices of our nice staff!']
 };
@@ -91,7 +91,7 @@ Game.SIGN_MESSAGES = {
     'serveriquest_54_21': ['Road to Neulamäki'],
     'serveriquest_55_4': ['Road to Savilahti'],
     'serveriquest_33_52': ['Serveri mouse house & grill', 'I live here!'],
-    'serveriquest_83_23': ['Serveri tip: Check you backbag by pressing E or I', 'Some items can help you!'],
+    'serveriquest_83_23': ['Serveri tip: Check you backbag by pressing E or I', 'Some items can help you alot!'],
     'serveriquest_11_34': ['Serveri tip: conserve some energy by jumping down cliffs!'],
     'savilahti_3_47': ['Novapolis\n \n↑ Main enterance', '→ Serveri enterance'],
     'savilahti_30_71': ['← Microkatu campus\n\n↓ Neulamäki'],
@@ -206,5 +206,8 @@ Game.SAME_MAP_TELEPORTS = {
     'Laitos': {
         '43,13': { targetX: 1, targetY: 9, exitDir: 'right' },
         '1,9': { targetX: 43, targetY: 13, exitDir: 'right' }
+    },
+    'Exam': {
+        '18,30': { targetX: 1, targetY: 7, exitDir: 'right' }
     }
 };

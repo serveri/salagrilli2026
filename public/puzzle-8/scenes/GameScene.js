@@ -15,6 +15,7 @@ Game.GameScene = class GameScene extends Phaser.Scene {
         this.dialogue = null;
         this.energy = 150;
         this.isMapOpen = false;
+        this.isExamOpen = false;
     }
 
     create() {
@@ -41,6 +42,14 @@ Game.GameScene = class GameScene extends Phaser.Scene {
             key: 'walk-right',
             frames: this.anims.generateFrameNumbers('player', { frames: [12, 13, 14, 15] }),
             frameRate: 9,
+            repeat: -1
+        });
+
+        // Pencil spin animation (6 frames)
+        this.anims.create({
+            key: 'pencil-spin',
+            frames: this.anims.generateFrameNumbers('pencil', { frames: [0, 1, 2, 3, 4, 5] }),
+            frameRate: 10,
             repeat: -1
         });
 
@@ -129,6 +138,9 @@ Game.GameScene = class GameScene extends Phaser.Scene {
         this.backpack = new Game.Backpack(this);
         this.pendingBackpackOpen = false;
 
+        // Exam system
+        this.exam = new Game.Exam(this);
+
         this.openBackpackSafely = () => {
             if (this.player.anims.isPlaying) {
                 this.player.anims.stop();
@@ -140,7 +152,7 @@ Game.GameScene = class GameScene extends Phaser.Scene {
         // Toggle backpack with 'E' or 'I' key
         const toggleBag = () => {
             if (this.dialogue && this.dialogue.active) return;
-            if (this.isMapOpen) return;
+            if (this.isMapOpen || this.isExamOpen) return;
 
             if (this.backpack && this.backpack.active) {
                 this.backpack.close();
@@ -164,7 +176,7 @@ Game.GameScene = class GameScene extends Phaser.Scene {
 
         // Inspect interaction
         this.input.keyboard.on('keydown-SPACE', () => {
-            if (this.isTransitioning || this.isMoving || this.isMapOpen) return;
+            if (this.isTransitioning || this.isMoving || this.isMapOpen || this.isExamOpen) return;
             if (this.dialogue && this.dialogue.active) return;
             if (this.backpack && this.backpack.active) return;
 
@@ -329,7 +341,23 @@ Game.GameScene = class GameScene extends Phaser.Scene {
                         }
                     ]);
                     interacted = true;
-                } else if (!interacted && Game.INSPECT_MESSAGES[targetTileIndex]) {
+                }
+                
+                if (!interacted && targetTileIndex === 1055) {
+                    this.dialogue.show(['Sit down for the exam?'], null, [
+                        {
+                            text: 'Yes', color: '#006600', hoverColor: '#00cc00', onClick: () => {
+                                this.exam.open();
+                            }
+                        },
+                        {
+                            text: 'No', color: '#880000', hoverColor: '#cc0000', onClick: () => { }
+                        }
+                    ]);
+                    interacted = true;
+                }
+
+                if (!interacted && Game.INSPECT_MESSAGES[targetTileIndex]) {
                     this.dialogue.show(Game.INSPECT_MESSAGES[targetTileIndex]);
                     interacted = true;
                 } else if (targetTileIndex === 196 || targetTileIndex === 68) {
@@ -671,7 +699,11 @@ Game.GameScene = class GameScene extends Phaser.Scene {
 
         this.updatePolice(time, delta);
 
-        if (this.isTransitioning || (this.dialogue && this.dialogue.active) || (this.backpack && this.backpack.active) || this.isMapOpen || this.pendingBackpackOpen) {
+        if (this.exam && this.exam.isOpen) {
+            this.exam.update(time, delta);
+        }
+
+        if (this.isTransitioning || (this.dialogue && this.dialogue.active) || (this.backpack && this.backpack.active) || this.isMapOpen || this.isExamOpen || this.pendingBackpackOpen) {
             this.resetEnergyLostStack();
             return;
         }

@@ -14,13 +14,13 @@ Game.BootScene = class BootScene extends Phaser.Scene {
             frameWidth: 16,
             frameHeight: 16
         });
-        
+
         // Player extra animations (sleeping, shadows etc.)
         this.load.spritesheet('playerextra', 'PlayerExtra.png', {
             frameWidth: 16,
             frameHeight: 16
         });
-        
+
         // Police spritesheet (16x18 frames, 4 cols x 4 rows)
         this.load.spritesheet('poliisi', 'Poliisi.png', {
             frameWidth: 16,
@@ -51,6 +51,17 @@ Game.BootScene = class BootScene extends Phaser.Scene {
 
         // Quest Map asset
         this.load.image('questMap', 'ServeriQuestMap.png');
+
+        // Exam Background
+        this.load.image('exambackground', 'examBackground.png');
+
+        this.load.spritesheet('pencil', 'Pencil.png', {
+            frameWidth: 32,
+            frameHeight: 16
+        });
+        
+        // Thought bubble for exam
+        this.load.image('thoughtbubble', 'thoughtbubble.png');
     }
 
     create() {
