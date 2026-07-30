@@ -17,6 +17,10 @@ Game.GameOverScene = class GameOverScene extends Phaser.Scene {
 
     async create() {
         const { width, height } = this.scale;
+        
+        if (this.sys && this.sys.game && this.sys.game.canvas) {
+            this.sys.game.canvas.style.filter = 'none';
+        }
 
         if (!this.passed) {
             // === LOSE SCREEN ===

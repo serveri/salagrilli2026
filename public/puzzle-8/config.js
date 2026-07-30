@@ -87,7 +87,7 @@ Game.INSPECT_MESSAGES = {
 
 Game.SIGN_MESSAGES = {
     'serveriquest_66_24': ['Neulamäki karting', 'Open 10-19'],
-    'serveriquest_75_48': ['Berries are a good snack!', 'Press I or E to open your inventory and eat collected berries.'],
+    'serveriquest_75_47': ['Berries are a good snack!', 'Press I or E to open your inventory and eat collected berries.'],
     'serveriquest_54_21': ['Road to Neulamäki'],
     'serveriquest_55_4': ['Road to Savilahti'],
     'serveriquest_33_52': ['Serveri mouse house & grill', 'I live here!'],

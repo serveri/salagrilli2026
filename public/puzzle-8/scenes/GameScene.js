@@ -124,8 +124,9 @@ Game.GameScene = class GameScene extends Phaser.Scene {
             // Show intro dialogue
             this.player.setTexture('playerextra', 1);
             this.dialogue.show([
-                'You woke up \n \n \n Press space to continue..',
-                'You feel tired..\n \n \n Press E or I to open backpack'
+                'Zzzz.. \n \n \n Press space to continue..',
+                '..Huh?',
+                'I feel tired..\nWhere even am I??'
             ], () => {
                 this.setIdleFrame();
             });
@@ -342,7 +343,7 @@ Game.GameScene = class GameScene extends Phaser.Scene {
                     ]);
                     interacted = true;
                 }
-                
+
                 if (!interacted && targetTileIndex === 1055) {
                     this.dialogue.show(['Sit down for the exam?'], null, [
                         {
@@ -708,9 +709,22 @@ Game.GameScene = class GameScene extends Phaser.Scene {
             return;
         }
 
-        const activeDir = this.getActiveInput();
+        let activeDir = this.getActiveInput();
 
         if (this.isMoving) return;
+
+        if (this.reverseControlsSteps > 0 && this.wasWalking) {
+            if (activeDir !== this.facing) {
+                if (!this.dizzyHasExtraStepped) {
+                    activeDir = this.facing;
+                    this.dizzyHasExtraStepped = true;
+                }
+            } else {
+                this.dizzyHasExtraStepped = false;
+            }
+        } else {
+            this.dizzyHasExtraStepped = false;
+        }
 
         if (activeDir) {
             if (this.facing !== activeDir) {
@@ -735,6 +749,7 @@ Game.GameScene = class GameScene extends Phaser.Scene {
                 this.setIdleFrame();
             }
             this.resetEnergyLostStack();
+            this.wasWalking = false;
         }
     }
 
@@ -766,8 +781,12 @@ Game.GameScene = class GameScene extends Phaser.Scene {
         else if (this.cursors.down.isDown || this.wasd.down.isDown) dir = 'down';
 
         if (dir && this.reverseControlsSteps > 0) {
-            const reversed = { 'left': 'right', 'right': 'left', 'up': 'down', 'down': 'up' };
-            return reversed[dir];
+            if (this.reverseX && (dir === 'left' || dir === 'right')) {
+                return dir === 'left' ? 'right' : 'left';
+            }
+            if (this.reverseY && (dir === 'up' || dir === 'down')) {
+                return dir === 'up' ? 'down' : 'up';
+            }
         }
         return dir;
     }
@@ -809,7 +828,7 @@ Game.GameScene = class GameScene extends Phaser.Scene {
         if (this.energy <= 0) {
             this.player.anims.stop();
             this.setIdleFrame();
-            
+
             let hasEnergyItems = false;
             if (this.backpack && this.backpack.items) {
                 hasEnergyItems = this.backpack.items.some(i => i.id === 'energy_drink' || i.id.startsWith('berry') || i.id === 'coffee');
@@ -818,13 +837,17 @@ Game.GameScene = class GameScene extends Phaser.Scene {
             if (!hasEnergyItems) {
                 this.isCollapsing = true;
                 this.isTransitioning = true; // Lock all further input updates completely
-                
+
                 // Show sleep frame immediately
                 this.player.setTexture('playerextra');
                 this.player.setFrame(1);
-                
+
                 if (this.dialogue && !this.dialogue.active) {
                     this.dialogue.show(['You collapse from exhaustion.'], () => {
+                        // Reset drunk effect in case it was active
+                        if (this.sys && this.sys.game && this.sys.game.canvas) {
+                            this.sys.game.canvas.style.filter = 'none';
+                        }
                         // Brief delay to ensure input events finish propagating before scene shutdown
                         this.time.delayedCall(50, () => {
                             const finalScore = (Game.state && Game.state.examScore) ? Game.state.examScore : 0;
@@ -931,6 +954,7 @@ Game.GameScene = class GameScene extends Phaser.Scene {
         }
 
         this.isMoving = true;
+        this.wasWalking = true;
         this.player.play(`walk-${this.facing}`, true);
 
         if (this.activeDoorEffect && (this.activeDoorEffect.x !== finalTargetX || this.activeDoorEffect.y !== finalTargetY)) {
@@ -1029,6 +1053,7 @@ Game.GameScene = class GameScene extends Phaser.Scene {
 
                 if (this.reverseControlsSteps > 0) {
                     this.reverseControlsSteps--;
+                    this.updateDrunkEffect();
                 }
 
                 if (this.speedModifierSteps > 0) {
@@ -1436,5 +1461,17 @@ Game.GameScene = class GameScene extends Phaser.Scene {
                 this.isTransitioning = false;
             }
         });
+    }
+
+    updateDrunkEffect() {
+        if (!this.sys || !this.sys.game || !this.sys.game.canvas) return;
+        const canvas = this.sys.game.canvas;
+        if (!this.reverseControlsSteps || this.reverseControlsSteps <= 0) {
+            canvas.style.filter = 'none';
+        } else {
+            // Cap blur at 8px. 15 steps is 1 dose (~2.5px blur). 
+            const blurAmount = Math.min(8, this.reverseControlsSteps / 6);
+            canvas.style.filter = `blur(${blurAmount}px)`;
+        }
     }
 };
