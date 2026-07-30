@@ -13,14 +13,17 @@ Game.Backpack = class Backpack {
 
         // Sample Inventory Items
         this.items = [
-            { id: 'jallu', name: 'Jallu', desc: 'Some kind of liquor', canUse: true },
+            { id: 'jallu', name: 'Jallu', desc: 'Some kind of strong liquor. Would taste better in a mix', canUse: true, cl: 50 },
             { id: 'key', name: 'Nappi avain', desc: 'A key found in the grass.', canUse: false },
             { id: 'map', name: 'Town Map', desc: 'A map showing Kuopio. \nI live in Neulamäki.', canUse: true },
             { id: 'energy_drink', name: 'Energy drink', desc: 'Classic ES energy drink, what a throwback!', canUse: true },
             { id: 'note', name: 'Reminder Note', desc: ['"Remember to feed the cat.. "', '"Exam today at 10:00 in SN100!"', '..Can\'t forget!'], canUse: false },
-            { id: 'watch', name: 'Watch', desc: 'It says 4:16 ..I think', canUse: false },
-            { id: 'teleport', name: 'Teleport', desc: 'A strange device that teleports you to your House.', canUse: true },
+            { id: 'watch', name: 'Watch', desc: 'It says 4:16 ..I think', canUse: false }
         ];
+
+        if (Game.testingmode) {
+            this.items.push({ id: 'teleport', name: 'Teleport', desc: 'A strange device that teleports you to your House.', canUse: true });
+        }
 
         // UI Element References
         this.elements = [];
@@ -343,6 +346,11 @@ Game.Backpack = class Backpack {
             } else {
                 pages = [`${item.name}: ${item.desc}`];
             }
+
+            if (item.id === 'jallu' && typeof item.cl !== 'undefined') {
+                pages.push(`There is ${item.cl}cl left in the bottle.`);
+            }
+
             this.scene.dialogue.show(pages, () => { this.open(); });
         }
     }
@@ -383,15 +391,44 @@ Game.Backpack = class Backpack {
                 ], () => { this.open(); });
             }
         } else if (item.id === 'jallu') {
+            if (item.cl <= 0) {
+                if (this.scene.dialogue) {
+                    this.scene.dialogue.show(['The bottle is empty..'], () => { this.open(); });
+                }
+                this.selectedItem = null;
+                return;
+            }
+
             if (this.scene && typeof this.scene.energy !== 'undefined') {
+                if (this.scene.reverseControlsSteps >= 60) {
+                    if (this.scene.dialogue) {
+                        this.scene.dialogue.show(['I WILL NOT TAKE THIS FOUL SUBSTANCE ANYMORE..!'], () => { this.open(); });
+                    }
+                    this.selectedItem = null;
+                    return;
+                }
+
+                item.cl = Math.max(0, item.cl - 5);
+                if (item.cl <= 0) {
+                    item.canUse = false;
+                }
                 const old = this.scene.energy;
-                this.scene.energy = Math.min(200, this.scene.energy + 6);
+                const energyChange = Math.floor(Math.random() * 18) - 5; // Random between -5 and +12
+                this.scene.energy = Math.max(0, Math.min(200, this.scene.energy + energyChange));
                 if (this.scene.addEnergyDiff) {
                     this.scene.addEnergyDiff(this.scene.energy - old);
                 }
-                this.scene.reverseControlsSteps = 15;
+
+                this.scene.reverseX = Math.random() < 0.5;
+                this.scene.reverseY = Math.random() < 0.5;
+
+                this.scene.reverseControlsSteps = (this.scene.reverseControlsSteps || 0) + 15;
                 this.scene.speedModifier = 1.15;
-                this.scene.speedModifierSteps = 15;
+                this.scene.speedModifierSteps = (this.scene.speedModifierSteps || 0) + 15;
+
+                if (typeof this.scene.updateDrunkEffect === 'function') {
+                    this.scene.updateDrunkEffect();
+                }
             }
 
             // Jallu has infinite uses, so we do not remove it
@@ -401,6 +438,29 @@ Game.Backpack = class Backpack {
                 this.scene.dialogue.show([
                     `You take a sip of raw Jallu`,
                     `It makes you dizzy..`
+                ], () => { this.open(); });
+            }
+        } else if (item.id === 'cup_of_coffee') {
+            if (this.scene && typeof this.scene.energy !== 'undefined') {
+                const old = this.scene.energy;
+                this.scene.energy = Math.min(200, this.scene.energy + 100);
+                if (this.scene.addEnergyDiff) {
+                    this.scene.addEnergyDiff(this.scene.energy - old);
+                }
+
+                // 10% speed increase -> speedModifier = 0.90
+                this.scene.speedModifier = 0.90;
+                this.scene.speedModifierSteps = (this.scene.speedModifierSteps || 0) + 35;
+            }
+
+            // Remove from backpack (only this specific item instance)
+            this.items = this.items.filter(i => i !== item);
+            this.selectedItem = null;
+
+            if (this.scene.dialogue) {
+                this.scene.dialogue.show([
+                    `You drank the ${item.name}!`,
+                    `Restored 100 energy and gave a speed boost!`
                 ], () => { this.open(); });
             }
         } else if (item.id.startsWith('berry')) {

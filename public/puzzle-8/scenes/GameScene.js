@@ -124,8 +124,9 @@ Game.GameScene = class GameScene extends Phaser.Scene {
             // Show intro dialogue
             this.player.setTexture('playerextra', 1);
             this.dialogue.show([
-                'You woke up \n \n \n Press space to continue..',
-                'You feel tired..\n \n \n Press E or I to open backpack'
+                'Zzzz.. \n \n \n Press space to continue..',
+                '..Huh?',
+                'I feel tired..\nWhere even am I??'
             ], () => {
                 this.setIdleFrame();
             });
@@ -223,7 +224,7 @@ Game.GameScene = class GameScene extends Phaser.Scene {
                                         id: 'cup_of_coffee',
                                         name: 'Cup of coffee',
                                         desc: 'Freshly made coffee.',
-                                        canUse: false
+                                        canUse: true
                                     });
                                     Game.state.serveriWoken = true;
 
@@ -251,6 +252,82 @@ Game.GameScene = class GameScene extends Phaser.Scene {
                     } else {
                         this.dialogue.show(['The coffee pot is empty.']);
                     }
+                    interacted = true;
+                }
+
+                if (!interacted && targetTileIndex === 699) {
+                    this.dialogue.show(['You found your home key!', 'I probably lost it last night and some kind soul brought it here'], () => {
+                        this.backpack.items.push({
+                            id: 'home_key',
+                            name: 'Home Key',
+                            desc: 'A shiny key to your house.',
+                            canUse: false
+                        });
+                        this.tileData[targetY][targetX] = 34;
+                        if (this.layer) {
+                            this.layer.putTileAt(34, targetX, targetY);
+                        }
+                        Game.state = Game.state || {};
+                        Game.state.homeKeyCollected = true;
+                    });
+                    interacted = true;
+                }
+
+                if (!interacted && targetTileIndex === 546) {
+                    this.dialogue.show(['You found a pencil!'], () => {
+                        this.backpack.items.push({
+                            id: 'pencil',
+                            name: 'Pencil',
+                            desc: 'A trusty pencil. Needed for the exam.',
+                            canUse: false
+                        });
+                        this.tileData[targetY][targetX] = 33;
+                        if (this.layer) {
+                            this.layer.putTileAt(33, targetX, targetY);
+                        }
+                        Game.state = Game.state || {};
+                        Game.state.pencilCollected = true;
+                    });
+                    interacted = true;
+                }
+
+                if (!interacted && targetTileIndex === 261) {
+                    Game.state = Game.state || {};
+                    Game.state.collectedShoes = (Game.state.collectedShoes || 0) + 1;
+                    
+                    this.tileData[targetY][targetX] = 0; // grass
+                    if (this.layer) {
+                        this.layer.putTileAt(0, targetX, targetY);
+                    }
+                    
+                    Game.state.collectedShoesLocations = Game.state.collectedShoesLocations || [];
+                    Game.state.collectedShoesLocations.push({ area: this.currentArea.name, x: targetX, y: targetY });
+                    
+                    if (Game.state.collectedShoes === 1) {
+                        this.backpack.items.push({
+                            id: 'single_shoe',
+                            name: 'Single shoe',
+                            desc: 'Just one shoe. Pretty useless.',
+                            canUse: false
+                        });
+                        this.dialogue.show(['You found your shoe!', 'How the hell did I even lose this?']);
+                    } else if (Game.state.collectedShoes === 2) {
+                        const shoeItem = this.backpack.items.find(i => i.id === 'single_shoe');
+                        if (shoeItem) {
+                            shoeItem.id = 'walking_shoes';
+                            shoeItem.name = 'Walking shoes';
+                            shoeItem.desc = 'Comfortable walking shoes. Less energy used.';
+                        } else {
+                            this.backpack.items.push({
+                                id: 'walking_shoes',
+                                name: 'Walking shoes',
+                                desc: 'Comfortable walking shoes. Less energy used.',
+                                canUse: false
+                            });
+                        }
+                        this.dialogue.show(['You found your other shoe!', 'Now I have a full pair! Walking uses less energy.']);
+                    }
+                    
                     interacted = true;
                 }
 
@@ -342,7 +419,7 @@ Game.GameScene = class GameScene extends Phaser.Scene {
                     ]);
                     interacted = true;
                 }
-                
+
                 if (!interacted && targetTileIndex === 1055) {
                     this.dialogue.show(['Sit down for the exam?'], null, [
                         {
@@ -374,7 +451,81 @@ Game.GameScene = class GameScene extends Phaser.Scene {
                         this.layer.putTileAt(132, targetX, targetY);
                     }
 
+                    Game.state = Game.state || {};
+                    Game.state.collectedBerries = Game.state.collectedBerries || [];
+                    Game.state.collectedBerries.push({
+                        area: this.currentArea.name,
+                        x: targetX,
+                        y: targetY
+                    });
+
                     this.dialogue.show(['You found a berry!']);
+                    interacted = true;
+                } else if (targetTileIndex === 478 || targetTileIndex === 414) {
+                    Game.state = Game.state || {};
+                    if (!Game.state.hasSlept) {
+                        this.isTransitioning = true;
+                        this.player.play(`walk-${this.facing}`, true);
+                        this.tweens.add({
+                            targets: this.player,
+                            x: targetX * Game.TILE_SIZE,
+                            y: targetY * Game.TILE_SIZE,
+                            duration: Game.TWEEN_DURATION,
+                            ease: 'Linear',
+                            onComplete: () => {
+                                this.player.anims.stop();
+                                this.player.setTexture('playerextra', 1);
+
+                                this.cameras.main.fadeOut(1000, 0, 0, 0, (camera, progress) => {
+                                    if (progress === 1) {
+                                        const old = this.energy;
+                                        this.energy = 200;
+                                        this.addEnergyDiff(this.energy - old);
+                                        Game.state.hasSlept = true;
+
+                                        if (this.backpack) {
+                                            const watch = this.backpack.items.find(i => i.id === 'watch');
+                                            if (watch) {
+                                                watch.desc = 'The time is 9:05. You are late.';
+                                            }
+                                        }
+
+                                        let sleepEl = document.getElementById('game-sleep-text');
+                                        if (!sleepEl) {
+                                            sleepEl = document.createElement('div');
+                                            sleepEl.id = 'game-sleep-text';
+                                            sleepEl.style.position = 'absolute';
+                                            sleepEl.style.top = '50%';
+                                            sleepEl.style.left = '50%';
+                                            sleepEl.style.transform = 'translate(-50%, -50%)';
+                                            sleepEl.style.color = '#ffffff';
+                                            sleepEl.style.fontFamily = "'Pokemon Classic', 'Courier New', monospace";
+                                            sleepEl.style.fontSize = '24px';
+                                            sleepEl.style.textShadow = '2px 2px 0 #000';
+                                            sleepEl.style.textAlign = 'center';
+                                            sleepEl.style.zIndex = '9999';
+                                            sleepEl.style.pointerEvents = 'none';
+                                            sleepEl.style.lineHeight = '2';
+                                            document.body.appendChild(sleepEl);
+                                        }
+                                        sleepEl.innerText = 'Zzz...\n\nThe clock advances to 9:05';
+                                        sleepEl.style.display = 'block';
+
+                                        this.time.delayedCall(4000, () => {
+                                            sleepEl.style.display = 'none';
+                                            this.cameras.main.fadeIn(1000, 0, 0, 0, (cam, prog) => {
+                                                if (prog === 1) {
+                                                    this.walkBackFromBench(this.tileX, this.tileY);
+                                                }
+                                            });
+                                        });
+                                    }
+                                });
+                            }
+                        });
+                    } else {
+                        this.dialogue.show(['You have already slept. You don\'t want to oversleep!']);
+                    }
                     interacted = true;
                 } else if ([2, 3, 133, 197, 134, 198].includes(targetTileIndex)) {
                     this.isTransitioning = true;
@@ -559,6 +710,46 @@ Game.GameScene = class GameScene extends Phaser.Scene {
             });
         }
 
+        if (Game.state && Game.state.collectedBerries) {
+            Game.state.collectedBerries.forEach(berry => {
+                if (berry.area === this.currentArea.name) {
+                    if (this.tileData[berry.y] && (this.tileData[berry.y][berry.x] === 196 || this.tileData[berry.y][berry.x] === 68)) {
+                        this.tileData[berry.y][berry.x] = 132;
+                    }
+                }
+            });
+        }
+
+        if (Game.state && Game.state.collectedShoesLocations) {
+            Game.state.collectedShoesLocations.forEach(loc => {
+                if (loc.area === this.currentArea.name) {
+                    if (this.tileData[loc.y] && this.tileData[loc.y][loc.x] === 261) {
+                        this.tileData[loc.y][loc.x] = 0;
+                    }
+                }
+            });
+        }
+
+        if (Game.state && Game.state.homeKeyCollected && this.currentArea.name === 'Laitos') {
+            for (let y = 0; y < this.tileData.length; y++) {
+                for (let x = 0; x < this.tileData[y].length; x++) {
+                    if (this.tileData[y][x] === 699) {
+                        this.tileData[y][x] = 34;
+                    }
+                }
+            }
+        }
+
+        if (Game.state && Game.state.pencilCollected && this.currentArea.name === 'House') {
+            for (let y = 0; y < this.tileData.length; y++) {
+                for (let x = 0; x < this.tileData[y].length; x++) {
+                    if (this.tileData[y][x] === 546) {
+                        this.tileData[y][x] = 33;
+                    }
+                }
+            }
+        }
+
         // Rebuild Tilemap
         if (this.tilemap) this.tilemap.destroy();
 
@@ -708,9 +899,22 @@ Game.GameScene = class GameScene extends Phaser.Scene {
             return;
         }
 
-        const activeDir = this.getActiveInput();
+        let activeDir = this.getActiveInput();
 
         if (this.isMoving) return;
+
+        if (this.reverseControlsSteps > 0 && this.wasWalking) {
+            if (activeDir !== this.facing) {
+                if (!this.dizzyHasExtraStepped) {
+                    activeDir = this.facing;
+                    this.dizzyHasExtraStepped = true;
+                }
+            } else {
+                this.dizzyHasExtraStepped = false;
+            }
+        } else {
+            this.dizzyHasExtraStepped = false;
+        }
 
         if (activeDir) {
             if (this.facing !== activeDir) {
@@ -735,6 +939,7 @@ Game.GameScene = class GameScene extends Phaser.Scene {
                 this.setIdleFrame();
             }
             this.resetEnergyLostStack();
+            this.wasWalking = false;
         }
     }
 
@@ -766,8 +971,12 @@ Game.GameScene = class GameScene extends Phaser.Scene {
         else if (this.cursors.down.isDown || this.wasd.down.isDown) dir = 'down';
 
         if (dir && this.reverseControlsSteps > 0) {
-            const reversed = { 'left': 'right', 'right': 'left', 'up': 'down', 'down': 'up' };
-            return reversed[dir];
+            if (this.reverseX && (dir === 'left' || dir === 'right')) {
+                return dir === 'left' ? 'right' : 'left';
+            }
+            if (this.reverseY && (dir === 'up' || dir === 'down')) {
+                return dir === 'up' ? 'down' : 'up';
+            }
         }
         return dir;
     }
@@ -809,7 +1018,7 @@ Game.GameScene = class GameScene extends Phaser.Scene {
         if (this.energy <= 0) {
             this.player.anims.stop();
             this.setIdleFrame();
-            
+
             let hasEnergyItems = false;
             if (this.backpack && this.backpack.items) {
                 hasEnergyItems = this.backpack.items.some(i => i.id === 'energy_drink' || i.id.startsWith('berry') || i.id === 'coffee');
@@ -818,13 +1027,17 @@ Game.GameScene = class GameScene extends Phaser.Scene {
             if (!hasEnergyItems) {
                 this.isCollapsing = true;
                 this.isTransitioning = true; // Lock all further input updates completely
-                
+
                 // Show sleep frame immediately
                 this.player.setTexture('playerextra');
                 this.player.setFrame(1);
-                
+
                 if (this.dialogue && !this.dialogue.active) {
                     this.dialogue.show(['You collapse from exhaustion.'], () => {
+                        // Reset drunk effect in case it was active
+                        if (this.sys && this.sys.game && this.sys.game.canvas) {
+                            this.sys.game.canvas.style.filter = 'none';
+                        }
                         // Brief delay to ensure input events finish propagating before scene shutdown
                         this.time.delayedCall(50, () => {
                             const finalScore = (Game.state && Game.state.examScore) ? Game.state.examScore : 0;
@@ -931,6 +1144,7 @@ Game.GameScene = class GameScene extends Phaser.Scene {
         }
 
         this.isMoving = true;
+        this.wasWalking = true;
         this.player.play(`walk-${this.facing}`, true);
 
         if (this.activeDoorEffect && (this.activeDoorEffect.x !== finalTargetX || this.activeDoorEffect.y !== finalTargetY)) {
@@ -1024,11 +1238,32 @@ Game.GameScene = class GameScene extends Phaser.Scene {
 
                 // Decrease energy for each tile moved
                 const old = this.energy;
-                this.energy = Math.max(0, this.energy - 1);
-                this.addEnergyDiff(this.energy - old);
+                
+                Game.state = Game.state || {};
+                Game.state.totalSteps = (Game.state.totalSteps || 0) + 1;
+                
+                let shouldDecrease = true;
+                if (Game.state.collectedShoes >= 2 && Game.state.totalSteps % 3 === 0) {
+                    shouldDecrease = false;
+                }
+                
+                if (shouldDecrease) {
+                    this.energy = Math.max(0, this.energy - 1);
+                    this.addEnergyDiff(this.energy - old);
+                }
+
+                if ((Game.state.startedSteps || 0) < 5) {
+                    Game.state.startedSteps = (Game.state.startedSteps || 0) + 1;
+                    if (Game.state.startedSteps === 5) {
+                        if (this.dialogue) {
+                            this.dialogue.show(['And where have my keys gone..?']);
+                        }
+                    }
+                }
 
                 if (this.reverseControlsSteps > 0) {
                     this.reverseControlsSteps--;
+                    this.updateDrunkEffect();
                 }
 
                 if (this.speedModifierSteps > 0) {
@@ -1436,5 +1671,17 @@ Game.GameScene = class GameScene extends Phaser.Scene {
                 this.isTransitioning = false;
             }
         });
+    }
+
+    updateDrunkEffect() {
+        if (!this.sys || !this.sys.game || !this.sys.game.canvas) return;
+        const canvas = this.sys.game.canvas;
+        if (!this.reverseControlsSteps || this.reverseControlsSteps <= 0) {
+            canvas.style.filter = 'none';
+        } else {
+            // Cap blur at 8px. 15 steps is 1 dose (~2.5px blur). 
+            const blurAmount = Math.min(8, this.reverseControlsSteps / 6);
+            canvas.style.filter = `blur(${blurAmount}px)`;
+        }
     }
 };
