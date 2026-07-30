@@ -15,7 +15,7 @@ const config = {
         antialias: false,
         mipmapFilter: 'NEAREST'
     },
-    scene: [Game.BootScene, Game.MenuScene, Game.GameScene]
+    scene: [Game.BootScene, Game.MenuScene, Game.GameScene, Game.GameOverScene]
 };
 
 const game = new Phaser.Game(config);

@@ -966,5 +966,13 @@ Game.Exam = class Exam {
         Game.state = Game.state || {};
         Game.state.examScore = finalScore;
         Game.state.examPassed = passed;
+
+        // Open exit door at tile 1,7
+        if (this.scene.tileData && this.scene.tileData[7]) {
+            this.scene.tileData[7][1] = 2695;
+            if (this.scene.layer) {
+                this.scene.layer.putTileAt(2695, 1, 7);
+            }
+        }
     }
 };

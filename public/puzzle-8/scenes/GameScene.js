@@ -759,11 +759,17 @@ Game.GameScene = class GameScene extends Phaser.Scene {
     }
 
     getActiveInput() {
-        if (this.cursors.left.isDown || this.wasd.left.isDown) return 'left';
-        if (this.cursors.right.isDown || this.wasd.right.isDown) return 'right';
-        if (this.cursors.up.isDown || this.wasd.up.isDown) return 'up';
-        if (this.cursors.down.isDown || this.wasd.down.isDown) return 'down';
-        return null;
+        let dir = null;
+        if (this.cursors.left.isDown || this.wasd.left.isDown) dir = 'left';
+        else if (this.cursors.right.isDown || this.wasd.right.isDown) dir = 'right';
+        else if (this.cursors.up.isDown || this.wasd.up.isDown) dir = 'up';
+        else if (this.cursors.down.isDown || this.wasd.down.isDown) dir = 'down';
+
+        if (dir && this.reverseControlsSteps > 0) {
+            const reversed = { 'left': 'right', 'right': 'left', 'up': 'down', 'down': 'up' };
+            return reversed[dir];
+        }
+        return dir;
     }
 
     getDeltaFromDir(dir) {
@@ -798,15 +804,42 @@ Game.GameScene = class GameScene extends Phaser.Scene {
     }
 
     tryMove(dx, dy) {
+        if (this.isCollapsing) return;
+
         if (this.energy <= 0) {
             this.player.anims.stop();
             this.setIdleFrame();
+            
+            let hasEnergyItems = false;
+            if (this.backpack && this.backpack.items) {
+                hasEnergyItems = this.backpack.items.some(i => i.id === 'energy_drink' || i.id.startsWith('berry') || i.id === 'coffee');
+            }
+
+            if (!hasEnergyItems) {
+                this.isCollapsing = true;
+                this.isTransitioning = true; // Lock all further input updates completely
+                
+                // Show sleep frame immediately
+                this.player.setTexture('playerextra');
+                this.player.setFrame(1);
+                
+                if (this.dialogue && !this.dialogue.active) {
+                    this.dialogue.show(['You collapse from exhaustion.'], () => {
+                        // Brief delay to ensure input events finish propagating before scene shutdown
+                        this.time.delayedCall(50, () => {
+                            const finalScore = (Game.state && Game.state.examScore) ? Game.state.examScore : 0;
+                            this.scene.start('GameOverScene', { passed: false, score: finalScore });
+                        });
+                    });
+                }
+                return;
+            }
+
             if (this.dialogue && !this.dialogue.active) {
                 this.dialogue.show(['You are too tired to move.'], null, [
                     {
                         text: 'Inventory', onClick: () => {
                             this.backpack.open();
-                            // Optional: since they open inventory, we close dialogue natively but they might heal
                         }
                     },
                     {
@@ -926,10 +959,14 @@ Game.GameScene = class GameScene extends Phaser.Scene {
         const targetPxY = finalTargetY * Game.TILE_SIZE;
 
         let totalMoveDuration = Game.TWEEN_DURATION;
+        if (this.speedModifierSteps > 0 && this.speedModifier) {
+            totalMoveDuration *= this.speedModifier;
+        }
+
         if (isJumping) {
             totalMoveDuration = jumpDistance === 2
-                ? (Game.TWEEN_DURATION * 0.9 * jumpDistance)
-                : (Game.TWEEN_DURATION * 1.1 * jumpDistance);
+                ? (totalMoveDuration * 0.9 * jumpDistance)
+                : (totalMoveDuration * 1.1 * jumpDistance);
         }
 
         if (isJumping) {
@@ -989,6 +1026,14 @@ Game.GameScene = class GameScene extends Phaser.Scene {
                 const old = this.energy;
                 this.energy = Math.max(0, this.energy - 1);
                 this.addEnergyDiff(this.energy - old);
+
+                if (this.reverseControlsSteps > 0) {
+                    this.reverseControlsSteps--;
+                }
+
+                if (this.speedModifierSteps > 0) {
+                    this.speedModifierSteps--;
+                }
 
                 const doorTriggered = this.checkDoorTrigger();
 
@@ -1117,6 +1162,23 @@ Game.GameScene = class GameScene extends Phaser.Scene {
 
     checkDoorTrigger() {
         const currentTile = this.tileData[this.tileY][this.tileX];
+
+        // Gameover door trigger: tile 2695 in Exam area
+        if (this.currentArea && this.currentArea.name === 'Exam' && currentTile === 2695) {
+            Game.state = Game.state || {};
+            this.isTransitioning = true;
+            this.player.anims.stop();
+            this.setIdleFrame();
+            this.cameras.main.fadeOut(500, 0, 0, 0, (camera, progress) => {
+                if (progress === 1) {
+                    this.scene.start('GameOverScene', {
+                        passed: !!Game.state.examPassed,
+                        score: Game.state.examScore || 0
+                    });
+                }
+            });
+            return true;
+        }
 
         const areaName = this.currentArea ? this.currentArea.name : '';
         const sameMapTeleports = Game.SAME_MAP_TELEPORTS[areaName];
