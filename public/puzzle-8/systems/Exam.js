@@ -207,16 +207,12 @@ Game.Exam = class Exam {
         this.container.add(this.answerText);
 
         // Erase button
-        this.eraseBtn = this.scene.add.text(this.paperLeft + 6, this.paperTop + 52, '←', {
+        this.eraseBtn = this.scene.add.text(this.paperRight - 25, this.paperTop + 52, '←', {
             fontFamily: "'Pokemon Classic', 'Courier New', monospace",
             fontSize: '7px',
             color: '#cc0000'
-        }).setOrigin(0, 0).setResolution(10).setInteractive({ useHandCursor: true });
+        }).setOrigin(0.5, 0).setResolution(10).setInteractive({ useHandCursor: true });
         this.eraseBtn.on('pointerdown', () => {
-            if (this.pencilActive) {
-                this._flashNoPencil();
-                return;
-            }
             this._queueInput({ type: 'erase' });
         });
         this.eraseBtn.on('pointerover', () => {
@@ -265,11 +261,6 @@ Game.Exam = class Exam {
             // Backspace to erase
             if (evt.code === 'Backspace' || evt.code === 'Enter') {
                 evt.preventDefault();
-                const state = this.questionStates[this.currentQuestion];
-                if (this.pencilActive) {
-                    this._flashNoPencil();
-                    return;
-                }
                 this._queueInput({ type: 'erase' });
                 return;
             }
@@ -396,8 +387,8 @@ Game.Exam = class Exam {
             this.pencilSprite.x += this.pencilDriftX * (delta / 16.67);
 
             // Sideways bounce oscillation
-            this.pencilBouncePhase = (this.pencilBouncePhase || 0) + delta * 0.003;
-            this.pencilSprite.x += Math.sin(this.pencilBouncePhase) * 0.15;
+            this.pencilBouncePhase = (this.pencilBouncePhase || 0) + delta * (this.pencilBounceSpeed || 0.003);
+            this.pencilSprite.x += Math.sin(this.pencilBouncePhase) * (this.pencilBounceAmp || 0.15);
 
             // Check if off screen (top)
             if (this.pencilSprite.y < this.paperTop - 20) {
@@ -432,6 +423,13 @@ Game.Exam = class Exam {
         return parts.join(' ');
     }
 
+    _updateEraseButtonPosition() {
+        if (!this.eraseBtn || !this.answerText) return;
+        const centerX = (this.paperLeft + this.paperRight) / 2;
+        // The text width might have trailing spaces depending on '___', but width gives the bounding box
+        this.eraseBtn.x = centerX + (this.answerText.width / 2) + 6; // 6px padding to the right
+    }
+
     _showQuestion() {
         if (this.currentQuestion >= this.activeQuestions.length) {
             this._finishExam();
@@ -448,6 +446,7 @@ Game.Exam = class Exam {
         if (this.answerText) {
             this.answerText.setText(this._formatAnswerLine(q, state));
             this.answerText.setColor('#003366');
+            this._updateEraseButtonPosition();
         }
 
         if (this.progressText) {
@@ -456,6 +455,14 @@ Game.Exam = class Exam {
 
         this._renderWordButtons();
         this._renderNavButtons();
+        
+        // Ensure pencil and thought bubble stay on top of the newly rendered buttons
+        if (this.pencilActive && this.pencilSprite) {
+            this.container.bringToTop(this.pencilSprite);
+        }
+        if (this.thoughtBubbleContainer) {
+            this.container.bringToTop(this.thoughtBubbleContainer);
+        }
     }
 
     _renderNavButtons() {
@@ -648,9 +655,12 @@ Game.Exam = class Exam {
     }
 
     _processQueue() {
-        if (this.inputQueue.length > 0 && !this.isTypingWord && !this.isErasing && !this.pencilActive) {
-            const action = this.inputQueue.shift();
-            this._processInput(action);
+        if (this.inputQueue.length > 0 && !this.isTypingWord && !this.isErasing) {
+            const nextAction = this.inputQueue[0];
+            if (nextAction.type === 'erase' || !this.pencilActive) {
+                const action = this.inputQueue.shift();
+                this._processInput(action);
+            }
         }
     }
 
@@ -698,9 +708,11 @@ Game.Exam = class Exam {
                 charIndex++;
                 const partialWord = word.substring(0, charIndex) + '_'.repeat(Math.max(0, 3 - charIndex));
                 this.answerText.setText(prefixText + partialWord + suffixText);
+                this._updateEraseButtonPosition();
 
                 if (charIndex >= word.length) {
                     this.answerText.setText(this._formatAnswerLine(q, state));
+                    this._updateEraseButtonPosition();
                     this.isTypingWord = false;
                     this._processQueue();
                 }
@@ -753,9 +765,11 @@ Game.Exam = class Exam {
                 }
 
                 this.answerText.setText(parts.join(' '));
+                this._updateEraseButtonPosition();
 
                 if (charsToRemove <= 0) {
                     this.answerText.setText(targetText);
+                    this._updateEraseButtonPosition();
                     this.isErasing = false;
                     this._processQueue();
                 }
@@ -797,10 +811,13 @@ Game.Exam = class Exam {
         this.pencilSprite.play('pencil-spin');
         this.pencilSprite.setInteractive({ useHandCursor: true });
 
-        // Random drift: -0.15, 0, or 0.15
-        const driftOptions = [-0.15, 0, 0, 0.15];
-        this.pencilDriftX = driftOptions[Math.floor(Math.random() * driftOptions.length)];
+        // Random drift: wider range for more deviation
+        this.pencilDriftX = (Math.random() * 0.8) - 0.4;
+        
+        // Random bounce characteristics
         this.pencilBouncePhase = Math.random() * Math.PI * 2;
+        this.pencilBounceSpeed = 0.002 + Math.random() * 0.005; // Different speeds
+        this.pencilBounceAmp = 0.2 + Math.random() * 0.6; // Different amplitudes
 
         this.pencilSprite.on('pointerdown', () => {
             this._catchPencil();
