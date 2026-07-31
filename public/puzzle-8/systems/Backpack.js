@@ -11,12 +11,18 @@ Game.Backpack = class Backpack {
         this.isOpen = false;
         this.selectedItem = null;
 
+        window.Game = window.Game || {};
+        Game.state = Game.state || {};
+        const startingMoney = Game.state.money !== undefined ? Game.state.money : 2;
+        Game.state.money = startingMoney;
+
         // Sample Inventory Items
         this.items = [
             { id: 'jallu', name: 'Jallu', desc: 'Some kind of strong liquor. Would taste better in a mix', canUse: true, cl: 50 },
             { id: 'key', name: 'Nappi avain', desc: 'A key found in the grass.', canUse: false },
             { id: 'map', name: 'Town Map', desc: 'A map showing Kuopio. \nI live in Neulamäki.', canUse: true },
             { id: 'energy_drink', name: 'Energy drink', desc: 'Classic ES energy drink, what a throwback!', canUse: true },
+            { id: 'wallet', name: `Wallet ${startingMoney}€`, desc: 'Contains your money.', canUse: false },
             { id: 'note', name: 'Reminder Note', desc: ['"Remember to feed the cat.. "', '"Exam today at 10:00 in SN100!"', '..Can\'t forget!'], canUse: false },
             { id: 'watch', name: 'Watch', desc: 'It says 4:16 ..I think', canUse: false }
         ];
@@ -43,6 +49,13 @@ Game.Backpack = class Backpack {
         if (this.isOpen) return;
         this.isOpen = true;
         this.selectedItem = null;
+
+        if (window.Game && window.Game.state && window.Game.state.money !== undefined) {
+            const walletItem = this.items.find(i => i.id === 'wallet');
+            if (walletItem) {
+                walletItem.name = `Wallet ${window.Game.state.money}€`;
+            }
+        }
 
         this._createUI();
         this.updatePosition();

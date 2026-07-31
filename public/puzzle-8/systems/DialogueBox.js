@@ -76,7 +76,7 @@ Game.DialogueBox = class DialogueBox {
             fontFamily: "'Pokemon Classic', 'Courier New', monospace",
             fontSize: '8px',
             color: '#1a1a2e',
-            wordWrap: { width: 160 },
+            wordWrap: { width: 156 },
             lineSpacing: 2,
             maxLines: 5
         });
