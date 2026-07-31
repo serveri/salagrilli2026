@@ -157,8 +157,8 @@ Game.Exam = class Exam {
         // Layout constants (in exam-local coordinates, centered at 0,0)
         // The white paper area is roughly centered in the background
         this.paperLeft = -62;
-        this.paperRight = 109; // Increased to fit new paper space
-        this.paperTop = -72;
+        this.paperRight = 106; // Increased to fit new paper space
+        this.paperTop = -76;
         this.paperBottom = 80;
     }
 
@@ -176,6 +176,9 @@ Game.Exam = class Exam {
         this.pencilActive = false;
         this.pencilSpeed = 1.0;
         this.nextPencilTime = 0;
+        this.isStartPage = true;
+        this.timerStarted = false;
+        this.startPageContainer = null;
 
         // Input buffering
         this.inputQueue = [];
@@ -310,6 +313,14 @@ Game.Exam = class Exam {
                 return;
             }
 
+            if (this.isStartPage) {
+                if (evt.code === 'Space' || evt.code === 'Enter' || evt.code === 'KeyD' || evt.code === 'ArrowRight') {
+                    evt.preventDefault();
+                    this._startExamFromCover();
+                }
+                return;
+            }
+
             // Backspace to erase
             if (evt.code === 'Backspace') {
                 evt.preventDefault();
@@ -346,39 +357,159 @@ Game.Exam = class Exam {
         };
         this.scene.input.keyboard.on('keydown', this._keyHandler);
 
-        // Start timer
-        this.timerEvent = this.scene.time.addEvent({
-            delay: 1000,
-            repeat: -1,
-            callback: () => {
-                if (this.isFinished) return;
-                this.timeRemaining--;
-                this._updateTimer();
-                if (this.timeRemaining <= 0) {
-                    this._finishExam();
-                }
-            }
+        // Show start page initially
+        this._showStartPage();
+    }
+
+    _showStartPage() {
+        this.isStartPage = true;
+
+        // Clear question elements
+        this._clearWordButtons();
+        if (this.questionText) this.questionText.setText('');
+        if (this.answerText) this.answerText.setText('');
+        if (this.eraseBtn) this.eraseBtn.setVisible(false);
+        if (this.thoughtBubbleContainer) this.thoughtBubbleContainer.setVisible(false);
+
+        this.navButtons.forEach(b => {
+            if (b.bg) b.bg.destroy();
+            if (b.label) b.label.destroy();
         });
+        this.navButtons = [];
 
-        // Schedule first pencil
-        this._schedulePencil();
+        if (this.progressText) {
+            this.progressText.setText('INFO');
+        }
+        this._updateTimer();
 
-        // Show first question
-        this._showQuestion();
+        if (this.startPageContainer) {
+            this.startPageContainer.destroy();
+            this.startPageContainer = null;
+        }
 
-        if (!Game.state.hasSlept) {
-            this.scene.time.delayedCall(1000, () => {
-                if (this.isOpen && !this.isFinished) {
-                    this._showThought("I really should have slept...", 3000);
+        this.startPageContainer = this.scene.add.container(0, 0);
+        this.container.add(this.startPageContainer);
+
+        const centerX = (this.paperLeft + this.paperRight) / 2;
+
+        // Title
+        const titleText = this.scene.add.text(centerX, this.paperTop + 14, 'EXAM INSTRUCTIONS', {
+            fontFamily: "'Pokemon Classic', 'Courier New', monospace",
+            fontSize: '7px',
+            color: '#1a1a2e',
+            align: 'center'
+        }).setOrigin(0.5, 0).setResolution(10);
+        this.startPageContainer.add(titleText);
+
+        // Time Info
+        const mins = Math.floor(this.timeRemaining / 60);
+        const secs = String(this.timeRemaining % 60).padStart(2, '0');
+        const timeStr = `Exam Time: ${mins}:${secs}`;
+        const timeText = this.scene.add.text(centerX, this.paperTop + 28, timeStr, {
+            fontFamily: "'Pokemon Classic', 'Courier New', monospace",
+            fontSize: '6px',
+            color: '#003366',
+            align: 'center'
+        }).setOrigin(0.5, 0).setResolution(10);
+        this.startPageContainer.add(timeText);
+
+        // Instructions
+        const instructionsStr =
+            "Instructions:\n" +
+            "- Form answers by selecting words.\n" +
+            "- Press Backspace or [<-] to erase.\n" +
+            "- Click flying pencil to stop it.\n" +
+            "- Press Finish on Q 10 to submit.";
+
+        const instText = this.scene.add.text(this.paperLeft + 10, this.paperTop + 42, instructionsStr, {
+            fontFamily: "'Pokemon Classic', 'Courier New', monospace",
+            fontSize: '5px',
+            color: '#333344',
+            wordWrap: { width: (this.paperRight - this.paperLeft) - 20 },
+            lineSpacing: 3
+        }).setOrigin(0, 0).setResolution(10);
+        this.startPageContainer.add(instText);
+
+        // Begin / Continue Button
+        const btnW = 55;
+        const btnH = 14;
+        const btnY = this.paperBottom - 12;
+        const btnLabel = this.timerStarted ? 'Continue' : 'Begin';
+        const bg = this.scene.add.rectangle(centerX, btnY, btnW, btnH, 0xccffcc).setOrigin(0.5, 0.5).setStrokeStyle(1, 0x008800);
+        bg.setInteractive({ useHandCursor: true });
+        bg.on('pointerdown', () => {
+            this._startExamFromCover();
+        });
+        bg.on('pointerover', () => bg.setFillStyle(0x99ee99));
+        bg.on('pointerout', () => bg.setFillStyle(0xccffcc));
+
+        const btnText = this.scene.add.text(centerX, btnY, btnLabel, {
+            fontFamily: "'Pokemon Classic', 'Courier New', monospace",
+            fontSize: '6px',
+            color: '#004400'
+        }).setOrigin(0.5, 0.5).setResolution(10);
+
+        this.startPageContainer.add(bg);
+        this.startPageContainer.add(btnText);
+    }
+
+    _startExamFromCover() {
+        if (this.startPageContainer) {
+            this.startPageContainer.destroy();
+            this.startPageContainer = null;
+        }
+
+        this.isStartPage = false;
+
+        if (!this.timerStarted) {
+            this.timerStarted = true;
+
+            // Start timer countdown
+            this.timerEvent = this.scene.time.addEvent({
+                delay: 1000,
+                repeat: -1,
+                callback: () => {
+                    if (this.isFinished) return;
+                    if (!this.timerStarted) return;
+                    this.timeRemaining--;
+                    this._updateTimer();
+                    if (this.timeRemaining <= 0) {
+                        this._finishExam();
+                    }
                 }
             });
+
+            // Schedule flying pencil
+            this._schedulePencil();
+
+            // Show initial thought bubble
+            if (Game.state && Game.state.sleptInJail) {
+                this.scene.time.delayedCall(1000, () => {
+                    if (this.isOpen && !this.isFinished) {
+                        this._showThought("I should have prepared", 3000);
+                    }
+                });
+            } else if (!Game.state || !Game.state.hasSlept) {
+                this.scene.time.delayedCall(1000, () => {
+                    if (this.isOpen && !this.isFinished) {
+                        this._showThought("I really should have slept...", 3000);
+                    }
+                });
+            }
         }
+
+        this._showQuestion();
     }
 
     close() {
         if (!this.isOpen) return;
         this.isOpen = false;
         this.scene.isExamOpen = false;
+
+        if (this.startPageContainer) {
+            this.startPageContainer.destroy();
+            this.startPageContainer = null;
+        }
 
         if (this._keyHandler) {
             this.scene.input.keyboard.off('keydown', this._keyHandler);
@@ -459,7 +590,7 @@ Game.Exam = class Exam {
                 if (this.thoughtText) {
                     this.thoughtText.setText(phrase.substring(0, charIdx));
                 }
-                if (charIdx === phrase.length && hideAfter > 0) {
+                if (charIdx >= phrase.length && hideAfter > 0) {
                     this.thoughtHideTimer = this.scene.time.delayedCall(hideAfter, () => {
                         if (this.thoughtBubbleContainer) {
                             this.thoughtBubbleContainer.setVisible(false);
@@ -640,10 +771,27 @@ Game.Exam = class Exam {
 
         const btnW = 40;
         const btnH = 12;
-        const y = this.paperBottom - 10;
+        const y = this.paperBottom - 8;
 
-        // Prev Button
-        if (this.currentQuestion > 0) {
+        // Prev / Info Button
+        if (this.currentQuestion === 0) {
+            const x = this.paperLeft + 25;
+            const bg = this.scene.add.rectangle(x, y, btnW, btnH, 0xe8e0d0).setOrigin(0.5, 0.5).setStrokeStyle(1, 0x886644);
+            bg.setInteractive({ useHandCursor: true });
+            bg.on('pointerdown', () => this._goPrev());
+            bg.on('pointerover', () => bg.setFillStyle(0xd8d0c0));
+            bg.on('pointerout', () => bg.setFillStyle(0xe8e0d0));
+
+            const label = this.scene.add.text(x, y, '< Info', {
+                fontFamily: "'Pokemon Classic', 'Courier New', monospace",
+                fontSize: '5px',
+                color: '#1a1a2e'
+            }).setOrigin(0.5, 0.5).setResolution(10);
+
+            this.container.add(bg);
+            this.container.add(label);
+            this.navButtons.push({ bg, label });
+        } else if (this.currentQuestion > 0) {
             const x = this.paperLeft + 25;
             const bg = this.scene.add.rectangle(x, y, btnW, btnH, 0xe8e0d0).setOrigin(0.5, 0.5).setStrokeStyle(1, 0x886644);
             bg.setInteractive({ useHandCursor: true });
@@ -690,7 +838,11 @@ Game.Exam = class Exam {
     _goPrev() {
         if (this.isTypingWord || this.isErasing) return;
         this.inputQueue = [];
-        if (this.currentQuestion > 0) {
+        if (this.isStartPage) return;
+
+        if (this.currentQuestion === 0) {
+            this._showStartPage();
+        } else if (this.currentQuestion > 0) {
             this.currentQuestion--;
             this._showQuestion();
         }
@@ -726,12 +878,12 @@ Game.Exam = class Exam {
         }
 
         const cols = 3;
-        const btnW = 50;
+        const btnW = 51;
         const btnH = 14;
-        const spacingX = 4;
+        const spacingX = 3;
         const spacingY = 5;
         const startX = (this.paperLeft + this.paperRight) / 2 - ((cols * (btnW + spacingX) - spacingX) / 2);
-        const startY = this.answerText ? this.answerText.y + 24 : this.paperTop + 76;
+        const startY = this.answerText ? this.answerText.y + 28 : this.paperTop + 76;
 
         q.words.forEach((word, i) => {
             const col = i % cols;

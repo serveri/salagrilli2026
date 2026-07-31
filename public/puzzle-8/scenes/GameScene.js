@@ -547,14 +547,13 @@ Game.GameScene = class GameScene extends Phaser.Scene {
                     this.dialogue.show(Game.INSPECT_MESSAGES[targetTileIndex]);
                     interacted = true;
                 } else if (targetTileIndex === 196 || targetTileIndex === 68) {
-                    this.backpack.items.push({
-                        id: 'berry_' + Date.now(), // unique ID to allow multiple berries
-                        name: 'Berry',
-                        desc: 'A fresh berry picked from a bush.',
-                        canUse: true
-                    });
+                    const old = this.energy;
+                    this.energy = Math.min(200, this.energy + 50);
+                    if (this.addEnergyDiff) {
+                        this.addEnergyDiff(this.energy - old);
+                    }
 
-                    // Update tile logically and visually
+                    // Update tile logically and visually to cleared bush
                     this.tileData[targetY][targetX] = 132;
                     if (this.layer) {
                         this.layer.putTileAt(132, targetX, targetY);
@@ -568,7 +567,7 @@ Game.GameScene = class GameScene extends Phaser.Scene {
                         y: targetY
                     });
 
-                    this.dialogue.show(['You found a berry!']);
+                    this.dialogue.show(['You snack on berries from the bush, +50 energy']);
                     interacted = true;
                 } else if (targetTileIndex === 478 || targetTileIndex === 414) {
                     Game.state = Game.state || {};
@@ -590,7 +589,9 @@ Game.GameScene = class GameScene extends Phaser.Scene {
                                         const old = this.energy;
                                         this.energy = 200;
                                         this.addEnergyDiff(this.energy - old);
+                                        Game.state = Game.state || {};
                                         Game.state.hasSlept = true;
+                                        Game.state.sleptInBed = true;
 
                                         if (this.backpack) {
                                             const watch = this.backpack.items.find(i => i.id === 'watch');
@@ -1175,7 +1176,7 @@ Game.GameScene = class GameScene extends Phaser.Scene {
 
             let hasEnergyItems = false;
             if (this.backpack && this.backpack.items) {
-                hasEnergyItems = this.backpack.items.some(i => i.id === 'energy_drink' || i.id === 'protein_bar' || i.id.startsWith('berry') || i.id === 'cup_of_coffee');
+                hasEnergyItems = this.backpack.items.some(i => i.id === 'energy_drink' || i.id === 'protein_bar' || i.id === 'cup_of_coffee');
             }
 
             if (!hasEnergyItems) {
@@ -1827,6 +1828,7 @@ Game.GameScene = class GameScene extends Phaser.Scene {
                     // Advance time
                     Game.state = Game.state || {};
                     Game.state.hasSlept = true;
+                    Game.state.sleptInJail = true;
                     if (this.backpack) {
                         const watch = this.backpack.items.find(i => i.id === 'watch');
                         if (watch) {
