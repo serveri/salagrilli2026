@@ -121,15 +121,28 @@ Game.GameScene = class GameScene extends Phaser.Scene {
             this.cameras.main.setVisible(true);
             this.cameras.main.fadeIn(900, 0, 0, 0);
 
-            // Show intro dialogue
+            // Darken world for intro sleeping sequence
+            const darkOverlay = this.add.rectangle(0, 0, this.currentArea.width * Game.TILE_SIZE, this.currentArea.height * Game.TILE_SIZE, 0x000000, 0.45)
+                .setOrigin(0, 0)
+                .setDepth(1900);
+
+            // Show intro dialogue with slower typing speed (50ms per character)
             this.player.setTexture('playerextra', 1);
             this.dialogue.show([
                 'Zzzz.. \n \n \n Press space to continue..',
                 '..Huh?',
                 'I feel tired..\nWhere even am I??'
             ], () => {
+                this.tweens.add({
+                    targets: darkOverlay,
+                    alpha: 0,
+                    duration: 800,
+                    onComplete: () => {
+                        darkOverlay.destroy();
+                    }
+                });
                 this.setIdleFrame();
-            });
+            }, [], 50);
         });
 
         // Dialogue system
@@ -914,9 +927,9 @@ Game.GameScene = class GameScene extends Phaser.Scene {
             this.police = null;
         }
 
-        if (this.currentArea.name === 'serveriquest') {
-            const px = 37;
-            const py = 42;
+        if (this.currentArea.name === 'serveriquest' && (!Game.state || !Game.state.hasSlept)) {
+            const px = 25;
+            const py = 52;
             this.police = {
                 tileX: px,
                 tileY: py,
@@ -1623,6 +1636,11 @@ Game.GameScene = class GameScene extends Phaser.Scene {
 
     updatePolice(time, delta) {
         if (!this.police) return;
+        if (Game.state && Game.state.hasSlept) {
+            if (this.police.sprite) this.police.sprite.destroy();
+            this.police = null;
+            return;
+        }
         if (this.police.isMoving) return;
         if (this.isTransitioning) return;
 
@@ -1638,7 +1656,9 @@ Game.GameScene = class GameScene extends Phaser.Scene {
         }
 
         // If player is caught
-        if (dist === 1) {
+        if (dist <= 1) {
+            if (this.police.isStunned) return;
+
             if (this.police.sprite.anims.isPlaying) {
                 this.police.sprite.anims.stop();
             }
@@ -1662,22 +1682,32 @@ Game.GameScene = class GameScene extends Phaser.Scene {
 
             this.isTransitioning = true; // lock player out
 
-            this.dialogue.show(['You are under arrest'], () => {
-                this.cameras.main.fadeOut(250, 0, 0, 0, (camera, progress) => {
-                    if (progress === 1) {
-                        this.loadArea('/puzzle-8/data/savilahti.csv', 4, 20).then(() => {
-                            const old = this.energy;
-                            this.energy = Math.min(200, this.energy + 15);
-                            this.addEnergyDiff(this.energy - old);
-                            this.cameras.main.fadeIn(250, 0, 0, 0, (cam, prog) => {
-                                if (prog === 1) {
-                                    this.isTransitioning = false;
-                                }
-                            });
-                        });
+            if (!this.police.hasRanOnce) {
+                this.dialogue.show(["You don't look well, how about we go sleep in the police station?"], null, [
+                    {
+                        text: 'Accept', color: '#006600', hoverColor: '#00cc00', onClick: () => {
+                            this._sendPlayerToJail();
+                        }
+                    },
+                    {
+                        text: 'Run', color: '#880000', hoverColor: '#cc0000', onClick: () => {
+                            if (this.police) {
+                                this.police.hasRanOnce = true;
+                                this.police.hasSeenPlayer = false;
+                                this.police.isStunned = true;
+                                this.time.delayedCall(4000, () => {
+                                    if (this.police) this.police.isStunned = false;
+                                });
+                            }
+                            this.isTransitioning = false;
+                        }
                     }
+                ]);
+            } else {
+                this.dialogue.show(["And where are you planning to go then?"], () => {
+                    this._sendPlayerToJail();
                 });
-            });
+            }
             return;
         }
 
@@ -1761,7 +1791,7 @@ Game.GameScene = class GameScene extends Phaser.Scene {
                     targets: this.police.sprite,
                     x: targetPxX,
                     y: targetPxY,
-                    duration: Game.TWEEN_DURATION + 10, // Same speed as player
+                    duration: Game.TWEEN_DURATION + 15, // Slower police movement
                     ease: 'Linear',
                     onComplete: () => {
                         this.police.tileX = targetX;
@@ -1786,226 +1816,280 @@ Game.GameScene = class GameScene extends Phaser.Scene {
         }
     }
 
-    setPoliceIdleFrame() {
-        if (!this.police) return;
-        switch (this.police.facing) {
-            case 'down': this.police.sprite.setFrame(0); break;
-            case 'up': this.police.sprite.setFrame(4); break;
-            case 'left': this.police.sprite.setFrame(8); break;
-            case 'right': this.police.sprite.setFrame(12); break;
-        }
-    }
+    _sendPlayerToJail() {
+        this.isTransitioning = true;
+        this.cameras.main.fadeOut(300, 0, 0, 0, (camera, progress) => {
+            if (progress === 1) {
+                // Step 1: Teleport to jail in snellmania.csv at (5, 3)
+                this.loadArea('/puzzle-8/data/snellmania.csv', 5, 3).then(() => {
+                    this.player.setTexture('playerextra', 1); // sleeping frame
 
-    canPoliceMove(targetX, targetY) {
-        if (targetX < 0 || targetX >= this.currentArea.width || targetY < 0 || targetY >= this.currentArea.height) {
-            return false;
-        }
+                    // Advance time
+                    Game.state = Game.state || {};
+                    Game.state.hasSlept = true;
+                    if (this.backpack) {
+                        const watch = this.backpack.items.find(i => i.id === 'watch');
+                        if (watch) {
+                            watch.desc = 'The time is 9:05. You are late.';
+                        }
+                    }
 
-        // Prevent walking on player tile
-        if (targetX === this.tileX && targetY === this.tileY) {
-            return false;
-        }
+                    // Dark sleeping overlay
+                    const darkOverlay = this.add.rectangle(0, 0, this.currentArea.width * Game.TILE_SIZE, this.currentArea.height * Game.TILE_SIZE, 0x000000, 0.5)
+                        .setOrigin(0, 0)
+                        .setDepth(1900);
 
-        const targetTileIndex = this.tileData[targetY][targetX];
-        return Game.WALKABLE_TILES.has(targetTileIndex);
-    }
-
-    walkBackFromBench(origX, origY) {
-        const oppFacing = {
-            'up': 'down',
-            'down': 'up',
-            'left': 'right',
-            'right': 'left'
-        }[this.facing];
-
-        this.player.play(`walk-${oppFacing}`, true);
-        this.tweens.add({
-            targets: this.player,
-            x: origX * Game.TILE_SIZE,
-            y: origY * Game.TILE_SIZE,
-            duration: Game.TWEEN_DURATION,
-            ease: 'Linear',
-            onComplete: () => {
-                this.player.anims.stop();
-                this.setIdleFrame();
-                this.isTransitioning = false;
+                    this.cameras.main.fadeIn(400, 0, 0, 0, (cam, prog) => {
+                        if (prog === 1) {
+                            // Show jail sleep message (restores NO energy!)
+                            this.dialogue.show(['You spend the night in jail.'], () => {
+                                // Step 2: Fade out and drop off player at serveriquest.csv (42, 1)
+                                this.cameras.main.fadeOut(400, 0, 0, 0, (cam2, prog2) => {
+                                    if (prog2 === 1) {
+                                        darkOverlay.destroy();
+                                        this.loadArea('/puzzle-8/data/snellmania.csv', 42, 1).then(() => {
+                                            this.setIdleFrame();
+                                            this.cameras.main.fadeIn(400, 0, 0, 0, (cam3, prog3) => {
+                                                if (prog3 === 1) {
+                                                    this.dialogue.show([
+                                                        'The police drop you off at snellmania',
+                                                        'Oh no, I have an exam!'
+                                                    ], () => {
+                                                        this.isTransitioning = false;
+                                                    });
+                                                }
+                                            });
+                                        });
+                                    }
+                                });
+                            });
+                        }
+                    });
+                });
             }
         });
     }
 
-    updateDrunkEffect() {
-        if (!this.sys || !this.sys.game || !this.sys.game.canvas) return;
-        const canvas = this.sys.game.canvas;
+setPoliceIdleFrame() {
+    if (!this.police) return;
+    switch (this.police.facing) {
+        case 'down': this.police.sprite.setFrame(0); break;
+        case 'up': this.police.sprite.setFrame(4); break;
+        case 'left': this.police.sprite.setFrame(8); break;
+        case 'right': this.police.sprite.setFrame(12); break;
+    }
+}
 
-        let drunkBlur = 0;
-        if (this.reverseControlsSteps && this.reverseControlsSteps > 0) {
-            drunkBlur = Math.min(8, this.reverseControlsSteps / 6);
-        }
-
-        let energyBlur = 0;
-        if (this.energy !== undefined && this.energy <= 20) {
-            energyBlur = (20 - Math.max(0, this.energy)) / 10;
-        }
-
-        const finalBlur = Math.max(drunkBlur, energyBlur);
-
-        if (finalBlur <= 0) {
-            canvas.style.filter = 'none';
-        } else {
-            canvas.style.filter = `blur(${finalBlur}px)`;
-        }
+canPoliceMove(targetX, targetY) {
+    if (targetX < 0 || targetX >= this.currentArea.width || targetY < 0 || targetY >= this.currentArea.height) {
+        return false;
     }
 
-    _openExamNpcOffer() {
-        // Open backpack in a special "offer to NPC" mode
-        // We temporarily override the grid click behavior
-        if (!this.backpack) return;
+    // Prevent walking on player tile
+    if (targetX === this.tileX && targetY === this.tileY) {
+        return false;
+    }
 
-        this.backpack.open();
+    const targetTileIndex = this.tileData[targetY][targetX];
+    return Game.WALKABLE_TILES.has(targetTileIndex);
+}
 
-        // Override the grid rendering to make items clickable as offers
-        const originalRenderGrid = this.backpack._renderGrid.bind(this.backpack);
-        const originalRenderHeader = this.backpack._renderHeader.bind(this.backpack);
-        const scene = this;
+walkBackFromBench(origX, origY) {
+    const oppFacing = {
+        'up': 'down',
+        'down': 'up',
+        'left': 'right',
+        'right': 'left'
+    }[this.facing];
 
-        this.backpack._renderHeader = function () {
-            if (!this.actionContainer) return;
-            this.actionContainer.removeAll(true);
+    this.player.play(`walk-${oppFacing}`, true);
+    this.tweens.add({
+        targets: this.player,
+        x: origX * Game.TILE_SIZE,
+        y: origY * Game.TILE_SIZE,
+        duration: Game.TWEEN_DURATION,
+        ease: 'Linear',
+        onComplete: () => {
+            this.player.anims.stop();
+            this.setIdleFrame();
+            this.isTransitioning = false;
+        }
+    });
+}
 
-            this.headerText.setText('Offer item');
-            this.headerText.setPosition(this.bgX + 99, this.bgY + 20);
-            this.headerText.setOrigin(0.5, 0.5);
+updateDrunkEffect() {
+    if (!this.sys || !this.sys.game || !this.sys.game.canvas) return;
+    const canvas = this.sys.game.canvas;
 
-            // Close button
-            const closeBtn = scene.add.text(20, 138, '[X]', {
-                fontFamily: "'Pokemon Classic', 'Courier New', monospace",
-                fontSize: '32px',
-                color: '#880000'
-            }).setOrigin(0, 0.5).setInteractive({ useHandCursor: true }).setScale(0.22);
+    let drunkBlur = 0;
+    if (this.reverseControlsSteps && this.reverseControlsSteps > 0) {
+        drunkBlur = Math.min(8, this.reverseControlsSteps / 6);
+    }
 
-            closeBtn.on('pointerover', () => closeBtn.setColor('#ff0000'));
-            closeBtn.on('pointerout', () => closeBtn.setColor('#880000'));
-            closeBtn.on('pointerdown', () => {
-                restoreBackpack();
-                scene.backpack.close();
-            });
-            this.actionContainer.add(closeBtn);
-        };
+    let energyBlur = 0;
+    if (this.energy !== undefined && this.energy <= 20) {
+        energyBlur = (20 - Math.max(0, this.energy)) / 10;
+    }
 
-        this.backpack._renderGrid = function () {
-            if (!this.gridContainer) return;
-            this.gridContainer.removeAll(true);
+    const finalBlur = Math.max(drunkBlur, energyBlur);
 
-            const cols = 3;
-            const startX = 20;
-            const startY = 36;
-            const slotW = 50;
-            const slotH = 28;
-            const spacingX = 4;
-            const spacingY = 4;
+    if (finalBlur <= 0) {
+        canvas.style.filter = 'none';
+    } else {
+        canvas.style.filter = `blur(${finalBlur}px)`;
+    }
+}
 
-            if (typeof this.currentPage === 'undefined') this.currentPage = 0;
-            const itemsPerPage = 9;
-            const totalPages = Math.ceil(this.items.length / itemsPerPage) || 1;
-            if (this.currentPage >= totalPages) this.currentPage = Math.max(0, totalPages - 1);
+_openExamNpcOffer() {
+    // Open backpack in a special "offer to NPC" mode
+    // We temporarily override the grid click behavior
+    if (!this.backpack) return;
 
-            const startIndex = this.currentPage * itemsPerPage;
-            const pageItems = this.items.slice(startIndex, startIndex + itemsPerPage);
+    this.backpack.open();
 
-            if (totalPages > 1) {
-                if (this.currentPage > 0) {
-                    const leftArrow = scene.add.text(10, 88, '←', {
-                        fontFamily: "'Pokemon Classic', 'Courier New', monospace",
-                        fontSize: '32px',
-                        color: '#1a1a2e'
-                    }).setOrigin(0.5).setInteractive({ useHandCursor: true }).setScale(0.25);
-                    leftArrow.on('pointerdown', () => { this.currentPage--; this._renderGrid(); });
-                    this.gridContainer.add(leftArrow);
-                }
-                if (this.currentPage < totalPages - 1) {
-                    const rightArrow = scene.add.text(190, 88, '→', {
-                        fontFamily: "'Pokemon Classic', 'Courier New', monospace",
-                        fontSize: '32px',
-                        color: '#1a1a2e'
-                    }).setOrigin(0.5).setInteractive({ useHandCursor: true }).setScale(0.25);
-                    rightArrow.on('pointerdown', () => { this.currentPage++; this._renderGrid(); });
-                    this.gridContainer.add(rightArrow);
-                }
-            }
+    // Override the grid rendering to make items clickable as offers
+    const originalRenderGrid = this.backpack._renderGrid.bind(this.backpack);
+    const originalRenderHeader = this.backpack._renderHeader.bind(this.backpack);
+    const scene = this;
 
-            pageItems.forEach((item, index) => {
-                const c = index % cols;
-                const r = Math.floor(index / cols);
-                const x = startX + c * (slotW + spacingX);
-                const y = startY + r * (slotH + spacingY);
+    this.backpack._renderHeader = function () {
+        if (!this.actionContainer) return;
+        this.actionContainer.removeAll(true);
 
-                const bgRect = scene.add.rectangle(
-                    x, y, slotW, slotH, 0xf0f0f5
-                ).setOrigin(0, 0).setInteractive({ useHandCursor: true });
+        this.headerText.setText('Offer item');
+        this.headerText.setPosition(this.bgX + 99, this.bgY + 20);
+        this.headerText.setOrigin(0.5, 0.5);
 
-                const strokeRect = scene.add.graphics();
-                strokeRect.lineStyle(1, 0x888899);
-                strokeRect.strokeRect(x, y, slotW, slotH);
+        // Close button
+        const closeBtn = scene.add.text(20, 138, '[X]', {
+            fontFamily: "'Pokemon Classic', 'Courier New', monospace",
+            fontSize: '32px',
+            color: '#880000'
+        }).setOrigin(0, 0.5).setInteractive({ useHandCursor: true }).setScale(0.22);
 
-                const itemText = scene.add.text(Math.round(x + slotW / 2), Math.round(y + slotH / 2), this._formatItemName(item.name), {
+        closeBtn.on('pointerover', () => closeBtn.setColor('#ff0000'));
+        closeBtn.on('pointerout', () => closeBtn.setColor('#880000'));
+        closeBtn.on('pointerdown', () => {
+            restoreBackpack();
+            scene.backpack.close();
+        });
+        this.actionContainer.add(closeBtn);
+    };
+
+    this.backpack._renderGrid = function () {
+        if (!this.gridContainer) return;
+        this.gridContainer.removeAll(true);
+
+        const cols = 3;
+        const startX = 20;
+        const startY = 36;
+        const slotW = 50;
+        const slotH = 28;
+        const spacingX = 4;
+        const spacingY = 4;
+
+        if (typeof this.currentPage === 'undefined') this.currentPage = 0;
+        const itemsPerPage = 9;
+        const totalPages = Math.ceil(this.items.length / itemsPerPage) || 1;
+        if (this.currentPage >= totalPages) this.currentPage = Math.max(0, totalPages - 1);
+
+        const startIndex = this.currentPage * itemsPerPage;
+        const pageItems = this.items.slice(startIndex, startIndex + itemsPerPage);
+
+        if (totalPages > 1) {
+            if (this.currentPage > 0) {
+                const leftArrow = scene.add.text(10, 88, '←', {
                     fontFamily: "'Pokemon Classic', 'Courier New', monospace",
                     fontSize: '32px',
-                    color: '#222233',
-                    align: 'center'
-                }).setOrigin(0.5, 0.5).setScale(0.22);
+                    color: '#1a1a2e'
+                }).setOrigin(0.5).setInteractive({ useHandCursor: true }).setScale(0.25);
+                leftArrow.on('pointerdown', () => { this.currentPage--; this._renderGrid(); });
+                this.gridContainer.add(leftArrow);
+            }
+            if (this.currentPage < totalPages - 1) {
+                const rightArrow = scene.add.text(190, 88, '→', {
+                    fontFamily: "'Pokemon Classic', 'Courier New', monospace",
+                    fontSize: '32px',
+                    color: '#1a1a2e'
+                }).setOrigin(0.5).setInteractive({ useHandCursor: true }).setScale(0.25);
+                rightArrow.on('pointerdown', () => { this.currentPage++; this._renderGrid(); });
+                this.gridContainer.add(rightArrow);
+            }
+        }
 
-                bgRect.on('pointerover', () => bgRect.setFillStyle(0xd8d0c0));
-                bgRect.on('pointerout', () => bgRect.setFillStyle(0xf0f0f5));
-                bgRect.on('pointerdown', () => {
-                    restoreBackpack();
-                    scene.backpack.close();
-                    scene._handleExamNpcItemOffer(item);
+        pageItems.forEach((item, index) => {
+            const c = index % cols;
+            const r = Math.floor(index / cols);
+            const x = startX + c * (slotW + spacingX);
+            const y = startY + r * (slotH + spacingY);
+
+            const bgRect = scene.add.rectangle(
+                x, y, slotW, slotH, 0xf0f0f5
+            ).setOrigin(0, 0).setInteractive({ useHandCursor: true });
+
+            const strokeRect = scene.add.graphics();
+            strokeRect.lineStyle(1, 0x888899);
+            strokeRect.strokeRect(x, y, slotW, slotH);
+
+            const itemText = scene.add.text(Math.round(x + slotW / 2), Math.round(y + slotH / 2), this._formatItemName(item.name), {
+                fontFamily: "'Pokemon Classic', 'Courier New', monospace",
+                fontSize: '32px',
+                color: '#222233',
+                align: 'center'
+            }).setOrigin(0.5, 0.5).setScale(0.22);
+
+            bgRect.on('pointerover', () => bgRect.setFillStyle(0xd8d0c0));
+            bgRect.on('pointerout', () => bgRect.setFillStyle(0xf0f0f5));
+            bgRect.on('pointerdown', () => {
+                restoreBackpack();
+                scene.backpack.close();
+                scene._handleExamNpcItemOffer(item);
+            });
+
+            this.gridContainer.add(bgRect);
+            this.gridContainer.add(strokeRect);
+            this.gridContainer.add(itemText);
+        });
+    };
+
+    const restoreBackpack = () => {
+        this.backpack._renderGrid = originalRenderGrid;
+        this.backpack._renderHeader = originalRenderHeader;
+    };
+
+    // Re-render with the overridden methods
+    this.backpack._renderHeader();
+    this.backpack._renderGrid();
+}
+
+_handleExamNpcItemOffer(item) {
+    if (item.id.startsWith('sign_')) {
+        // Traffic sign — success!
+        this.dialogue.show(
+            ['A traffic sign?? Ok quite random but what the hell, you can have this pencil LOL'],
+            () => {
+                // Remove the traffic sign from inventory
+                this.backpack.items = this.backpack.items.filter(i => i !== item);
+
+                // Add pencil to inventory
+                this.backpack.items.push({
+                    id: 'pencil',
+                    name: 'Pencil',
+                    desc: 'A trusty pencil. Needed for the exam.',
+                    canUse: false
                 });
 
-                this.gridContainer.add(bgRect);
-                this.gridContainer.add(strokeRect);
-                this.gridContainer.add(itemText);
-            });
-        };
+                Game.state = Game.state || {};
+                Game.state.examNpcTraded = true;
+                Game.state.pencilCollected = true;
 
-        const restoreBackpack = () => {
-            this.backpack._renderGrid = originalRenderGrid;
-            this.backpack._renderHeader = originalRenderHeader;
-        };
-
-        // Re-render with the overridden methods
-        this.backpack._renderHeader();
-        this.backpack._renderGrid();
+                this.dialogue.show(['You received a Pencil!']);
+            }
+        );
+    } else if (item.id === 'jallu') {
+        this.dialogue.show(['No, I only drink Gambina']);
+    } else {
+        this.dialogue.show(['I have no use for that']);
     }
-
-    _handleExamNpcItemOffer(item) {
-        if (item.id.startsWith('sign_')) {
-            // Traffic sign — success!
-            this.dialogue.show(
-                ['A traffic sign?? Ok quite random but what the hell, you can have this pencil LOL'],
-                () => {
-                    // Remove the traffic sign from inventory
-                    this.backpack.items = this.backpack.items.filter(i => i !== item);
-
-                    // Add pencil to inventory
-                    this.backpack.items.push({
-                        id: 'pencil',
-                        name: 'Pencil',
-                        desc: 'A trusty pencil. Needed for the exam.',
-                        canUse: false
-                    });
-
-                    Game.state = Game.state || {};
-                    Game.state.examNpcTraded = true;
-                    Game.state.pencilCollected = true;
-
-                    this.dialogue.show(['You received a Pencil!']);
-                }
-            );
-        } else if (item.id === 'jallu') {
-            this.dialogue.show(['No, I only drink Gambina']);
-        } else {
-            this.dialogue.show(['I have no use for that']);
-        }
-    }
+}
 };

@@ -156,9 +156,9 @@ Game.Exam = class Exam {
 
         // Layout constants (in exam-local coordinates, centered at 0,0)
         // The white paper area is roughly centered in the background
-        this.paperLeft = -59;
+        this.paperLeft = -62;
         this.paperRight = 109; // Increased to fit new paper space
-        this.paperTop = -75;
+        this.paperTop = -72;
         this.paperBottom = 80;
     }
 

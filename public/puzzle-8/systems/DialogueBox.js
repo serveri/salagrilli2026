@@ -37,13 +37,14 @@ Game.DialogueBox = class DialogueBox {
      * @param {string[]} messages - Array of message strings to display sequentially
      * @param {Function} [onComplete] - Called when all messages are dismissed
      */
-    show(messages, onComplete, buttons = []) {
+    show(messages, onComplete, buttons = [], typeDelay = 20) {
         if (!messages || messages.length === 0) return;
 
         this.messages = messages;
         this.currentIndex = 0;
         this.onComplete = onComplete || null;
         this.buttonsData = buttons;
+        this.typeDelay = typeDelay;
         this.isActive = true;
 
         this._createUI();
@@ -195,7 +196,7 @@ Game.DialogueBox = class DialogueBox {
         let charIndex = 0;
 
         this.typeTimer = this.scene.time.addEvent({
-            delay: 20, // 25ms per character — fast typewriter
+            delay: this.typeDelay || 20,
             repeat: this.fullText.length - 1,
             callback: () => {
                 charIndex++;
