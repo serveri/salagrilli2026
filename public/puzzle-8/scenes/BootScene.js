@@ -77,6 +77,12 @@ Game.BootScene = class BootScene extends Phaser.Scene {
         
         // Thought bubble for exam
         this.load.image('thoughtbubble', 'thoughtbubble.png');
+
+        // Serveri celebrate spritesheet (16x18 frames)
+        this.load.spritesheet('servericelebrate', 'ServeriCelebrate.png', {
+            frameWidth: 16,
+            frameHeight: 18
+        });
     }
 
     create() {

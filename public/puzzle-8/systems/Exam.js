@@ -361,6 +361,17 @@ Game.Exam = class Exam {
         this._showStartPage();
     }
 
+    _clearWordButtons() {
+        if (this.wordButtons) {
+            this.wordButtons.forEach(b => {
+                if (b.bg) b.bg.destroy();
+                if (b.label) b.label.destroy();
+                if (b.numLabel) b.numLabel.destroy();
+            });
+        }
+        this.wordButtons = [];
+    }
+
     _showStartPage() {
         this.isStartPage = true;
 
@@ -451,6 +462,24 @@ Game.Exam = class Exam {
 
         this.startPageContainer.add(bg);
         this.startPageContainer.add(btnText);
+
+        // Show initial thought bubble on info page (only on first open, not on return via < Info)
+        if (!this.timerStarted) {
+            Game.state = Game.state || {};
+            if (Game.state.sleptInJail) {
+                this.scene.time.delayedCall(600, () => {
+                    if (this.isOpen && !this.isFinished && this.isStartPage) {
+                        this._showThought("I should have prepared", 3000);
+                    }
+                });
+            } else if (!Game.state.hasSlept) {
+                this.scene.time.delayedCall(600, () => {
+                    if (this.isOpen && !this.isFinished && this.isStartPage) {
+                        this._showThought("I really should have slept...", 3000);
+                    }
+                });
+            }
+        }
     }
 
     _startExamFromCover() {
@@ -481,21 +510,6 @@ Game.Exam = class Exam {
 
             // Schedule flying pencil
             this._schedulePencil();
-
-            // Show initial thought bubble
-            if (Game.state && Game.state.sleptInJail) {
-                this.scene.time.delayedCall(1000, () => {
-                    if (this.isOpen && !this.isFinished) {
-                        this._showThought("I should have prepared", 3000);
-                    }
-                });
-            } else if (!Game.state || !Game.state.hasSlept) {
-                this.scene.time.delayedCall(1000, () => {
-                    if (this.isOpen && !this.isFinished) {
-                        this._showThought("I really should have slept...", 3000);
-                    }
-                });
-            }
         }
 
         this._showQuestion();

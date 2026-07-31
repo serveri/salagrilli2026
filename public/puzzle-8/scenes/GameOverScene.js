@@ -46,14 +46,42 @@ Game.GameOverScene = class GameOverScene extends Phaser.Scene {
             // Load and render Victory.csv
             await this._loadVictoryMap();
 
-            // Place player at tile 2, 6
-            this.player = this.add.sprite(
-                2 * Game.TILE_SIZE,
-                6 * Game.TILE_SIZE,
-                'player', 0
-            );
-            this.player.setOrigin(0, 0);
-            this.player.setDepth(10);
+            // Ensure animations exist
+            if (!this.anims.exists('walk-down')) {
+                this.anims.create({
+                    key: 'walk-down',
+                    frames: this.anims.generateFrameNumbers('player', { frames: [0, 1, 2, 3] }),
+                    frameRate: 10,
+                    repeat: -1
+                });
+            }
+            if (!this.anims.exists('walk-up')) {
+                this.anims.create({
+                    key: 'walk-up',
+                    frames: this.anims.generateFrameNumbers('player', { frames: [4, 5, 6, 7] }),
+                    frameRate: 10,
+                    repeat: -1
+                });
+            }
+            if (!this.anims.exists('walk-right')) {
+                this.anims.create({
+                    key: 'walk-right',
+                    frames: this.anims.generateFrameNumbers('player', { frames: [12, 13, 14, 15] }),
+                    frameRate: 9,
+                    repeat: -1
+                });
+            }
+            if (!this.anims.exists('serveri-celebrate')) {
+                this.anims.create({
+                    key: 'serveri-celebrate',
+                    frames: this.anims.generateFrameNumbers('servericelebrate', { start: 0, end: 3 }),
+                    frameRate: 6,
+                    repeat: -1
+                });
+            }
+
+            // Animate 3 Serveris walking and celebrating on Victory map
+            this._animateVictoryServeris();
 
             // Camera setup for the small victory map
             this.cameras.main.setZoom(Game.SCALE);
@@ -221,5 +249,63 @@ Game.GameOverScene = class GameOverScene extends Phaser.Scene {
         const tileset = tilemap.addTilesetImage('tiles', 'tiles', 16, 16, 0, 0);
         const layer = tilemap.createLayer(0, tileset, 0, 0);
         layer.setDepth(0);
+    }
+
+    _animateVictoryServeris() {
+        const TILE = Game.TILE_SIZE;
+        const stepTime = 160;
+
+        const createServeri = (delay, pathSegments, finalTileX, finalTileY) => {
+            this.time.delayedCall(delay, () => {
+                const s = this.add.sprite(0, 0, 'player', 0).setOrigin(0, 0).setDepth(10);
+                s.play('walk-down');
+
+                let chainTween = (segmentIndex) => {
+                    if (segmentIndex >= pathSegments.length) {
+                        // Switch to 4-frame celebrate animation
+                        s.setTexture('servericelebrate');
+                        s.setPosition(finalTileX * TILE, finalTileY * TILE - 2);
+                        s.play('serveri-celebrate');
+                        return;
+                    }
+
+                    const seg = pathSegments[segmentIndex];
+                    s.play(seg.anim);
+                    const duration = seg.dist * stepTime;
+
+                    this.tweens.add({
+                        targets: s,
+                        x: seg.targetX * TILE,
+                        y: seg.targetY * TILE - 2,
+                        duration: duration,
+                        ease: 'Linear',
+                        onComplete: () => {
+                            chainTween(segmentIndex + 1);
+                        }
+                    });
+                };
+
+                chainTween(0);
+            });
+        };
+
+        // Serveri 1: spawns at 0,0 delay 0. Walks down to 0,6 then right to 5,6
+        createServeri(0, [
+            { targetX: 0, targetY: 6, dist: 6, anim: 'walk-down' },
+            { targetX: 5, targetY: 6, dist: 5, anim: 'walk-right' }
+        ], 5, 6);
+
+        // Serveri 2: spawns at 0,0 delay 700. Walks down to 0,6 then right to 3,6 then up to 3,5
+        createServeri(700, [
+            { targetX: 0, targetY: 6, dist: 6, anim: 'walk-down' },
+            { targetX: 3, targetY: 6, dist: 3, anim: 'walk-right' },
+            { targetX: 3, targetY: 5, dist: 1, anim: 'walk-up' }
+        ], 3, 5);
+
+        // Serveri 3: spawns at 0,0 delay 1400. Walks down to 0,6 then right to 2,6
+        createServeri(1400, [
+            { targetX: 0, targetY: 6, dist: 6, anim: 'walk-down' },
+            { targetX: 2, targetY: 6, dist: 2, anim: 'walk-right' }
+        ], 2, 6);
     }
 };

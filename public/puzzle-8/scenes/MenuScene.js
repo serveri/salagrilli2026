@@ -28,7 +28,7 @@ Game.MenuScene = class MenuScene extends Phaser.Scene {
         menuGroup.add(title);
 
         // START Button
-        const startBtn = this.add.image(width / 2, height / 2 - 20, 'btn');
+        const startBtn = this.add.image(width / 2, height / 2 + 14, 'btn');
         startBtn.setScale(Game.SCALE);
         startBtn.setInteractive(
             new Phaser.Geom.Rectangle(0, 0, startBtn.width, startBtn.height),
@@ -37,7 +37,7 @@ Game.MenuScene = class MenuScene extends Phaser.Scene {
         startBtn.input.cursor = 'pointer';
         menuGroup.add(startBtn);
 
-        const startBtnLabel = this.add.text(width / 2, height / 2 - 20, 'START', {
+        const startBtnLabel = this.add.text(width / 2, height / 2 + 14, 'START', {
             fontFamily: 'Pokemon Classic',
             fontSize: '8px',
             color: '#1a1a2e'
@@ -45,7 +45,7 @@ Game.MenuScene = class MenuScene extends Phaser.Scene {
         menuGroup.add(startBtnLabel);
 
         // ABOUT Button
-        const aboutBtn = this.add.image(width / 2, height / 2 + 50, 'btn');
+        const aboutBtn = this.add.image(width / 2, height / 2 + 92, 'btn');
         aboutBtn.setScale(Game.SCALE);
         aboutBtn.setInteractive(
             new Phaser.Geom.Rectangle(0, 0, aboutBtn.width, aboutBtn.height),
@@ -54,7 +54,7 @@ Game.MenuScene = class MenuScene extends Phaser.Scene {
         aboutBtn.input.cursor = 'pointer';
         menuGroup.add(aboutBtn);
 
-        const aboutBtnLabel = this.add.text(width / 2, height / 2 + 50, 'ABOUT', {
+        const aboutBtnLabel = this.add.text(width / 2, height / 2 + 92, 'ABOUT', {
             fontFamily: 'Pokemon Classic',
             fontSize: '8px',
             color: '#1a1a2e'
@@ -62,7 +62,7 @@ Game.MenuScene = class MenuScene extends Phaser.Scene {
         menuGroup.add(aboutBtnLabel);
 
         // SETTINGS Button
-        const settingsBtn = this.add.image(width / 2, height / 2 + 120, 'btn');
+        const settingsBtn = this.add.image(width / 2, height / 2 + 170, 'btn');
         settingsBtn.setScale(Game.SCALE);
         settingsBtn.setInteractive(
             new Phaser.Geom.Rectangle(0, 0, settingsBtn.width, settingsBtn.height),
@@ -71,7 +71,7 @@ Game.MenuScene = class MenuScene extends Phaser.Scene {
         settingsBtn.input.cursor = 'pointer';
         menuGroup.add(settingsBtn);
 
-        const settingsBtnLabel = this.add.text(width / 2, height / 2 + 120, 'SETTINGS', {
+        const settingsBtnLabel = this.add.text(width / 2, height / 2 + 170, 'SETTINGS', {
             fontFamily: 'Pokemon Classic',
             fontSize: '8px',
             color: '#1a1a2e'
@@ -160,7 +160,7 @@ Game.MenuScene = class MenuScene extends Phaser.Scene {
         });
 
         // Settings Back Button
-        const settingsBackBtn = this.add.image(width / 2, height / 2 + 120, 'btn');
+        const settingsBackBtn = this.add.image(width / 2, height / 2 + 170, 'btn');
         settingsBackBtn.setScale(Game.SCALE);
         settingsBackBtn.setInteractive(
             new Phaser.Geom.Rectangle(0, 0, settingsBackBtn.width, settingsBackBtn.height),
@@ -169,7 +169,7 @@ Game.MenuScene = class MenuScene extends Phaser.Scene {
         settingsBackBtn.input.cursor = 'pointer';
         settingsGroup.add(settingsBackBtn);
 
-        const settingsBackBtnLabel = this.add.text(width / 2, height / 2 + 120, 'BACK', {
+        const settingsBackBtnLabel = this.add.text(width / 2, height / 2 + 170, 'BACK', {
             fontFamily: 'Pokemon Classic',
             fontSize: '8px',
             color: '#1a1a2e'
@@ -177,16 +177,17 @@ Game.MenuScene = class MenuScene extends Phaser.Scene {
         settingsGroup.add(settingsBackBtnLabel);
 
         // --- About View Elements ---
-        const aboutText = this.add.text(width / 2, height / 3, 'About ServeriQuest\n\nThis is an adventure following the life of Serveri mouse. Excercise and socialising is kinda tiring. Beat the game and you get the flag! There might be other secrets.\n \nYou may need to restart couple of times... \n \n \nCredit\nPokemon Classic font by TheLouster115 \nisaiah658\'s Pixel Pack #2\nEverything else by https://github.com/RemesTop', {
+        const aboutText = this.add.text(width / 2, height / 2 - 115, 'About ServeriQuest\n\nThis is an adventure following the life of Serveri mouse, in the fictional world of Kuopio.\nHaving tiny mouse legs is hard work, so walking around will tire you out. Socializing is pretty exhausting, too.\n\nBeat the game and get the flag!\n\nYou may need to restart a couple of times. It builds character.\n\nControls\nMove: WASD / Arrows\nInteract: Space\nBackpack:E / I\n\nCredit\nPokemon Classic font by TheLouster115\nisaiah658\'s Pixel Pack #2\nEverything else by https://github.com/RemesTop', {
             fontFamily: 'Pokemon Classic',
-            fontSize: '16px',
+            fontSize: '18px',
             color: '#ffffff',
             align: 'center',
-            wordWrap: { width: width - 40 }
-        }).setOrigin(0.5);
+            wordWrap: { width: width - 60 },
+            lineSpacing: 4
+        }).setOrigin(0.5).setResolution(2);
         aboutGroup.add(aboutText);
 
-        const aboutBackBtn = this.add.image(width / 2, height / 2 + 50, 'btn');
+        const aboutBackBtn = this.add.image(width / 2, height / 2 + 170, 'btn');
         aboutBackBtn.setScale(Game.SCALE);
         aboutBackBtn.setInteractive(
             new Phaser.Geom.Rectangle(0, 0, aboutBackBtn.width, aboutBackBtn.height),
@@ -195,7 +196,7 @@ Game.MenuScene = class MenuScene extends Phaser.Scene {
         aboutBackBtn.input.cursor = 'pointer';
         aboutGroup.add(aboutBackBtn);
 
-        const aboutBackBtnLabel = this.add.text(width / 2, height / 2 + 50, 'BACK', {
+        const aboutBackBtnLabel = this.add.text(width / 2, height / 2 + 170, 'BACK', {
             fontFamily: 'Pokemon Classic',
             fontSize: '8px',
             color: '#1a1a2e'
