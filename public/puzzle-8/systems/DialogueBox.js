@@ -72,12 +72,12 @@ Game.DialogueBox = class DialogueBox {
         this.bgImage.setOrigin(0, 0);
         this.bgImage.setDepth(2000);
 
-        // Text over the box with padding (allows lines to extend longer, max 4 lines)
+        // Text over the box with padding (wordWrap 138 to leave space for arrow)
         this.textObj = this.scene.add.text(0, 0, '', {
             fontFamily: "'Pokemon Classic', 'Courier New', monospace",
             fontSize: '8px',
             color: '#1a1a2e',
-            wordWrap: { width: 156 },
+            wordWrap: { width: 138 },
             lineSpacing: 2,
             maxLines: 5
         });

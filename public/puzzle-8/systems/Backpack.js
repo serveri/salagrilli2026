@@ -18,10 +18,10 @@ Game.Backpack = class Backpack {
 
         // Sample Inventory Items
         this.items = [
-            { id: 'jallu', name: 'Jallu', desc: 'Some kind of strong liquor. Would taste better in a mix', canUse: true, cl: 50 },
+            { id: 'jallu', name: 'Jallu', desc: 'Some kind of strong liquor. Would taste better in a mix', canUse: true, cl: 75 },
             { id: 'key', name: 'Nappi avain', desc: 'A key found in the grass.', canUse: false },
             { id: 'map', name: 'Town Map', desc: 'A map showing Kuopio. \nI live in Neulamäki.', canUse: true },
-            { id: 'energy_drink', name: 'Energy drink', desc: 'Classic ES energy drink, what a throwback!', canUse: true },
+            { id: 'energy_drink', name: 'Energy drink', desc: 'Classic MegaShopper energy drink, what a throwback!', canUse: true },
             { id: 'wallet', name: `Wallet ${startingMoney}€`, desc: 'Contains your money.', canUse: false },
             { id: 'note', name: 'Reminder Note', desc: ['"Remember to feed the cat.. "', '"Exam today at 10:00 in SN100!"', '..Can\'t forget!'], canUse: false },
             { id: 'watch', name: 'Watch', desc: 'It says 4:16 ..I think', canUse: false }
@@ -360,7 +360,7 @@ Game.Backpack = class Backpack {
                 pages = [`${item.name}: ${item.desc}`];
             }
 
-            if (item.id === 'jallu' && typeof item.cl !== 'undefined') {
+            if ((item.id === 'jallu' || item.id === 'gambina') && typeof item.cl !== 'undefined') {
                 pages.push(`There is ${item.cl}cl left in the bottle.`);
             }
 
@@ -408,7 +408,7 @@ Game.Backpack = class Backpack {
                     `Restored 100 energy.`
                 ], () => { this.open(); });
             }
-        } else if (item.id === 'jallu') {
+        } else if (item.id === 'jallu' || item.id === 'gambina') {
             if (item.cl <= 0) {
                 if (this.scene.dialogue) {
                     this.scene.dialogue.show(['The bottle is empty..'], () => { this.open(); });
@@ -437,25 +437,32 @@ Game.Backpack = class Backpack {
                     this.scene.addEnergyDiff(this.scene.energy - old);
                 }
 
-                this.scene.reverseX = Math.random() < 0.5;
-                this.scene.reverseY = Math.random() < 0.5;
+                if (item.id === 'jallu') {
+                    this.scene.reverseX = Math.random() < 0.5;
+                    this.scene.reverseY = Math.random() < 0.5;
+                    this.scene.reverseControlsSteps = (this.scene.reverseControlsSteps || 0) + 15;
+                }
 
-                this.scene.reverseControlsSteps = (this.scene.reverseControlsSteps || 0) + 15;
                 this.scene.speedModifier = 1.15;
                 this.scene.speedModifierSteps = (this.scene.speedModifierSteps || 0) + 15;
+                this.scene.drunkSteps = (this.scene.drunkSteps || 0) + 15;
+                this.scene.lastDrunkType = item.id;
 
                 if (typeof this.scene.updateDrunkEffect === 'function') {
                     this.scene.updateDrunkEffect();
                 }
             }
 
-            // Jallu has infinite uses, so we do not remove it
             this.selectedItem = null;
+
+            const drinkMsg = item.id === 'gambina'
+                ? 'You drink raw Gambina alone, what a disgrace!'
+                : 'You take a sip of raw Jallu';
 
             if (this.scene.dialogue) {
                 this.scene.dialogue.show([
-                    `You take a sip of raw Jallu`,
-                    `It makes you dizzy..`
+                    drinkMsg,
+                    'It makes you dizzy..'
                 ], () => { this.open(); });
             }
         } else if (item.id === 'cup_of_coffee') {
@@ -616,7 +623,7 @@ Game.Backpack = class Backpack {
                 }
             ],
             'NeulamaenSale': [
-                { condition: () => true, x: -90, y: 109 }
+                { condition: () => true, x: -31, y: 90 }
             ],
             'savilahti': [
                 {
@@ -636,10 +643,16 @@ Game.Backpack = class Backpack {
                 }
             ],
             'House': [
-                { condition: () => true, x: -82, y: 115 }
-            ],
-            'default': [
                 { condition: () => true, x: -31, y: 90 }
+            ],
+            'Exam': [
+                { condition: () => true, x: 72, y: -35 }
+            ],
+            'Laitos': [
+                { condition: () => true, x: 11, y: 20 }
+            ],
+            'Prisma': [
+                { condition: () => true, x: 21, y: 40 }
             ],
             'snellmania': [
                 {

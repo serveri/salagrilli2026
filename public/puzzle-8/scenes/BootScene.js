@@ -83,6 +83,9 @@ Game.BootScene = class BootScene extends Phaser.Scene {
             frameWidth: 16,
             frameHeight: 18
         });
+
+        // Lose screen image
+        this.load.image('ratlost', 'ratlost.png');
     }
 
     create() {

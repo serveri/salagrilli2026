@@ -177,7 +177,7 @@ Game.MenuScene = class MenuScene extends Phaser.Scene {
         settingsGroup.add(settingsBackBtnLabel);
 
         // --- About View Elements ---
-        const aboutText = this.add.text(width / 2, height / 2 - 115, 'About ServeriQuest\n\nThis is an adventure following the life of Serveri mouse, in the fictional world of Kuopio.\nHaving tiny mouse legs is hard work, so walking around will tire you out. Socializing is pretty exhausting, too.\n\nBeat the game and get the flag!\n\nYou may need to restart a couple of times. It builds character.\n\nControls\nMove: WASD / Arrows\nInteract: Space\nBackpack:E / I\n\nCredit\nPokemon Classic font by TheLouster115\nisaiah658\'s Pixel Pack #2\nEverything else by https://github.com/RemesTop', {
+        const aboutText = this.add.text(width / 2, height / 2 - 115, 'About ServeriQuest\n\nThis is an adventure following the life of Serveri mouse, in the fictional world of Kuopio.\nHaving tiny mouse legs is hard work, so walking around will tire you out. Socializing is pretty exhausting, too.\n\nBeat the game and get the flag!\n\nYou may need to restart a couple of times. It builds character.\n\nControls\nMove: WASD / Arrows\nInteract: Space\nBackpack: E / I\n\nCredit\nPokemon Classic font by TheLouster115\nisaiah658\'s Pixel Pack #2\nEverything else by https://github.com/RemesTop', {
             fontFamily: 'Pokemon Classic',
             fontSize: '18px',
             color: '#ffffff',

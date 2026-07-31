@@ -53,10 +53,11 @@ Game.Shop = class Shop {
     }
 
     /** Open the shop interface overlay */
-    open() {
+    open(customItems = null) {
         if (this.isOpen) return;
         this.isOpen = true;
         this.selectedItem = null;
+        this.activeItems = customItems || this.items;
 
         this._createUI();
         this.updatePosition();
@@ -187,6 +188,18 @@ Game.Shop = class Shop {
             buyBtn.on('pointerout', () => buyBtn.setColor('#006600'));
             buyBtn.on('pointerdown', () => this._handleBuy(item));
             this.actionContainer.add(buyBtn);
+
+            // Wallet text above Buy button (matched to item header text size 0.25)
+            window.Game = window.Game || {};
+            Game.state = Game.state || {};
+            const money = Game.state.money !== undefined ? Game.state.money : 2;
+
+            const walletText = this.scene.add.text(178, 118, `Wallet: ${money}€`, {
+                fontFamily: "'Pokemon Classic', 'Courier New', monospace",
+                fontSize: '32px',
+                color: '#1a1a2e'
+            }).setOrigin(1, 0.5).setScale(0.25);
+            this.actionContainer.add(walletText);
         }
 
         // Close button (Bottom Left)
@@ -214,7 +227,8 @@ Game.Shop = class Shop {
         const spacingX = 4;
         const spacingY = 4;
 
-        this.items.forEach((item, index) => {
+        const activeList = this.activeItems || this.items;
+        activeList.forEach((item, index) => {
             const c = index % cols;
             const r = Math.floor(index / cols);
             const x = startX + c * (slotW + spacingX);
@@ -239,7 +253,9 @@ Game.Shop = class Shop {
                 fontFamily: "'Pokemon Classic', 'Courier New', monospace",
                 fontSize: '32px',
                 color: isSelected ? '#003366' : '#222233',
-                align: 'center'
+                align: 'center',
+                wordWrap: { width: Math.round((slotW - 4) / 0.22) },
+                lineSpacing: -4
             }).setOrigin(0.5, 0.5).setScale(0.22);
 
             bgRect.on('pointerdown', () => {
@@ -259,6 +275,10 @@ Game.Shop = class Shop {
     }
 
     _formatItemName(name) {
+        const match = name.match(/^(.*)\s+(\d+€)$/);
+        if (match) {
+            return `${match[1]}\n${match[2]}`;
+        }
         if (name.length > 12) {
             const words = name.split(' ');
             if (words.length > 1) {
@@ -269,16 +289,23 @@ Game.Shop = class Shop {
     }
 
     _handleInspect(item) {
+        const activeList = this.activeItems;
         this.close();
         if (this.scene.dialogue) {
+            let descText = item.desc;
+            const itemCl = (item.itemData && typeof item.itemData.cl !== 'undefined') ? item.itemData.cl : item.cl;
+            if (typeof itemCl !== 'undefined') {
+                descText += ` (${itemCl}cl left)`;
+            }
             this.scene.dialogue.show([
                 `${item.name}`,
-                `${item.desc}`
-            ], () => { this.open(); });
+                `${descText}`
+            ], () => { this.open(activeList); });
         }
     }
 
     _handleBuy(item) {
+        const activeList = this.activeItems;
         window.Game = window.Game || {};
         Game.state = Game.state || {};
         const playerMoney = Game.state.money !== undefined ? Game.state.money : 2;
@@ -289,7 +316,7 @@ Game.Shop = class Shop {
                 this.scene.dialogue.show([
                     `You don't have enough money!`,
                     `Item costs ${item.price}€, but you only have ${playerMoney}€.`
-                ], () => { this.open(); });
+                ], () => { this.open(activeList); });
             }
             return;
         }

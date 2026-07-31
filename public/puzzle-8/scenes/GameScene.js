@@ -169,7 +169,7 @@ Game.GameScene = class GameScene extends Phaser.Scene {
         // Toggle backpack with 'E' or 'I' key
         const toggleBag = () => {
             if (this.dialogue && this.dialogue.active) return;
-            if (this.isMapOpen || this.isExamOpen) return;
+            if (this.isMapOpen || this.isExamOpen || (this.shop && this.shop.isOpen)) return;
 
             if (this.backpack && this.backpack.active) {
                 this.backpack.close();
@@ -193,7 +193,7 @@ Game.GameScene = class GameScene extends Phaser.Scene {
 
         // Inspect interaction
         this.input.keyboard.on('keydown-SPACE', () => {
-            if (this.isTransitioning || this.isMoving || this.isMapOpen || this.isExamOpen) return;
+            if (this.isTransitioning || this.isMoving || this.isMapOpen || this.isExamOpen || (this.shop && this.shop.isOpen)) return;
             if (this.dialogue && this.dialogue.active) return;
             if (this.backpack && this.backpack.active) return;
 
@@ -347,13 +347,14 @@ Game.GameScene = class GameScene extends Phaser.Scene {
                     interacted = true;
                 }
 
-                if (!interacted && targetTileIndex === 262) {
+                if (!interacted && (targetTileIndex === 262 || targetTileIndex === 502)) {
+                    const replacementTile = targetTileIndex === 502 ? 436 : 0;
                     Game.state = Game.state || {};
                     Game.state.money = (Game.state.money !== undefined ? Game.state.money : 2) + 5;
 
-                    this.tileData[targetY][targetX] = 0; // grass / empty ground
+                    this.tileData[targetY][targetX] = replacementTile;
                     if (this.layer) {
-                        this.layer.putTileAt(0, targetX, targetY);
+                        this.layer.putTileAt(replacementTile, targetX, targetY);
                     }
 
                     Game.state.collectedCashLocations = Game.state.collectedCashLocations || [];
@@ -375,7 +376,7 @@ Game.GameScene = class GameScene extends Phaser.Scene {
                     interacted = true;
                 }
 
-                if (!interacted && this.currentArea && this.currentArea.name === 'NeulamaenSale' && targetX === 6 && (targetY === 5 || targetY === 4)) {
+                if (!interacted && this.currentArea && this.currentArea.name === 'NeulamaenSale' && targetX === 9 && (targetY === 5 || targetY === 4)) {
                     if (this.shopkeep) {
                         if (this.facing === 'up') this.shopkeep.facing = 'down';
                         else if (this.facing === 'down') this.shopkeep.facing = 'up';
@@ -395,6 +396,80 @@ Game.GameScene = class GameScene extends Phaser.Scene {
                             text: 'Yes', color: '#006600', hoverColor: '#00cc00', onClick: () => {
                                 if (this.shop) {
                                     this.shop.open();
+                                }
+                            }
+                        },
+                        {
+                            text: 'No', color: '#880000', hoverColor: '#cc0000', onClick: () => { }
+                        }
+                    ]);
+                    interacted = true;
+                }
+
+                const isPrismaMainShop = this.currentArea && this.currentArea.name === 'Prisma' && (
+                    (targetX === 21 && targetY === 10) || (targetX === 22 && targetY === 10) ||
+                    (targetX === 26 && targetY === 10) || (targetX === 27 && targetY === 10)
+                );
+
+                const isPrismaAlcoholShop = this.currentArea && this.currentArea.name === 'Prisma' && (
+                    (targetX === 8 && targetY === 18) || (targetX === 9 && targetY === 18)
+                );
+
+                if (!interacted && (isPrismaMainShop || isPrismaAlcoholShop)) {
+                    if (this.prismaShopkeeps) {
+                        this.prismaShopkeeps.forEach(sk => {
+                            if (Math.abs(sk.tileX - targetX) <= 1 && Math.abs(sk.tileY - targetY) <= 1) {
+                                if (this.facing === 'up') sk.facing = 'down';
+                                else if (this.facing === 'down') sk.facing = 'up';
+                                else if (this.facing === 'left') sk.facing = 'right';
+                                else if (this.facing === 'right') sk.facing = 'left';
+
+                                switch (sk.facing) {
+                                    case 'down': sk.sprite.setFrame(0); break;
+                                    case 'up': sk.sprite.setFrame(4); break;
+                                    case 'left': sk.sprite.setFrame(8); break;
+                                    case 'right': sk.sprite.setFrame(12); break;
+                                }
+                            }
+                        });
+                    }
+
+                    this.dialogue.show(['Buy something?'], null, [
+                        {
+                            text: 'Yes', color: '#006600', hoverColor: '#00cc00', onClick: () => {
+                                if (this.shop) {
+                                    if (isPrismaAlcoholShop) {
+                                        this.shop.open([
+                                            {
+                                                id: 'jallu',
+                                                name: 'Jallu 17€',
+                                                price: 17,
+                                                desc: 'Some kind of strong liquor. Would taste better in a mix',
+                                                itemData: {
+                                                    id: 'jallu',
+                                                    name: 'Jallu',
+                                                    desc: 'Some kind of strong liquor. Would taste better in a mix',
+                                                    canUse: true,
+                                                    cl: 75
+                                                }
+                                            },
+                                            {
+                                                id: 'gambina',
+                                                name: 'Gambina 12€',
+                                                price: 12,
+                                                desc: 'Ruby colored substance, best for having a Gambina meeting',
+                                                itemData: {
+                                                    id: 'gambina',
+                                                    name: 'Gambina',
+                                                    desc: 'Ruby colored substance, best for having a Gambina meeting',
+                                                    canUse: true,
+                                                    cl: 75
+                                                }
+                                            }
+                                        ]);
+                                    } else {
+                                        this.shop.open();
+                                    }
                                 }
                             }
                         },
@@ -869,6 +944,8 @@ Game.GameScene = class GameScene extends Phaser.Scene {
                 if (loc.area === this.currentArea.name) {
                     if (this.tileData[loc.y] && this.tileData[loc.y][loc.x] === 262) {
                         this.tileData[loc.y][loc.x] = 0;
+                    } else if (this.tileData[loc.y] && this.tileData[loc.y][loc.x] === 502) {
+                        this.tileData[loc.y][loc.x] = 436;
                     }
                 }
             });
@@ -1036,7 +1113,7 @@ Game.GameScene = class GameScene extends Phaser.Scene {
         }
 
         if (this.currentArea.name === 'NeulamaenSale') {
-            const skx = 6;
+            const skx = 9;
             const sky = 4;
             this.shopkeep = {
                 tileX: skx,
@@ -1044,6 +1121,22 @@ Game.GameScene = class GameScene extends Phaser.Scene {
                 facing: 'down',
                 sprite: this.add.sprite(skx * Game.TILE_SIZE, sky * Game.TILE_SIZE - 4, 'shopkeep', 0).setOrigin(0, 0).setDepth(10)
             };
+        }
+
+        // Spawn Shopkeeps if in Prisma
+        if (this.prismaShopkeeps) {
+            this.prismaShopkeeps.forEach(sk => sk.sprite && sk.sprite.destroy());
+            this.prismaShopkeeps = [];
+        }
+
+        if (this.currentArea.name === 'Prisma') {
+            this.prismaShopkeeps = [
+                { tileX: 22, tileY: 10, facing: 'left', sprite: this.add.sprite(22 * Game.TILE_SIZE, 10 * Game.TILE_SIZE - 4, 'shopkeep', 8).setOrigin(0, 0).setDepth(10) },
+                { tileX: 27, tileY: 10, facing: 'left', sprite: this.add.sprite(27 * Game.TILE_SIZE, 10 * Game.TILE_SIZE - 4, 'shopkeep', 8).setOrigin(0, 0).setDepth(10) },
+                { tileX: 8, tileY: 18, facing: 'right', sprite: this.add.sprite(8 * Game.TILE_SIZE, 18 * Game.TILE_SIZE - 4, 'shopkeep', 12).setOrigin(0, 0).setDepth(10) }
+            ];
+            this.facing = 'up';
+            this.setIdleFrame();
         }
 
         // Camera bounds — center small areas
@@ -1087,7 +1180,7 @@ Game.GameScene = class GameScene extends Phaser.Scene {
             this.exam.update(time, delta);
         }
 
-        if (this.isTransitioning || (this.dialogue && this.dialogue.active) || (this.backpack && this.backpack.active) || this.isMapOpen || this.isExamOpen || this.pendingBackpackOpen) {
+        if (this.isTransitioning || (this.dialogue && this.dialogue.active) || (this.backpack && this.backpack.active) || (this.shop && this.shop.isOpen) || this.isMapOpen || this.isExamOpen || this.pendingBackpackOpen) {
             this.resetEnergyLostStack();
             return;
         }
@@ -1096,7 +1189,8 @@ Game.GameScene = class GameScene extends Phaser.Scene {
 
         if (this.isMoving) return;
 
-        if (this.reverseControlsSteps > 0 && this.wasWalking) {
+        const isDizzy = (this.reverseControlsSteps > 0 || (this.drunkSteps && this.drunkSteps > 0)) && this.wasWalking;
+        if (isDizzy) {
             if (activeDir !== this.facing) {
                 if (!this.dizzyHasExtraStepped) {
                     activeDir = this.facing;
@@ -1346,6 +1440,21 @@ Game.GameScene = class GameScene extends Phaser.Scene {
             this.restoreActiveDoorEffect();
         }
 
+        if (this.activeStepTileEffect && (this.activeStepTileEffect.x !== finalTargetX || this.activeStepTileEffect.y !== finalTargetY)) {
+            this.restoreActiveStepTileEffect();
+        }
+
+        if (targetTileIndex === 627 || targetTileIndex === 628) {
+            this.activeStepTileEffect = {
+                x: finalTargetX,
+                y: finalTargetY,
+                origTile: targetTileIndex
+            };
+            if (this.layer) {
+                this.layer.putTileAt(436, finalTargetX, finalTargetY);
+            }
+        }
+
         if (Game.DOOR_FRAMES && Game.DOOR_FRAMES[targetTileIndex]) {
             const frameTile = Game.DOOR_FRAMES[targetTileIndex];
             const blackTile = (Game.DOOR_BLACK_TILES && Game.DOOR_BLACK_TILES[targetTileIndex]) || Game.DOOR_BLACK_TILE || 780;
@@ -1462,6 +1571,11 @@ Game.GameScene = class GameScene extends Phaser.Scene {
                     this.updateDrunkEffect();
                 }
 
+                if (this.drunkSteps > 0) {
+                    this.drunkSteps--;
+                    this.updateDrunkEffect();
+                }
+
                 if (this.speedModifierSteps > 0) {
                     this.speedModifierSteps--;
                 }
@@ -1535,6 +1649,16 @@ Game.GameScene = class GameScene extends Phaser.Scene {
         }
     }
 
+    restoreActiveStepTileEffect() {
+        if (this.activeStepTileEffect) {
+            const { x, y, origTile } = this.activeStepTileEffect;
+            if (this.layer) {
+                this.layer.putTileAt(origTile, x, y);
+            }
+            this.activeStepTileEffect = null;
+        }
+    }
+
     isDoorLocked(targetX, targetY) {
         if (!this.currentArea) return false;
         const areaName = this.currentArea.name;
@@ -1571,7 +1695,7 @@ Game.GameScene = class GameScene extends Phaser.Scene {
         return false;
     }
 
-    triggerMapTransition(targetMap, targetX, targetY) {
+    triggerMapTransition(targetMap, targetX, targetY, exitDir) {
         this.isTransitioning = true;
         this.player.anims.stop();
         this.setIdleFrame();
@@ -1579,6 +1703,8 @@ Game.GameScene = class GameScene extends Phaser.Scene {
         this.cameras.main.fadeOut(250, 0, 0, 0, (camera, progress) => {
             if (progress === 1) {
                 this.loadArea(targetMap, targetX, targetY).then(() => {
+                    if (exitDir) this.facing = exitDir;
+                    this.setIdleFrame();
                     this.cameras.main.fadeIn(250, 0, 0, 0, (cam, prog) => {
                         if (prog === 1) {
                             this.isTransitioning = false;
@@ -1630,7 +1756,7 @@ Game.GameScene = class GameScene extends Phaser.Scene {
             const transition = areaTransitions.byCoord[coordKey];
             if (transition) {
                 if (!transition.requiredItem || this.hasItem(transition.requiredItem)) {
-                    this.triggerMapTransition(transition.targetMap, transition.targetX, transition.targetY);
+                    this.triggerMapTransition(transition.targetMap, transition.targetX, transition.targetY, transition.exitDir);
                     return true;
                 }
             }
@@ -1640,7 +1766,7 @@ Game.GameScene = class GameScene extends Phaser.Scene {
         if (areaTransitions.edgeTransitions) {
             if (this.tileY === 0 && areaTransitions.edgeTransitions.top) {
                 const transition = areaTransitions.edgeTransitions.top;
-                this.triggerMapTransition(transition.targetMap, transition.targetX, transition.targetY);
+                this.triggerMapTransition(transition.targetMap, transition.targetX, transition.targetY, transition.exitDir);
                 return true;
             }
         }
@@ -1649,7 +1775,7 @@ Game.GameScene = class GameScene extends Phaser.Scene {
         if (areaTransitions.byTile) {
             const transition = areaTransitions.byTile[currentTile];
             if (transition) {
-                this.triggerMapTransition(transition.targetMap, transition.targetX, transition.targetY);
+                this.triggerMapTransition(transition.targetMap, transition.targetX, transition.targetY, transition.exitDir);
                 return true;
             }
         }
@@ -1911,6 +2037,7 @@ Game.GameScene = class GameScene extends Phaser.Scene {
             this.examNpc,
             this.examAssistant,
             this.shopkeep,
+            ...(this.prismaShopkeeps || []),
             this.police
         ];
         return npcs.some(npc => npc && npc.tileX === x && npc.tileY === y);
@@ -1958,8 +2085,14 @@ Game.GameScene = class GameScene extends Phaser.Scene {
         const canvas = this.sys.game.canvas;
 
         let drunkBlur = 0;
-        if (this.reverseControlsSteps && this.reverseControlsSteps > 0) {
-            drunkBlur = Math.min(8, this.reverseControlsSteps / 6);
+        if (this.drunkSteps && this.drunkSteps > 0) {
+            if (this.lastDrunkType === 'gambina') {
+                drunkBlur = Math.min(3, 1.2 + (this.drunkSteps / 10));
+            } else {
+                drunkBlur = Math.min(8, this.drunkSteps / 4);
+            }
+        } else if (this.reverseControlsSteps && this.reverseControlsSteps > 0) {
+            drunkBlur = Math.min(8, this.reverseControlsSteps / 4);
         }
 
         let energyBlur = 0;
@@ -2124,6 +2257,20 @@ Game.GameScene = class GameScene extends Phaser.Scene {
             );
         } else if (item.id === 'jallu') {
             this.dialogue.show(['No, I only drink Gambina']);
+        } else if (item.id === 'gambina') {
+            this.backpack.items = this.backpack.items.filter(i => i.id !== item.id);
+            this.backpack.items.push({
+                id: 'pencil',
+                name: 'Pencil',
+                desc: 'A trusty pencil. Needed for the exam.',
+                canUse: false
+            });
+
+            Game.state = Game.state || {};
+            Game.state.examNpcTraded = true;
+            Game.state.pencilCollected = true;
+
+            this.dialogue.show(['You received a Pencil!']);
         } else {
             this.dialogue.show(['I have no use for that']);
         }

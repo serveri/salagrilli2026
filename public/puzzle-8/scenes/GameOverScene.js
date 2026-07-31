@@ -17,7 +17,7 @@ Game.GameOverScene = class GameOverScene extends Phaser.Scene {
 
     async create() {
         const { width, height } = this.scale;
-        
+
         if (this.sys && this.sys.game && this.sys.game.canvas) {
             this.sys.game.canvas.style.filter = 'none';
         }
@@ -26,17 +26,26 @@ Game.GameOverScene = class GameOverScene extends Phaser.Scene {
             // === LOSE SCREEN ===
             this.cameras.main.setBackgroundColor('#000000');
 
-            const gameOverText = this.add.text(width / 2, height / 2 - 60, 'Game Over', {
+            const gameOverText = this.add.text(width / 2, height / 2 - 210, 'Game Over', {
                 fontFamily: "'Pokemon Classic', 'Courier New', monospace",
-                fontSize: '32px',
+                fontSize: '48px',
                 color: '#cc0000',
                 align: 'center'
             }).setOrigin(0.5).setResolution(2);
 
-            const scoreText = this.add.text(width / 2, height / 2, `Score: ${this.score}/100`, {
+            const scoreText = this.add.text(width / 2, height / 2 - 150, `Score: ${this.score}/100`, {
                 fontFamily: "'Pokemon Classic', 'Courier New', monospace",
-                fontSize: '16px',
+                fontSize: '24px',
                 color: '#888888',
+                align: 'center'
+            }).setOrigin(0.5).setResolution(2);
+
+            const ratImage = this.add.image(width / 2, height / 2 + 10, 'ratlost').setOrigin(0.5).setScale(2);
+
+            const killsText = this.add.text(width / 2, height / 2 + 110, 'THIS KILLS THE SERVERI', {
+                fontFamily: "'Pokemon Classic', 'Courier New', monospace",
+                fontSize: '15px',
+                color: '#ffffff',
                 align: 'center'
             }).setOrigin(0.5).setResolution(2);
 
@@ -135,7 +144,7 @@ Game.GameOverScene = class GameOverScene extends Phaser.Scene {
                     align: 'center',
                     padding: { top: 4, bottom: 4 }
                 }
-            ).setOrigin(0.5).setScale(7/32).setResolution(2);
+            ).setOrigin(0.5).setScale(7 / 32).setResolution(2);
             overlay.add(thanksText);
 
             const scoreText = this.add.text(
@@ -149,7 +158,7 @@ Game.GameOverScene = class GameOverScene extends Phaser.Scene {
                     align: 'center',
                     padding: { top: 4, bottom: 4 }
                 }
-            ).setOrigin(0.5).setScale(5/32).setResolution(2);
+            ).setOrigin(0.5).setScale(5 / 32).setResolution(2);
             overlay.add(scoreText);
 
             // Hardcoded flag for now
@@ -166,7 +175,7 @@ Game.GameOverScene = class GameOverScene extends Phaser.Scene {
                     align: 'center',
                     padding: { top: 4, bottom: 4 }
                 }
-            ).setOrigin(0.5, 0.5).setScale(5/32).setResolution(2);
+            ).setOrigin(0.5, 0.5).setScale(5 / 32).setResolution(2);
             overlay.add(flagText);
 
             // Copy button
@@ -181,7 +190,7 @@ Game.GameOverScene = class GameOverScene extends Phaser.Scene {
                     align: 'center',
                     padding: { top: 4, bottom: 4 }
                 }
-            ).setOrigin(0, 0.5).setScale(4/32).setResolution(2).setInteractive({ useHandCursor: true }).setDepth(9999);
+            ).setOrigin(0, 0.5).setScale(4 / 32).setResolution(2).setInteractive({ useHandCursor: true }).setDepth(9999);
             copyBtn.on('pointerover', () => copyBtn.setColor('#ffffff'));
             copyBtn.on('pointerout', () => copyBtn.setColor('#aaaaaa'));
             copyBtn.on('pointerdown', () => {
@@ -207,13 +216,13 @@ Game.GameOverScene = class GameOverScene extends Phaser.Scene {
     }
 
     _createButtons(width, height) {
-        const btnY = height / 2 + 60;
+        const btnY = height / 2 + 180;
         const btnStyle = {
             fontFamily: "'Pokemon Classic', 'Courier New', monospace",
-            fontSize: '14px',
+            fontSize: '21px',
             color: '#ffffff',
             align: 'center',
-            padding: { x: 20, y: 10 },
+            padding: { x: 30, y: 15 },
             backgroundColor: '#333333'
         };
 
