@@ -7,7 +7,7 @@ Game.TILE_SIZE = 16;
 Game.SCALE = 4;
 Game.TWEEN_DURATION = 160;
 Game.TAP_DELAY = 45;
-Game.testingmode = true;
+Game.testingmode = false;
 
 // Shared Game Settings & Persistence
 Game.settings = Game.settings || {

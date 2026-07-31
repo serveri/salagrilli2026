@@ -142,6 +142,9 @@ Game.GameScene = class GameScene extends Phaser.Scene {
         // Exam system
         this.exam = new Game.Exam(this);
 
+        // Shop system
+        this.shop = new Game.Shop(this);
+
         this.openBackpackSafely = () => {
             if (this.player.anims.isPlaying) {
                 this.player.anims.stop();
@@ -356,6 +359,36 @@ Game.GameScene = class GameScene extends Phaser.Scene {
                     }
 
                     this.dialogue.show(['You found 5€!']);
+                    interacted = true;
+                }
+
+                if (!interacted && this.currentArea && this.currentArea.name === 'NeulamaenSale' && targetX === 6 && (targetY === 5 || targetY === 4)) {
+                    if (this.shopkeep) {
+                        if (this.facing === 'up') this.shopkeep.facing = 'down';
+                        else if (this.facing === 'down') this.shopkeep.facing = 'up';
+                        else if (this.facing === 'left') this.shopkeep.facing = 'right';
+                        else if (this.facing === 'right') this.shopkeep.facing = 'left';
+
+                        switch (this.shopkeep.facing) {
+                            case 'down': this.shopkeep.sprite.setFrame(0); break;
+                            case 'up': this.shopkeep.sprite.setFrame(4); break;
+                            case 'left': this.shopkeep.sprite.setFrame(8); break;
+                            case 'right': this.shopkeep.sprite.setFrame(12); break;
+                        }
+                    }
+
+                    this.dialogue.show(['Buy something?'], null, [
+                        {
+                            text: 'Yes', color: '#006600', hoverColor: '#00cc00', onClick: () => {
+                                if (this.shop) {
+                                    this.shop.open();
+                                }
+                            }
+                        },
+                        {
+                            text: 'No', color: '#880000', hoverColor: '#cc0000', onClick: () => { }
+                        }
+                    ]);
                     interacted = true;
                 }
 
@@ -944,6 +977,23 @@ Game.GameScene = class GameScene extends Phaser.Scene {
             };
         }
 
+        // Spawn Shopkeep if in NeulamaenSale
+        if (this.shopkeep) {
+            this.shopkeep.sprite.destroy();
+            this.shopkeep = null;
+        }
+
+        if (this.currentArea.name === 'NeulamaenSale') {
+            const skx = 6;
+            const sky = 4;
+            this.shopkeep = {
+                tileX: skx,
+                tileY: sky,
+                facing: 'down',
+                sprite: this.add.sprite(skx * Game.TILE_SIZE, sky * Game.TILE_SIZE - 4, 'shopkeep', 0).setOrigin(0, 0).setDepth(10)
+            };
+        }
+
         // Camera bounds — center small areas
         const areaWidthPx = this.currentArea.width * Game.TILE_SIZE;
         const areaHeightPx = this.currentArea.height * Game.TILE_SIZE;
@@ -1112,7 +1162,7 @@ Game.GameScene = class GameScene extends Phaser.Scene {
 
             let hasEnergyItems = false;
             if (this.backpack && this.backpack.items) {
-                hasEnergyItems = this.backpack.items.some(i => i.id === 'energy_drink' || i.id.startsWith('berry') || i.id === 'cup_of_coffee');
+                hasEnergyItems = this.backpack.items.some(i => i.id === 'energy_drink' || i.id === 'protein_bar' || i.id.startsWith('berry') || i.id === 'cup_of_coffee');
             }
 
             if (!hasEnergyItems) {
@@ -1171,6 +1221,11 @@ Game.GameScene = class GameScene extends Phaser.Scene {
         }
 
         if (this.examNpc && targetX === this.examNpc.tileX && targetY === this.examNpc.tileY) {
+            this.player.play(`walk-${this.facing}`, true);
+            return;
+        }
+
+        if (this.shopkeep && targetX === this.shopkeep.tileX && targetY === this.shopkeep.tileY) {
             this.player.play(`walk-${this.facing}`, true);
             return;
         }

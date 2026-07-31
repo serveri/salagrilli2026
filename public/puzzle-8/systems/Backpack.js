@@ -370,6 +370,11 @@ Game.Backpack = class Backpack {
 
     _handleDrop(item) {
         this.close();
+        if (item.id === 'wallet') {
+            if (window.Game && window.Game.state) {
+                window.Game.state.money = 0;
+            }
+        }
         this.items = this.items.filter(i => i.id !== item.id);
         this.selectedItem = null;
         if (this.scene && this.scene.dialogue) {
@@ -493,6 +498,25 @@ Game.Backpack = class Backpack {
                 this.scene.dialogue.show([
                     `You ate the ${item.name}!`,
                     `Restored 50 energy.`
+                ], () => { this.open(); });
+            }
+        } else if (item.id === 'protein_bar') {
+            if (this.scene && typeof this.scene.energy !== 'undefined') {
+                const old = this.scene.energy;
+                this.scene.energy = Math.min(200, this.scene.energy + 60);
+                if (this.scene.addEnergyDiff) {
+                    this.scene.addEnergyDiff(this.scene.energy - old);
+                }
+            }
+
+            // Remove protein bar from backpack
+            this.items = this.items.filter(i => i !== item);
+            this.selectedItem = null;
+
+            if (this.scene.dialogue) {
+                this.scene.dialogue.show([
+                    `You ate the ${item.name}!`,
+                    `Restored 60 energy.`
                 ], () => { this.open(); });
             }
         } else if (item.id === 'map') {

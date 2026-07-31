@@ -52,6 +52,15 @@ Game.BootScene = class BootScene extends Phaser.Scene {
         // Backpack asset (198x150)
         this.load.image('backpack', 'backpack.png');
 
+        // Shop interface asset (198x150)
+        this.load.image('shopinterface', 'shopinterface.png');
+
+        // Shopkeep spritesheet (16x20 frames)
+        this.load.spritesheet('shopkeep', 'Shopkeep.png', {
+            frameWidth: 16,
+            frameHeight: 20
+        });
+
         // Effects asset (16x16 frames)
         this.load.spritesheet('effects', 'Effects.png', { frameWidth: 16, frameHeight: 16 });
 
