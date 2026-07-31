@@ -142,6 +142,9 @@ Game.GameScene = class GameScene extends Phaser.Scene {
         // Exam system
         this.exam = new Game.Exam(this);
 
+        // Shop system
+        this.shop = new Game.Shop(this);
+
         this.openBackpackSafely = () => {
             if (this.player.anims.isPlaying) {
                 this.player.anims.stop();
@@ -294,15 +297,15 @@ Game.GameScene = class GameScene extends Phaser.Scene {
                 if (!interacted && targetTileIndex === 261) {
                     Game.state = Game.state || {};
                     Game.state.collectedShoes = (Game.state.collectedShoes || 0) + 1;
-                    
+
                     this.tileData[targetY][targetX] = 0; // grass
                     if (this.layer) {
                         this.layer.putTileAt(0, targetX, targetY);
                     }
-                    
+
                     Game.state.collectedShoesLocations = Game.state.collectedShoesLocations || [];
                     Game.state.collectedShoesLocations.push({ area: this.currentArea.name, x: targetX, y: targetY });
-                    
+
                     if (Game.state.collectedShoes === 1) {
                         this.backpack.items.push({
                             id: 'single_shoe',
@@ -327,7 +330,65 @@ Game.GameScene = class GameScene extends Phaser.Scene {
                         }
                         this.dialogue.show(['You found your other shoe!', 'Now I have a full pair! Walking uses less energy.']);
                     }
-                    
+
+                    interacted = true;
+                }
+
+                if (!interacted && targetTileIndex === 262) {
+                    Game.state = Game.state || {};
+                    Game.state.money = (Game.state.money !== undefined ? Game.state.money : 2) + 5;
+
+                    this.tileData[targetY][targetX] = 0; // grass / empty ground
+                    if (this.layer) {
+                        this.layer.putTileAt(0, targetX, targetY);
+                    }
+
+                    Game.state.collectedCashLocations = Game.state.collectedCashLocations || [];
+                    Game.state.collectedCashLocations.push({ area: this.currentArea.name, x: targetX, y: targetY });
+
+                    let walletItem = this.backpack ? this.backpack.items.find(i => i.id === 'wallet') : null;
+                    if (walletItem) {
+                        walletItem.name = `Wallet ${Game.state.money}€`;
+                    } else if (this.backpack) {
+                        this.backpack.items.push({
+                            id: 'wallet',
+                            name: `Wallet ${Game.state.money}€`,
+                            desc: 'Contains your money.',
+                            canUse: false
+                        });
+                    }
+
+                    this.dialogue.show(['You found 5€!']);
+                    interacted = true;
+                }
+
+                if (!interacted && this.currentArea && this.currentArea.name === 'NeulamaenSale' && targetX === 6 && (targetY === 5 || targetY === 4)) {
+                    if (this.shopkeep) {
+                        if (this.facing === 'up') this.shopkeep.facing = 'down';
+                        else if (this.facing === 'down') this.shopkeep.facing = 'up';
+                        else if (this.facing === 'left') this.shopkeep.facing = 'right';
+                        else if (this.facing === 'right') this.shopkeep.facing = 'left';
+
+                        switch (this.shopkeep.facing) {
+                            case 'down': this.shopkeep.sprite.setFrame(0); break;
+                            case 'up': this.shopkeep.sprite.setFrame(4); break;
+                            case 'left': this.shopkeep.sprite.setFrame(8); break;
+                            case 'right': this.shopkeep.sprite.setFrame(12); break;
+                        }
+                    }
+
+                    this.dialogue.show(['Buy something?'], null, [
+                        {
+                            text: 'Yes', color: '#006600', hoverColor: '#00cc00', onClick: () => {
+                                if (this.shop) {
+                                    this.shop.open();
+                                }
+                            }
+                        },
+                        {
+                            text: 'No', color: '#880000', hoverColor: '#cc0000', onClick: () => { }
+                        }
+                    ]);
                     interacted = true;
                 }
 
@@ -379,6 +440,41 @@ Game.GameScene = class GameScene extends Phaser.Scene {
                         }
                     });
 
+                    interacted = true;
+                }
+
+                if (!interacted && this.examNpc && targetX === this.examNpc.tileX && targetY === this.examNpc.tileY) {
+                    // Face the player
+                    if (this.facing === 'up') this.examNpc.facing = 'down';
+                    else if (this.facing === 'down') this.examNpc.facing = 'up';
+                    else if (this.facing === 'left') this.examNpc.facing = 'right';
+                    else if (this.facing === 'right') this.examNpc.facing = 'left';
+
+                    switch (this.examNpc.facing) {
+                        case 'down': this.examNpc.sprite.setFrame(0); break;
+                        case 'up': this.examNpc.sprite.setFrame(4); break;
+                        case 'left': this.examNpc.sprite.setFrame(8); break;
+                        case 'right': this.examNpc.sprite.setFrame(12); break;
+                    }
+
+                    Game.state = Game.state || {};
+                    if (Game.state.examNpcTraded) {
+                        this.dialogue.show(['Good luck on the exam!']);
+                    } else {
+                        this.dialogue.show(['Hey, do you have a pencil I could borrow?'], null, [
+                            {
+                                text: 'Ask', color: '#006600', hoverColor: '#00cc00', onClick: () => {
+                                    this.dialogue.show(['Perhaps, but what am I gonna get in return?'], () => {
+                                        // Open backpack in "offer" mode — player picks an item to give
+                                        this._openExamNpcOffer();
+                                    });
+                                }
+                            },
+                            {
+                                text: 'Leave', color: '#880000', hoverColor: '#cc0000', onClick: () => { }
+                            }
+                        ]);
+                    }
                     interacted = true;
                 }
 
@@ -584,6 +680,7 @@ Game.GameScene = class GameScene extends Phaser.Scene {
 
         this.cancelEnergyLostReset();
         this.updateEnergyUI();
+        this.updateDrunkEffect();
     }
 
     updateEnergyUI() {
@@ -730,6 +827,16 @@ Game.GameScene = class GameScene extends Phaser.Scene {
             });
         }
 
+        if (Game.state && Game.state.collectedCashLocations) {
+            Game.state.collectedCashLocations.forEach(loc => {
+                if (loc.area === this.currentArea.name) {
+                    if (this.tileData[loc.y] && this.tileData[loc.y][loc.x] === 262) {
+                        this.tileData[loc.y][loc.x] = 0;
+                    }
+                }
+            });
+        }
+
         if (Game.state && Game.state.homeKeyCollected && this.currentArea.name === 'Laitos') {
             for (let y = 0; y < this.tileData.length; y++) {
                 for (let x = 0; x < this.tileData[y].length; x++) {
@@ -850,6 +957,40 @@ Game.GameScene = class GameScene extends Phaser.Scene {
                 tileY: sy,
                 facing: 'down',
                 sprite: this.add.sprite(28 * Game.TILE_SIZE, sy * Game.TILE_SIZE - 2, tex, frame).setOrigin(0, 0).setDepth(10)
+            };
+        }
+
+        // Spawn ServeriNPC if in Exam
+        if (this.examNpc) {
+            this.examNpc.sprite.destroy();
+            this.examNpc = null;
+        }
+
+        if (this.currentArea.name === 'Exam') {
+            const nx = 12;
+            const ny = 33;
+            this.examNpc = {
+                tileX: nx,
+                tileY: ny,
+                facing: 'down',
+                sprite: this.add.sprite(nx * Game.TILE_SIZE, ny * Game.TILE_SIZE, 'serverinpc', 0).setOrigin(0, 0).setDepth(10)
+            };
+        }
+
+        // Spawn Shopkeep if in NeulamaenSale
+        if (this.shopkeep) {
+            this.shopkeep.sprite.destroy();
+            this.shopkeep = null;
+        }
+
+        if (this.currentArea.name === 'NeulamaenSale') {
+            const skx = 6;
+            const sky = 4;
+            this.shopkeep = {
+                tileX: skx,
+                tileY: sky,
+                facing: 'down',
+                sprite: this.add.sprite(skx * Game.TILE_SIZE, sky * Game.TILE_SIZE - 4, 'shopkeep', 0).setOrigin(0, 0).setDepth(10)
             };
         }
 
@@ -1021,7 +1162,7 @@ Game.GameScene = class GameScene extends Phaser.Scene {
 
             let hasEnergyItems = false;
             if (this.backpack && this.backpack.items) {
-                hasEnergyItems = this.backpack.items.some(i => i.id === 'energy_drink' || i.id.startsWith('berry') || i.id === 'coffee');
+                hasEnergyItems = this.backpack.items.some(i => i.id === 'energy_drink' || i.id === 'protein_bar' || i.id.startsWith('berry') || i.id === 'cup_of_coffee');
             }
 
             if (!hasEnergyItems) {
@@ -1049,15 +1190,10 @@ Game.GameScene = class GameScene extends Phaser.Scene {
             }
 
             if (this.dialogue && !this.dialogue.active) {
-                this.dialogue.show(['You are too tired to move.'], null, [
+                this.dialogue.show(['You are too tired to move!\n\nYou can use an item'], null, [
                     {
                         text: 'Inventory', onClick: () => {
                             this.backpack.open();
-                        }
-                    },
-                    {
-                        text: 'Restart', color: '#880000', hoverColor: '#ff0000', onClick: () => {
-                            window.location.reload();
                         }
                     }
                 ]);
@@ -1080,6 +1216,16 @@ Game.GameScene = class GameScene extends Phaser.Scene {
         }
 
         if (this.sleepingServeri && targetX === this.sleepingServeri.tileX && targetY === this.sleepingServeri.tileY) {
+            this.player.play(`walk-${this.facing}`, true);
+            return;
+        }
+
+        if (this.examNpc && targetX === this.examNpc.tileX && targetY === this.examNpc.tileY) {
+            this.player.play(`walk-${this.facing}`, true);
+            return;
+        }
+
+        if (this.shopkeep && targetX === this.shopkeep.tileX && targetY === this.shopkeep.tileY) {
             this.player.play(`walk-${this.facing}`, true);
             return;
         }
@@ -1146,6 +1292,18 @@ Game.GameScene = class GameScene extends Phaser.Scene {
         this.isMoving = true;
         this.wasWalking = true;
         this.player.play(`walk-${this.facing}`, true);
+
+        if (this.speedModifierSteps > 0 && this.speedModifier) {
+            if (this.speedModifier < 1) {
+                this.player.anims.timeScale = 1.15;
+            } else if (this.speedModifier > 1) {
+                this.player.anims.timeScale = 0.9;
+            } else {
+                this.player.anims.timeScale = 1.0;
+            }
+        } else {
+            this.player.anims.timeScale = 1.0;
+        }
 
         if (this.activeDoorEffect && (this.activeDoorEffect.x !== finalTargetX || this.activeDoorEffect.y !== finalTargetY)) {
             this.restoreActiveDoorEffect();
@@ -1238,15 +1396,17 @@ Game.GameScene = class GameScene extends Phaser.Scene {
 
                 // Decrease energy for each tile moved
                 const old = this.energy;
-                
+
                 Game.state = Game.state || {};
                 Game.state.totalSteps = (Game.state.totalSteps || 0) + 1;
-                
+
                 let shouldDecrease = true;
-                if (Game.state.collectedShoes >= 2 && Game.state.totalSteps % 3 === 0) {
+                if (Game.state.examScore !== undefined) {
+                    shouldDecrease = false;
+                } else if (Game.state.collectedShoes >= 2 && Game.state.totalSteps % 3 === 0) {
                     shouldDecrease = false;
                 }
-                
+
                 if (shouldDecrease) {
                     this.energy = Math.max(0, this.energy - 1);
                     this.addEnergyDiff(this.energy - old);
@@ -1676,12 +1836,176 @@ Game.GameScene = class GameScene extends Phaser.Scene {
     updateDrunkEffect() {
         if (!this.sys || !this.sys.game || !this.sys.game.canvas) return;
         const canvas = this.sys.game.canvas;
-        if (!this.reverseControlsSteps || this.reverseControlsSteps <= 0) {
+
+        let drunkBlur = 0;
+        if (this.reverseControlsSteps && this.reverseControlsSteps > 0) {
+            drunkBlur = Math.min(8, this.reverseControlsSteps / 6);
+        }
+
+        let energyBlur = 0;
+        if (this.energy !== undefined && this.energy <= 20) {
+            energyBlur = (20 - Math.max(0, this.energy)) / 10;
+        }
+
+        const finalBlur = Math.max(drunkBlur, energyBlur);
+
+        if (finalBlur <= 0) {
             canvas.style.filter = 'none';
         } else {
-            // Cap blur at 8px. 15 steps is 1 dose (~2.5px blur). 
-            const blurAmount = Math.min(8, this.reverseControlsSteps / 6);
-            canvas.style.filter = `blur(${blurAmount}px)`;
+            canvas.style.filter = `blur(${finalBlur}px)`;
+        }
+    }
+
+    _openExamNpcOffer() {
+        // Open backpack in a special "offer to NPC" mode
+        // We temporarily override the grid click behavior
+        if (!this.backpack) return;
+
+        this.backpack.open();
+
+        // Override the grid rendering to make items clickable as offers
+        const originalRenderGrid = this.backpack._renderGrid.bind(this.backpack);
+        const originalRenderHeader = this.backpack._renderHeader.bind(this.backpack);
+        const scene = this;
+
+        this.backpack._renderHeader = function () {
+            if (!this.actionContainer) return;
+            this.actionContainer.removeAll(true);
+
+            this.headerText.setText('Offer item');
+            this.headerText.setPosition(this.bgX + 99, this.bgY + 20);
+            this.headerText.setOrigin(0.5, 0.5);
+
+            // Close button
+            const closeBtn = scene.add.text(20, 138, '[X]', {
+                fontFamily: "'Pokemon Classic', 'Courier New', monospace",
+                fontSize: '32px',
+                color: '#880000'
+            }).setOrigin(0, 0.5).setInteractive({ useHandCursor: true }).setScale(0.22);
+
+            closeBtn.on('pointerover', () => closeBtn.setColor('#ff0000'));
+            closeBtn.on('pointerout', () => closeBtn.setColor('#880000'));
+            closeBtn.on('pointerdown', () => {
+                restoreBackpack();
+                scene.backpack.close();
+            });
+            this.actionContainer.add(closeBtn);
+        };
+
+        this.backpack._renderGrid = function () {
+            if (!this.gridContainer) return;
+            this.gridContainer.removeAll(true);
+
+            const cols = 3;
+            const startX = 20;
+            const startY = 36;
+            const slotW = 50;
+            const slotH = 28;
+            const spacingX = 4;
+            const spacingY = 4;
+
+            if (typeof this.currentPage === 'undefined') this.currentPage = 0;
+            const itemsPerPage = 9;
+            const totalPages = Math.ceil(this.items.length / itemsPerPage) || 1;
+            if (this.currentPage >= totalPages) this.currentPage = Math.max(0, totalPages - 1);
+
+            const startIndex = this.currentPage * itemsPerPage;
+            const pageItems = this.items.slice(startIndex, startIndex + itemsPerPage);
+
+            if (totalPages > 1) {
+                if (this.currentPage > 0) {
+                    const leftArrow = scene.add.text(10, 88, '←', {
+                        fontFamily: "'Pokemon Classic', 'Courier New', monospace",
+                        fontSize: '32px',
+                        color: '#1a1a2e'
+                    }).setOrigin(0.5).setInteractive({ useHandCursor: true }).setScale(0.25);
+                    leftArrow.on('pointerdown', () => { this.currentPage--; this._renderGrid(); });
+                    this.gridContainer.add(leftArrow);
+                }
+                if (this.currentPage < totalPages - 1) {
+                    const rightArrow = scene.add.text(190, 88, '→', {
+                        fontFamily: "'Pokemon Classic', 'Courier New', monospace",
+                        fontSize: '32px',
+                        color: '#1a1a2e'
+                    }).setOrigin(0.5).setInteractive({ useHandCursor: true }).setScale(0.25);
+                    rightArrow.on('pointerdown', () => { this.currentPage++; this._renderGrid(); });
+                    this.gridContainer.add(rightArrow);
+                }
+            }
+
+            pageItems.forEach((item, index) => {
+                const c = index % cols;
+                const r = Math.floor(index / cols);
+                const x = startX + c * (slotW + spacingX);
+                const y = startY + r * (slotH + spacingY);
+
+                const bgRect = scene.add.rectangle(
+                    x, y, slotW, slotH, 0xf0f0f5
+                ).setOrigin(0, 0).setInteractive({ useHandCursor: true });
+
+                const strokeRect = scene.add.graphics();
+                strokeRect.lineStyle(1, 0x888899);
+                strokeRect.strokeRect(x, y, slotW, slotH);
+
+                const itemText = scene.add.text(Math.round(x + slotW / 2), Math.round(y + slotH / 2), this._formatItemName(item.name), {
+                    fontFamily: "'Pokemon Classic', 'Courier New', monospace",
+                    fontSize: '32px',
+                    color: '#222233',
+                    align: 'center'
+                }).setOrigin(0.5, 0.5).setScale(0.22);
+
+                bgRect.on('pointerover', () => bgRect.setFillStyle(0xd8d0c0));
+                bgRect.on('pointerout', () => bgRect.setFillStyle(0xf0f0f5));
+                bgRect.on('pointerdown', () => {
+                    restoreBackpack();
+                    scene.backpack.close();
+                    scene._handleExamNpcItemOffer(item);
+                });
+
+                this.gridContainer.add(bgRect);
+                this.gridContainer.add(strokeRect);
+                this.gridContainer.add(itemText);
+            });
+        };
+
+        const restoreBackpack = () => {
+            this.backpack._renderGrid = originalRenderGrid;
+            this.backpack._renderHeader = originalRenderHeader;
+        };
+
+        // Re-render with the overridden methods
+        this.backpack._renderHeader();
+        this.backpack._renderGrid();
+    }
+
+    _handleExamNpcItemOffer(item) {
+        if (item.id.startsWith('sign_')) {
+            // Traffic sign — success!
+            this.dialogue.show(
+                ['A traffic sign?? Ok quite random but what the hell, you can have this pencil LOL'],
+                () => {
+                    // Remove the traffic sign from inventory
+                    this.backpack.items = this.backpack.items.filter(i => i !== item);
+
+                    // Add pencil to inventory
+                    this.backpack.items.push({
+                        id: 'pencil',
+                        name: 'Pencil',
+                        desc: 'A trusty pencil. Needed for the exam.',
+                        canUse: false
+                    });
+
+                    Game.state = Game.state || {};
+                    Game.state.examNpcTraded = true;
+                    Game.state.pencilCollected = true;
+
+                    this.dialogue.show(['You received a Pencil!']);
+                }
+            );
+        } else if (item.id === 'jallu') {
+            this.dialogue.show(['No, I only drink Gambina']);
+        } else {
+            this.dialogue.show(['I have no use for that']);
         }
     }
 };

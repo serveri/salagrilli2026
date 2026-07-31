@@ -4,79 +4,114 @@ window.Game = window.Game || {};
 
 Game.EXAM_QUESTIONS = [
     {
-        question: 'What keyword creates a new object in Java?',
-        words: ['new', 'class', 'void', 'static', 'int', 'return'],
-        answer: ['new']
-    },
-    {
-        question: 'Which data structure uses FIFO ordering?',
-        words: ['Queue', 'Stack', 'Array', 'Tree', 'Graph', 'Set'],
-        answer: ['Queue']
-    },
-    {
-        question: 'Complete: public static void ___',
-        words: ['main', 'class', 'new', 'import', 'break', 'else'],
-        answer: ['main']
-    },
-    {
-        question: 'What does JVM stand for?',
-        words: ['Java', 'Virtual', 'Machine', 'Script', 'Code', 'Runtime'],
-        answer: ['Java', 'Virtual', 'Machine']
-    },
-    {
-        question: 'Which keyword handles exceptions in Java?',
-        words: ['catch', 'throw', 'new', 'class', 'void', 'for'],
-        answer: ['catch']
-    },
-    {
-        question: 'What is the parent class of all Java classes?',
-        words: ['Object', 'Main', 'String', 'Class', 'System', 'Super'],
-        answer: ['Object']
-    },
-    {
-        question: 'Which sorting algorithm has O(n log n) average case?',
-        words: ['Merge', 'Sort', 'Bubble', 'Insert', 'Delete', 'Find'],
-        answer: ['Merge', 'Sort']
-    },
-    {
-        question: 'What data structure uses LIFO ordering?',
-        words: ['Stack', 'Queue', 'List', 'Map', 'Heap', 'Tree'],
-        answer: ['Stack']
-    },
-    {
-        question: 'Complete: HashMap stores ___ pairs',
-        words: ['key-value', 'index', 'node', 'stack', 'queue', 'array'],
-        answer: ['key-value']
-    },
-    {
-        question: 'Which keyword makes a variable unchangeable?',
-        words: ['final', 'static', 'public', 'void', 'class', 'new'],
-        answer: ['final']
-    },
-    {
-        question: 'Which keywords define the main method?',
-        words: ['public', 'static', 'void', 'main', 'class', 'new'],
+        question: 'Please, for the love of sanity, how do we start a Java program?',
+        words: ['public', 'static', 'void', 'main', 'private', 'please'],
         answer: ['public', 'static', 'void', 'main']
     },
     {
-        question: 'How do you declare a constant integer?',
-        words: ['public', 'static', 'final', 'int', 'void', 'const'],
-        answer: ['public', 'static', 'final', 'int']
+        question: 'If the autograder fails your code, what is your highly sophisticated debugging strategy?',
+        words: ['print', 'stuff', 'until', 'it', 'works', 'cry'],
+        answer: ['print', 'stuff', 'until', 'it', 'works']
     },
     {
-        question: 'What prints text with a newline?',
-        words: ['System', 'out', 'println', 'print', 'console', 'log'],
-        answer: ['System', 'out', 'println']
+        question: 'The code crashes on my computer but not yours. What is your legally binding defense?',
+        words: ['it', 'works', 'on', 'my', 'machine', 'Java'],
+        answer: ['it', 'works', 'on', 'my', 'machine']
     },
     {
-        question: 'How do you throw a new exception?',
-        words: ['throw', 'new', 'Exception', 'throws', 'catch', 'finally'],
-        answer: ['throw', 'new', 'Exception']
+        question: 'What is the universally accepted name for your absolute final submission file?',
+        words: ['untitled', 'version', 'three', 'real', 'done', 'Submission'],
+        answer: ['Submission', 'version', 'three', 'real', 'done']
     },
     {
-        question: 'What is the signature of a constructor for MyClass?',
-        words: ['public', 'MyClass', 'void', 'static', 'return', 'class'],
-        answer: ['public', 'MyClass']
+        question: 'Translate to Java: "Start the program"',
+        words: ['public', 'static', 'void', 'main', 'private', 'class', 'begin', 'now'],
+        answer: ['public', 'static', 'void', 'main']
+    },
+    {
+        question: 'How do you politely ask Java to output text to the screen?',
+        words: ['System', 'out', 'print', 'line', 'please', 'say', 'hello', 'console', 'log'],
+        answer: ['System', 'out', 'print', 'line']
+    },
+    {
+        question: 'What is the fastest way to exit the Vim text editor?',
+        words: ['hold', 'down', 'the', 'power', 'button', 'colon', 'quit', 'escape', 'save'],
+        answer: ['hold', 'down', 'the', 'power', 'button']
+    },
+    {
+        question: 'The true purpose of a catch block is to:',
+        words: ['ignore', 'the', 'error', 'and', 'keep', 'going', 'handle', 'exception'],
+        answer: ['ignore', 'the', 'error', 'and', 'keep', 'going']
+    },
+    {
+        question: 'If your algorithm runs in O(n!) time, how fast is it?',
+        words: ['slower', 'than', 'a', 'physical', 'snail', 'fast'],
+        answer: ['slower', 'than', 'a', 'physical', 'snail']
+    },
+    {
+        question: 'To be or not to be, that is the...',
+        words: ['standard', 'boolean', 'logic', 'expression', 'Shakespeare', 'false'],
+        answer: ['standard', 'boolean', 'logic', 'expression']
+    },
+    {
+        question: 'Why should we never use floating-point variables to calculate real money?',
+        words: ['Hackers', 'precise', 'math', 'becomes', 'impossible', 'integers'],
+        answer: ['precise', 'math', 'becomes', 'impossible']
+    },
+    {
+        question: 'What data structure is the answer to almost every technical interview question?',
+        words: ['just', 'use', 'a', 'hash', 'map', 'array'],
+        answer: ['just', 'use', 'a', 'hash', 'map']
+    },
+    {
+        question: 'When is it actually appropriate to use Bubble Sort in the real world?',
+        words: ['literally', 'never', 'do', 'that', 'ever', 'sometimes'],
+        answer: ['literally', 'never', 'do', 'that', 'ever']
+    },
+    {
+        question: 'Explain the Last-In-First-Out concept of a Stack using real-world chores.',
+        words: ['washing', 'a', 'coffeepan', 'pile', 'of', 'plates'],
+        answer: ['washing', 'a', 'pile', 'of', 'plates']
+    },
+    {
+        question: 'How does Binary Search find a specific number so quickly?',
+        words: ['chopping', 'the', 'array', 'in', 'half', 'sorting'],
+        answer: ['chopping', 'the', 'array', 'in', 'half']
+    },
+    {
+        question: "Complete the sentence: Java code runs on the...",
+        words: ["Java", "CPU", "browser", "printer", "Virtual", "Machine"],
+        answer: ["Virtual", "Machine"]
+    },
+    {
+        question: "if (true && false) equals to: ",
+        words: ["false", "true", "maybe", "error", "always", "null"],
+        answer: ["false"]
+    },
+    {
+        question: "Complete the sentence: A bug is an...",
+        words: ["error", "in", "code", "feature", "computer", "keyboard"],
+        answer: ["error", "in", "code"]
+    },
+    {
+        question: "An algorithm is...",
+        words: ["step", "by", "step", "instructions", "wizardry", "vibes"],
+        answer: ["step", "by", "step", "instructions"]
+    },
+    {
+        question: "A variable stores...",
+        words: ["a", "value", "sandwich", "regret", "hamsters", "wifi"],
+        answer: ["a", "value"]
+    },
+    {
+        question: "A binary tree node has...",
+        words: ["at", "most", "two", "children", "help!", "javaste"],
+        answer: ["at", "most", "two", "children"]
+    },
+    {
+        question: "Objects are created with keyword...",
+        words: ["new", "please", "summon", "duct", "tape", "hope"],
+        answer: ["new"]
     }
 ];
 
@@ -121,8 +156,8 @@ Game.Exam = class Exam {
 
         // Layout constants (in exam-local coordinates, centered at 0,0)
         // The white paper area is roughly centered in the background
-        this.paperLeft = -55;
-        this.paperRight = 105; // Increased to fit new paper space
+        this.paperLeft = -59;
+        this.paperRight = 109; // Increased to fit new paper space
         this.paperTop = -75;
         this.paperBottom = 80;
     }
@@ -145,13 +180,28 @@ Game.Exam = class Exam {
         // Input buffering
         this.inputQueue = [];
 
-        // Pick 10 random questions
-        const shuffled = [...Game.EXAM_QUESTIONS].sort(() => Math.random() - 0.5);
+        // Pick 10 random questions and shuffle their words
+        const shuffled = [...Game.EXAM_QUESTIONS].map(q => {
+            return {
+                question: q.question,
+                words: [...q.words].sort(() => Math.random() - 0.5),
+                answer: q.answer
+            };
+        }).sort(() => Math.random() - 0.5);
         this.activeQuestions = shuffled.slice(0, 10);
 
         this.questionStates = this.activeQuestions.map(() => ({
             selectedWords: []
         }));
+
+        // Dynamic timer based on player energy
+        const playerEnergy = Math.min(200, Math.max(0, this.scene.energy || 0));
+        this.timeRemaining = Math.floor(150 + (playerEnergy / 200) * 150);
+
+        Game.state = Game.state || {};
+        if (!Game.state.hasSlept) {
+            this._scheduleBlur();
+        }
 
         const cam = this.scene.cameras.main;
         const wv = cam.worldView;
@@ -169,7 +219,9 @@ Game.Exam = class Exam {
         this.container.add(this.bgImg);
 
         // Timer display (top-right of paper)
-        this.timerText = this.scene.add.text(this.paperRight - 5, this.paperTop + 5, '5:00', {
+        const mins = Math.floor(this.timeRemaining / 60);
+        const secs = this.timeRemaining % 60;
+        this.timerText = this.scene.add.text(this.paperRight - 5, this.paperTop + 5, `${mins}:${secs.toString().padStart(2, '0')}`, {
             fontFamily: "'Pokemon Classic', 'Courier New', monospace",
             fontSize: '7px',
             color: '#1a1a2e',
@@ -186,7 +238,7 @@ Game.Exam = class Exam {
         this.container.add(this.progressText);
 
         // Question text
-        this.questionText = this.scene.add.text((this.paperLeft + this.paperRight) / 2, this.paperTop + 28, '', {
+        this.questionText = this.scene.add.text((this.paperLeft + this.paperRight) / 2, this.paperTop + 16, '', {
             fontFamily: "'Pokemon Classic', 'Courier New', monospace",
             fontSize: '6px',
             color: '#1a1a2e',
@@ -197,7 +249,7 @@ Game.Exam = class Exam {
         this.container.add(this.questionText);
 
         // Answer line
-        this.answerText = this.scene.add.text((this.paperLeft + this.paperRight) / 2, this.paperTop + 52, '', {
+        this.answerText = this.scene.add.text((this.paperLeft + this.paperRight) / 2, this.paperTop + 46, '', {
             fontFamily: "'Pokemon Classic', 'Courier New', monospace",
             fontSize: '7px',
             color: '#003366',
@@ -207,7 +259,7 @@ Game.Exam = class Exam {
         this.container.add(this.answerText);
 
         // Erase button
-        this.eraseBtn = this.scene.add.text(this.paperRight - 25, this.paperTop + 52, '←', {
+        this.eraseBtn = this.scene.add.text(this.paperRight - 25, this.paperTop + 46, '←', {
             fontFamily: "'Pokemon Classic', 'Courier New', monospace",
             fontSize: '7px',
             color: '#cc0000'
@@ -230,7 +282,7 @@ Game.Exam = class Exam {
         this.container.add(this.thoughtBubbleContainer);
 
         // Add thought bubble image
-        this.thoughtBubbleImg = this.scene.add.image(this.paperLeft - 50, this.paperBottom + 20, 'thoughtbubble');
+        this.thoughtBubbleImg = this.scene.add.image(this.paperLeft - 50, this.paperBottom + 18, 'thoughtbubble');
         this.thoughtBubbleImg.setOrigin(0, 1);
         this.thoughtBubbleContainer.add(this.thoughtBubbleImg);
 
@@ -259,7 +311,7 @@ Game.Exam = class Exam {
             }
 
             // Backspace to erase
-            if (evt.code === 'Backspace' || evt.code === 'Enter') {
+            if (evt.code === 'Backspace') {
                 evt.preventDefault();
                 this._queueInput({ type: 'erase' });
                 return;
@@ -313,6 +365,14 @@ Game.Exam = class Exam {
 
         // Show first question
         this._showQuestion();
+
+        if (!Game.state.hasSlept) {
+            this.scene.time.delayedCall(1000, () => {
+                if (this.isOpen && !this.isFinished) {
+                    this._showThought("I really should have slept...", 3000);
+                }
+            });
+        }
     }
 
     close() {
@@ -338,6 +398,11 @@ Game.Exam = class Exam {
         if (this.thoughtTimer) {
             this.thoughtTimer.remove();
             this.thoughtTimer = null;
+        }
+
+        if (this.thoughtHideTimer) {
+            this.thoughtHideTimer.remove();
+            this.thoughtHideTimer = null;
         }
 
         this._destroyPencil();
@@ -366,10 +431,109 @@ Game.Exam = class Exam {
         }
         this.thoughtBubbleImg = null;
         this.thoughtText = null;
-        
+
         if (this.eraseBtn) {
             this.eraseBtn.destroy();
             this.eraseBtn = null;
+        }
+
+        this._clearBlur();
+    }
+
+    _showThought(phrase, hideAfter = 0) {
+        if (!this.thoughtBubbleContainer || !this.thoughtText) return;
+
+        this.container.bringToTop(this.thoughtBubbleContainer);
+        this.thoughtBubbleContainer.setVisible(true);
+        this.thoughtText.setText('');
+
+        if (this.thoughtTimer) this.thoughtTimer.remove();
+        if (this.thoughtHideTimer) this.thoughtHideTimer.remove();
+
+        let charIdx = 0;
+        this.thoughtTimer = this.scene.time.addEvent({
+            delay: 30,
+            repeat: phrase.length - 1,
+            callback: () => {
+                charIdx++;
+                if (this.thoughtText) {
+                    this.thoughtText.setText(phrase.substring(0, charIdx));
+                }
+                if (charIdx === phrase.length && hideAfter > 0) {
+                    this.thoughtHideTimer = this.scene.time.delayedCall(hideAfter, () => {
+                        if (this.thoughtBubbleContainer) {
+                            this.thoughtBubbleContainer.setVisible(false);
+                        }
+                    });
+                }
+            }
+        });
+    }
+
+    _scheduleBlur() {
+        if (this.isFinished || !this.isOpen) return;
+        const delay = 5000 + Math.random() * 10000; // 5-15 seconds
+        this.blurTimer = this.scene.time.addEvent({
+            delay: delay,
+            callback: () => {
+                if (this.isFinished || !this.isOpen) return;
+
+                // First, less intense blur
+                if (this.scene.sys && this.scene.sys.game && this.scene.sys.game.canvas) {
+                    this.scene.sys.game.canvas.style.transition = 'filter 3s ease-in-out';
+                    this.scene.sys.game.canvas.style.filter = 'blur(1px) brightness(0.8)';
+                }
+
+                // Second, more intense blur
+                this.blurIntenseTimer = this.scene.time.delayedCall(3000, () => {
+                    if (this.isFinished || !this.isOpen) return;
+                    if (this.scene.sys && this.scene.sys.game && this.scene.sys.game.canvas) {
+                        this.scene.sys.game.canvas.style.transition = 'filter 1.5s ease-in';
+                        this.scene.sys.game.canvas.style.filter = 'blur(5px) brightness(0.3)';
+                    }
+                });
+
+                // Remove blur after shorter time
+                this.blurEndTimer = this.scene.time.delayedCall(3600 + Math.random() * 1000, () => {
+                    this._clearBlur();
+                    if (!this.isFinished && this.isOpen) {
+                        this._scheduleBlur();
+                    }
+                });
+            }
+        });
+    }
+
+    _clearBlur(fast = false) {
+        if (this.blurTimer) {
+            this.blurTimer.remove();
+            this.blurTimer = null;
+        }
+        if (this.blurIntenseTimer) {
+            this.blurIntenseTimer.remove();
+            this.blurIntenseTimer = null;
+        }
+        if (this.blurEndTimer) {
+            this.blurEndTimer.remove();
+            this.blurEndTimer = null;
+        }
+        if (this.scene.sys && this.scene.sys.game && this.scene.sys.game.canvas) {
+            const canvas = this.scene.sys.game.canvas;
+            if (fast) {
+                canvas.style.transition = 'filter 0.3s ease';
+            }
+            canvas.style.filter = 'none';
+            // Re-apply game scene's drunk effect if it exists
+            if (this.scene.updateDrunkEffect) {
+                this.scene.updateDrunkEffect();
+            }
+
+            // Remove transition after it finishes
+            setTimeout(() => {
+                if (this.scene.sys && this.scene.sys.game && this.scene.sys.game.canvas) {
+                    this.scene.sys.game.canvas.style.transition = '';
+                }
+            }, fast ? 300 : 2000);
         }
     }
 
@@ -380,8 +544,6 @@ Game.Exam = class Exam {
         if (!this.pencilActive && this.nextPencilTime > 0 && time >= this.nextPencilTime) {
             this._spawnPencil();
         }
-
-        // Update pencil position
         if (this.pencilActive && this.pencilSprite) {
             this.pencilSprite.y -= this.pencilSpeed * (delta / 16.67); // Faster upward movement with variance
             this.pencilSprite.x += this.pencilDriftX * (delta / 16.67);
@@ -428,6 +590,7 @@ Game.Exam = class Exam {
         const centerX = (this.paperLeft + this.paperRight) / 2;
         // The text width might have trailing spaces depending on '___', but width gives the bounding box
         this.eraseBtn.x = centerX + (this.answerText.width / 2) + 6; // 6px padding to the right
+        this.eraseBtn.y = this.answerText.y;
     }
 
     _showQuestion() {
@@ -444,6 +607,9 @@ Game.Exam = class Exam {
         }
 
         if (this.answerText) {
+            if (this.questionText) {
+                this.answerText.y = this.questionText.y + this.questionText.height + 10;
+            }
             this.answerText.setText(this._formatAnswerLine(q, state));
             this.answerText.setColor('#003366');
             this._updateEraseButtonPosition();
@@ -455,7 +621,7 @@ Game.Exam = class Exam {
 
         this._renderWordButtons();
         this._renderNavButtons();
-        
+
         // Ensure pencil and thought bubble stay on top of the newly rendered buttons
         if (this.pencilActive && this.pencilSprite) {
             this.container.bringToTop(this.pencilSprite);
@@ -554,18 +720,18 @@ Game.Exam = class Exam {
         if (!q) return;
 
         const state = this.questionStates[this.currentQuestion];
-        
+
         if (this.eraseBtn) {
             this.eraseBtn.setVisible(state.selectedWords.length > 0);
         }
 
         const cols = 3;
-        const btnW = 46;
+        const btnW = 50;
         const btnH = 14;
         const spacingX = 4;
         const spacingY = 5;
         const startX = (this.paperLeft + this.paperRight) / 2 - ((cols * (btnW + spacingX) - spacingX) / 2);
-        const startY = this.paperTop + 66;
+        const startY = this.answerText ? this.answerText.y + 24 : this.paperTop + 76;
 
         q.words.forEach((word, i) => {
             const col = i % cols;
@@ -604,7 +770,7 @@ Game.Exam = class Exam {
 
             const label = this.scene.add.text(x + btnW / 2 + 4, y + btnH / 2, word, {
                 fontFamily: "'Pokemon Classic', 'Courier New', monospace",
-                fontSize: '6px',
+                fontSize: '5px',
                 color: isUsed ? '#999999' : '#1a1a2e'
             }).setOrigin(0.5, 0.5).setResolution(10);
 
@@ -613,6 +779,14 @@ Game.Exam = class Exam {
             this.container.add(label);
             this.wordButtons.push({ bg, label, numLabel, index: i });
         });
+
+        // Ensure pencil and thought bubble stay on top of the newly rendered buttons
+        if (this.pencilActive && this.pencilSprite) {
+            this.container.bringToTop(this.pencilSprite);
+        }
+        if (this.thoughtBubbleContainer) {
+            this.container.bringToTop(this.thoughtBubbleContainer);
+        }
     }
 
     _flashNoPencil() {
@@ -803,8 +977,16 @@ Game.Exam = class Exam {
         this.nextPencilTime = 0;
 
         // Spawn at bottom of paper area with random X
-        const spawnX = this.paperLeft + 20 + Math.random() * (this.paperRight - this.paperLeft - 40);
+        const spawnX = this.paperLeft + 20 + Math.random() * (this.paperRight - this.paperLeft - 65);
         const spawnY = this.paperBottom + 5;
+
+        // If the vision is currently blurred, the pencil spawning clears it quickly!
+        if (this.blurEndTimer) {
+            this._clearBlur(true);
+            if (!this.isFinished && this.isOpen) {
+                this._scheduleBlur();
+            }
+        }
 
         this.pencilSprite = this.scene.add.sprite(spawnX, spawnY, 'pencil');
         this.pencilSprite.setOrigin(0.5, 0.5);
@@ -813,7 +995,7 @@ Game.Exam = class Exam {
 
         // Random drift: wider range for more deviation
         this.pencilDriftX = (Math.random() * 0.8) - 0.4;
-        
+
         // Random bounce characteristics
         this.pencilBouncePhase = Math.random() * Math.PI * 2;
         this.pencilBounceSpeed = 0.002 + Math.random() * 0.005; // Different speeds
@@ -825,27 +1007,9 @@ Game.Exam = class Exam {
 
         this.container.add(this.pencilSprite);
 
-        // Show thought bubble over everything
-        this.container.bringToTop(this.thoughtBubbleContainer);
-        this.thoughtBubbleContainer.setVisible(true);
-        this.thoughtText.setText('');
-
-        if (this.thoughtTimer) this.thoughtTimer.remove();
-
         const phrases = ["My pencil!", "Oh shit!", "My hands are shaking!"];
         const phrase = phrases[Math.floor(Math.random() * phrases.length)];
-        let charIdx = 0;
-
-        this.thoughtTimer = this.scene.time.addEvent({
-            delay: 20, // fast typing
-            repeat: phrase.length - 1,
-            callback: () => {
-                charIdx++;
-                if (this.thoughtText) {
-                    this.thoughtText.setText(phrase.substring(0, charIdx));
-                }
-            }
-        });
+        this._showThought(phrase);
     }
 
     _catchPencil() {
@@ -882,6 +1046,10 @@ Game.Exam = class Exam {
             this.thoughtTimer.remove();
             this.thoughtTimer = null;
         }
+        if (this.thoughtHideTimer) {
+            this.thoughtHideTimer.remove();
+            this.thoughtHideTimer = null;
+        }
     }
 
     _finishExam() {
@@ -893,10 +1061,12 @@ Game.Exam = class Exam {
         }
 
         this._destroyPencil();
+        this._clearBlur();
 
         // Clear question UI
         if (this.questionText) this.questionText.setText('');
         if (this.answerText) this.answerText.setText('');
+        if (this.eraseBtn) this.eraseBtn.setVisible(false);
         this.wordButtons.forEach(b => {
             if (b.bg) b.bg.destroy();
             if (b.label) b.label.destroy();

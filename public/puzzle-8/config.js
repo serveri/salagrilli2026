@@ -78,17 +78,18 @@ Game.INSPECT_MESSAGES = {
     3077: ['Wolksvagen golf GTI'], 3078: ['Wolksvagen golf GTI'], 3144: ['Wolksvagen golf GTI'], 3080: ['Wolksvagen golf GTI'],
     3205: ['Mercedes-Benz X 350 d 4MATIC', 'What a car!'], 3206: ['Mercedes-Benz X 350 d 4MATIC', 'What a car!'], 3271: ['Mercedes-Benz X 350 d 4MATIC', 'What a car!'], 3207: ['Mercedes-Benz X 350 d 4MATIC', 'What a car!'],
     3138: ['Might be related to triangle man'], 3074: ['Its good thing there is not much traffic'], 195: ['Its a barrel, or a pipe maybe?'], 132: ['Just a bush'], 2762: ['Some old tires'], 2757: ['Damn construction!'], 2758: ['Damn construction!'],
-    2759: ['Damn construction!'], 225: ['It\'s locked'], 226: ['It\'s locked'], 227: ['It\'s locked'], 291: ['It\'s locked'], 671: ['It\'s a computer! I love computers :)'], 673: ['Nothing interesting ever on TV..'], 674: ['Nothing interesting ever on TV..'],
+    2759: ['Damn construction!'], 225: ['It\'s locked'], 226: ['It\'s locked'], 227: ['It\'s locked'], 291: ['It\'s locked'], 671: ['It\'s a computer! I love computers :)'], 799: ['It\'s a computer! I love computers :)'], 673: ['Nothing interesting ever on TV..'], 674: ['Nothing interesting ever on TV..'],
     418: ['Poster of my favourite game!', 'I play it with my friends'], 377: ['I don\'t like this weird plant'], 3209: ['BMW E36 Cabrio', 'Clearly compensating for something'], 3210: ['BMW E36 Cabrio', 'Clearly compensating for something'], 3276: ['BMW E36 Cabrio', 'Clearly compensating for something'], 3212: ['BMW E36 Cabrio', 'Clearly compensating for something'],
     3273: ['Toyota Corolla', 'Definitely not compensating for anything'], 3274: ['Toyota Corolla', 'Definitely not compensating for anything'], 3211: ['Toyota Corolla', 'Definitely not compensating for anything'], 3275: ['Toyota Corolla', 'Definitely not compensating for anything'], 2824: ['Construction around here seems to never finish'], 2888: ['Construction around here seems to never finish'],
-    1750: ['Locked, I should have guessed'], 3072: ['The light bulb is burning into my eyes!'], 3136: ['Put that light away!'], 612: ['Books: Java 101: The importance of programming socks,', '..How to craft a nuclear device, in Minecraft'], 676: ['Books: S.Javasteel - Programming 101: The importance of programming socks,', '.. Chad.Gepede - How to craft a nuclear device, in Minecraft'],
+    1750: ['Locked, I should have guessed'], 3072: ['The light bulb is burning into my eyes!'], 3136: ['Put that light away!'], 612: ['Books: Linux Torvalds - GNU/Linux 101: The importance of programming socks,', '..How to craft a nuclear device, in Minecraft'], 676: ['Books: Linux Torvalds - GNU/Linux 101: The importance of programming socks,', '.. Chad.Gepede - How to craft a nuclear device, in Minecraft'],
     3012: ['Its a barrel, or a pipe maybe?'], 519: ['I sniff my rose this morning, yes'], 584: ['I sniff my rose this morning, yes'], 3081: ['A flimsy bike rack'], 290: ['I sniff my rose this morning, yes'], 1056: ['That hat must have been left by one of the bussiness students'], 1120: ['That hat must have been left by one of the bussiness students'], 1057: ['M\'lady'], 1121: ['I found him!'], 1122: ['Mice don\'t wear hats'],
-    1058: ['Mice don\'t wear hats'], 662: ['Restaurant Hunter has closed down for good', '*You shed a small tear*'], 113: ['Locked', 'I\'m not gonna break into the offices of our nice staff!'], 228: ['Restaurant is not open right now']
+    1058: ['Mice don\'t wear hats'], 662: ['Restaurant Hunter has closed down for good', '*You shed a small tear*'], 113: ['Locked', 'I\'m not gonna break into the offices of our nice staff!'], 228: ['Restaurant is not open right now'], 1119: ['There is no exam paper at this seat'], 805: ['Books: S.Javasteel: Differences of japanese and finnish binary tree gardens', '...S.Alterman: Mechanical humans and their superiority'], 869: ['Books: S.Javasteel: Differences of japanese and finnish binary tree gardens', '...S.Alterman: Mechanical humans and their superiority'],
+    3264: ['Bus schedule: Every 5 minutes after 7 am'], 3200: ['Bus schedule: Every 5 minutes after 7 am'], 545: ['Exam paper ready to go! I\'m nervous!']
 };
 
 Game.SIGN_MESSAGES = {
     'serveriquest_66_24': ['Neulamäki karting', 'Open 10-19'],
-    'serveriquest_75_47': ['Berries are a good snack!', 'Press I or E to open your inventory and eat collected berries.'],
+    'serveriquest_75_47': ['Berries are a good snack!', 'Press I or E to open your inventory and eat collected berries.', 'There are multiple other energy restoring items'],
     'serveriquest_54_21': ['Road to Neulamäki'],
     'serveriquest_55_4': ['Road to Savilahti'],
     'serveriquest_33_52': ['Serveri mouse house & grill', 'I live here!'],
@@ -102,6 +103,7 @@ Game.SIGN_MESSAGES = {
     'snellmania_11_45': ['↑ Snellmania lobby'],
     'snellmania_42_22': ['University of eastern finland'],
     'snellmania_46_47': ['Serveri tip: preparing for the exam makes it easier to pass!'],
+    'Exam_4_45': ['Serveri tip: The exam gets way harder if you have not slept, or if your energy is low.', 'But it is passable!'],
     // Add more signs here as needed
 };
 
@@ -116,6 +118,9 @@ Game.LOCKED_DOORS = {
         { x: 39, y: 52, requiredItem: null, failedItem: 'Nappi avain', msgMissing: ['Its locked', 'Let\'s try the other door'], msgHasItem: ['Light on the lock is flashing red..', 'Nappiavain does not in Snellmania'] },
         { x: 7, y: 55, requiredItem: null, failedItem: 'Nappi avain', msgMissing: ['Its locked', 'Let\'s try the other door'], msgHasItem: ['Light on the lock is flashing red..', 'Nappiavain does not in Snellmania'] },
         { x: 15, y: 52, requiredItem: null, failedItem: 'Nappi avain', msgMissing: ['Its locked', 'Let\'s try the other door'], msgHasItem: ['Light on the lock is flashing red..', 'Nappiavain does not in Snellmania'] },
+    ],
+    'Exam': [
+        { x: 18, y: 30, requiredItem: 'pencil', msgMissing: ['Oh wait! I need a pencil to enter the exam'], msgHasItem: null }
     ]
 };
 

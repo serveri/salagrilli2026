@@ -33,6 +33,12 @@ Game.BootScene = class BootScene extends Phaser.Scene {
             frameHeight: 20
         });
 
+        // ServeriNPC spritesheet (16x16 frames, 4 cols x 4 rows)
+        this.load.spritesheet('serverinpc', 'ServeriNPC.png', {
+            frameWidth: 16,
+            frameHeight: 16
+        });
+
         // Tileset (1024x1024, 64 tiles per row)
         this.load.image('tiles', 'Tileset.png');
 
@@ -45,6 +51,15 @@ Game.BootScene = class BootScene extends Phaser.Scene {
 
         // Backpack asset (198x150)
         this.load.image('backpack', 'backpack.png');
+
+        // Shop interface asset (198x150)
+        this.load.image('shopinterface', 'shopinterface.png');
+
+        // Shopkeep spritesheet (16x20 frames)
+        this.load.spritesheet('shopkeep', 'Shopkeep.png', {
+            frameWidth: 16,
+            frameHeight: 20
+        });
 
         // Effects asset (16x16 frames)
         this.load.spritesheet('effects', 'Effects.png', { frameWidth: 16, frameHeight: 16 });
@@ -66,7 +81,7 @@ Game.BootScene = class BootScene extends Phaser.Scene {
 
     create() {
         // Load custom font via FontFace API, then proceed to menu
-        const font = new FontFace('Pokemon Classic', "url('/puzzle-8/assets/Pokemon%20Classic.ttf')");
+        const font = new FontFace('Pokemon Classic', `url('/puzzle-8/assets/Pokemon%20Classic.ttf?v=${Date.now()}')`);
         font.load().then((loadedFont) => {
             document.fonts.add(loadedFont);
             this.scene.start('MenuScene');
