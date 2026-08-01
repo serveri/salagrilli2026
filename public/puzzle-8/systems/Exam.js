@@ -19,14 +19,9 @@ Game.EXAM_QUESTIONS = [
         answer: ['it', 'works', 'on', 'my', 'machine']
     },
     {
-        question: 'What is the universally accepted name for your absolute final submission file?',
-        words: ['untitled', 'version', 'three', 'real', 'done', 'Submission'],
-        answer: ['Submission', 'version', 'three', 'real', 'done']
-    },
-    {
-        question: 'Translate to Java: "Start the program"',
-        words: ['public', 'static', 'void', 'main', 'private', 'class', 'begin', 'now'],
-        answer: ['public', 'static', 'void', 'main']
+        question: 'What is the universally accepted name for your absolute final Excercise file?',
+        words: ['untitled', 'version', 'three', 'real', 'done', 'Excercise'],
+        answer: ['Excercise', 'version', 'three', 'real', 'done']
     },
     {
         question: 'How do you politely ask Java to output text to the screen?',
@@ -40,7 +35,7 @@ Game.EXAM_QUESTIONS = [
     },
     {
         question: 'The true purpose of a catch block is to:',
-        words: ['ignore', 'the', 'error', 'and', 'keep', 'going', 'handle', 'exception'],
+        words: ['ignore', 'the', 'error', 'and', 'keep', 'going', 'handle', 'try'],
         answer: ['ignore', 'the', 'error', 'and', 'keep', 'going']
     },
     {
@@ -50,8 +45,8 @@ Game.EXAM_QUESTIONS = [
     },
     {
         question: 'To be or not to be, that is the...',
-        words: ['standard', 'boolean', 'logic', 'expression', 'Shakespeare', 'false'],
-        answer: ['standard', 'boolean', 'logic', 'expression']
+        words: ['standard', 'boolean', 'logic', 'joke', 'Letkautus', 'false'],
+        answer: ['standard', 'boolean', 'logic']
     },
     {
         question: 'Why should we never use floating-point variables to calculate real money?',
@@ -114,6 +109,24 @@ Game.EXAM_QUESTIONS = [
         answer: ["new"]
     }
 ];
+
+Game.getOrCreateActiveQuestions = function () {
+    Game.state = Game.state || {};
+    if (!Game.state.activeQuestions) {
+        const shuffled = [...Game.EXAM_QUESTIONS].map(q => {
+            const shuffledWords = [...q.words].sort(() => Math.random() - 0.5);
+            const answerIndices = q.answer.map(w => shuffledWords.indexOf(w) + 1);
+            return {
+                question: q.question,
+                words: shuffledWords,
+                answer: q.answer,
+                answerIndices: answerIndices
+            };
+        }).sort(() => Math.random() - 0.5);
+        Game.state.activeQuestions = shuffled.slice(0, 10);
+    }
+    return Game.state.activeQuestions;
+};
 
 Game.Exam = class Exam {
     constructor(scene) {
@@ -183,15 +196,8 @@ Game.Exam = class Exam {
         // Input buffering
         this.inputQueue = [];
 
-        // Pick 10 random questions and shuffle their words
-        const shuffled = [...Game.EXAM_QUESTIONS].map(q => {
-            return {
-                question: q.question,
-                words: [...q.words].sort(() => Math.random() - 0.5),
-                answer: q.answer
-            };
-        }).sort(() => Math.random() - 0.5);
-        this.activeQuestions = shuffled.slice(0, 10);
+        // Get pre-randomized 10 active questions
+        this.activeQuestions = Game.getOrCreateActiveQuestions();
 
         this.questionStates = this.activeQuestions.map(() => ({
             selectedWords: []

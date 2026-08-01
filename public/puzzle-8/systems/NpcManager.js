@@ -134,7 +134,7 @@ Game.NpcManager = class NpcManager {
                 tileX: 37,
                 tileY: 54,
                 facing: 'down',
-                sprite: scene.add.sprite(37 * Game.TILE_SIZE, 54 * Game.TILE_SIZE - 4, 'hyeena', 0).setOrigin(0, 0).setDepth(10)
+                sprite: scene.add.sprite(37 * Game.TILE_SIZE, 54 * Game.TILE_SIZE - 2, 'hyeena', 0).setOrigin(0, 0).setDepth(10)
             };
         }
     }

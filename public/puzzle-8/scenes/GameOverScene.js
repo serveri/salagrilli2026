@@ -60,7 +60,7 @@ Game.GameOverScene = class GameOverScene extends Phaser.Scene {
                 this.anims.create({
                     key: 'walk-down',
                     frames: this.anims.generateFrameNumbers('player', { frames: [0, 1, 2, 3] }),
-                    frameRate: 10,
+                    frameRate: 8,
                     repeat: -1
                 });
             }
@@ -68,7 +68,7 @@ Game.GameOverScene = class GameOverScene extends Phaser.Scene {
                 this.anims.create({
                     key: 'walk-up',
                     frames: this.anims.generateFrameNumbers('player', { frames: [4, 5, 6, 7] }),
-                    frameRate: 10,
+                    frameRate: 8,
                     repeat: -1
                 });
             }
@@ -76,7 +76,7 @@ Game.GameOverScene = class GameOverScene extends Phaser.Scene {
                 this.anims.create({
                     key: 'walk-right',
                     frames: this.anims.generateFrameNumbers('player', { frames: [12, 13, 14, 15] }),
-                    frameRate: 9,
+                    frameRate: 8,
                     repeat: -1
                 });
             }
@@ -264,7 +264,7 @@ Game.GameOverScene = class GameOverScene extends Phaser.Scene {
 
     _animateVictoryServeris() {
         const TILE = Game.TILE_SIZE;
-        const stepTime = 160;
+        const stepTime = 200;
 
         const createServeri = (delay, pathSegments, finalTileX, finalTileY) => {
             this.time.delayedCall(delay, () => {

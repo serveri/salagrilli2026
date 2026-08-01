@@ -354,7 +354,14 @@ Game.Backpack = class Backpack {
         this.close();
         if (this.scene.dialogue) {
             let pages = [];
-            if (Array.isArray(item.desc)) {
+            if (item.id === 'cheat_sheet') {
+                const activeQs = window.Game && window.Game.getOrCreateActiveQuestions ? window.Game.getOrCreateActiveQuestions() : [];
+                const lines = activeQs.map((q, idx) => `Q${idx + 1}: ${q.answerIndices.join(', ')}`);
+                const page1 = ['Cheat Sheet Answers:'].concat(lines.slice(0, 3)).join('\n');
+                const page2 = lines.slice(3, 7).join('\n');
+                const page3 = lines.slice(7, 10).join('\n');
+                pages = [page1, page2, page3];
+            } else if (Array.isArray(item.desc)) {
                 pages = item.desc.map((text, index) => index === 0 ? `${item.name}: ${text}` : text);
             } else {
                 pages = [`${item.name}: ${item.desc}`];
