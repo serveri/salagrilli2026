@@ -86,7 +86,7 @@ Game.INSPECT_MESSAGES = {
     3012: ['Its a barrel, or a pipe maybe'], 519: ['I sniff my rose this morning, yes'], 584: ['I sniff my rose this morning, yes'], 3081: ['A flimsy bike rack'], 290: ['I sniff my rose this morning, yes'], 1056: ['That hat must have been left by one of the bussiness students'], 1120: ['That hat must have been left by one of the bussiness students'], 1057: ['M\'lady'], 1121: ['I found him!'], 1122: ['Mice don\'t wear hats'],
     1058: ['Mice don\'t wear hats'], 662: ['Restaurant Hunter has closed down for good', 'You shed a small tear'], 113: ['Locked', 'I\'m not gonna break into the offices of our nice staff!'], 228: ['Restaurant is not open right now'], 1119: ['No exam paper at this seat'], 805: ['Books: S.Javasteel - Differences of japanese and finnish binary tree gardens', '...S.Alterman: Mechanical humans and their superiority'], 869: ['Books: S.Javasteel - Differences of japanese and finnish binary tree gardens', '...S.Alterman: Mechanical humans and their superiority'],
     3264: ['Bus 4 schedule: Every 5 minutes to Neulamäki'], 3200: ['Bus 4 schedule: Every 5 minutes to Neulamäki'], 545: ['Exam paper ready to go! I\'m nervous!'],
-    246: ['Smoked salmon -like sandvich'], 310: ['Smoked salmon -like sandvich']
+    246: ['Smoked salmon -like sandvich'], 310: ['Smoked salmon -like sandvich'], 31: ['Looks pretty empty'], 95: ['Looks pretty empty'], 483: ['Wish I had time to play', 'But that exam is pretty soon!'], 484: ['Wish I had time to play', 'But that exam is pretty soon!']
 };
 
 Game.SIGN_MESSAGES = {

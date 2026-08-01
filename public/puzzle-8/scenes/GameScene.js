@@ -252,6 +252,30 @@ Game.GameScene = class GameScene extends Phaser.Scene {
                     interacted = true;
                 }
 
+                if (!interacted && targetTileIndex === 698) {
+                    Game.state = Game.state || {};
+                    if (!Game.state.secondCoffeeMakerUsed) {
+                        this.dialogue.show(['Make coffee?'], null, [
+                            {
+                                text: 'Yes', color: '#006600', hoverColor: '#00cc00', onClick: () => {
+                                    this.backpack.items.push({
+                                        id: 'cup_of_coffee',
+                                        name: 'Cup of coffee',
+                                        desc: 'Freshly made coffee. Restores 100 energy.',
+                                        canUse: true
+                                    });
+                                    Game.state.secondCoffeeMakerUsed = true;
+                                    this.dialogue.show(['You made a cup of coffee.']);
+                                }
+                            },
+                            { text: 'No', onClick: () => { } }
+                        ]);
+                    } else {
+                        this.dialogue.show(['The coffee pot is empty.']);
+                    }
+                    interacted = true;
+                }
+
                 if (!interacted && targetTileIndex === 699) {
                     this.dialogue.show(['You found your home key!', 'I probably lost it last night and some kind soul brought it here'], () => {
                         this.backpack.items.push({
