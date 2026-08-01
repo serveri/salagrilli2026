@@ -214,7 +214,7 @@ Game.GameScene = class GameScene extends Phaser.Scene {
                         this.dialogue.show(['The serveri is fast asleep']);
                     } else {
                         if (!Game.state.cheatSheetGiven) {
-                            this.dialogue.show(['That delicous smell of coffee woke me up!', 'Look, I got this cheat sheet..', 'Take it, I\'m probably not gonna make it to the exam anyway..'], () => {
+                            this.dialogue.show(['Serveri: That delicous smell of coffee woke me up!', 'Serveri: Look, I got this cheat sheet..', 'Serveri: Take it, I\'m probably not gonna make it to the exam anyway..'], () => {
                                 this.backpack.items.push({
                                     id: 'cheat_sheet',
                                     name: 'Cheat sheet',
@@ -224,7 +224,7 @@ Game.GameScene = class GameScene extends Phaser.Scene {
                                 Game.state.cheatSheetGiven = true;
                             });
                         } else {
-                            this.dialogue.show(['Good luck on the exam!']);
+                            this.dialogue.show(['Serveri: Good luck on the exam!']);
                         }
                     }
                     interacted = true;
@@ -239,7 +239,7 @@ Game.GameScene = class GameScene extends Phaser.Scene {
                                     this.backpack.items.push({
                                         id: 'cup_of_coffee',
                                         name: 'Cup of coffee',
-                                        desc: 'Freshly made coffee.',
+                                        desc: 'Freshly made coffee. Restores 100 energy.',
                                         canUse: true
                                     });
                                     Game.state.serveriWoken = true;
@@ -391,7 +391,7 @@ Game.GameScene = class GameScene extends Phaser.Scene {
                         }
                     }
 
-                    this.dialogue.show(['Buy something?'], null, [
+                    this.dialogue.show(['Cashier: Welcome! Want to buy something?'], null, [
                         {
                             text: 'Yes', color: '#006600', hoverColor: '#00cc00', onClick: () => {
                                 if (this.shop) {
@@ -434,7 +434,7 @@ Game.GameScene = class GameScene extends Phaser.Scene {
                         });
                     }
 
-                    this.dialogue.show(['Buy something?'], null, [
+                    this.dialogue.show(['Cashier: Welcome! Want to buy something?'], null, [
                         {
                             text: 'Yes', color: '#006600', hoverColor: '#00cc00', onClick: () => {
                                 if (this.shop) {
@@ -495,22 +495,22 @@ Game.GameScene = class GameScene extends Phaser.Scene {
 
                     const stories = [
                         [
-                            'Do you know what happened to Niilo22?',
-                            'He bought a new bike, and immediately lost the keys...',
-                            'Then he complained about it on video for 20 minutes.',
-                            'Classic Niilo!'
+                            'IT-Guy: Do you know what happened to Niilo22?',
+                            'IT-Guy: He bought a new bike, and immediately lost the keys...',
+                            'IT-Guy: Then he complained about it on video for 20 minutes.',
+                            'IT-Guy: Classic Niilo!'
                         ],
                         [
-                            'Have you heard? Niilo22 tried to make coffee..',
-                            'He broke a hole in the bottom of his coffee pot!',
-                            'Then he blamed the coffee maker manufacturer.',
-                            'Never change, Niilo!'
+                            'IT-Guy: Have you heard? Niilo22 tried to make coffee..',
+                            'IT-Guy: He broke a hole in the bottom of his coffee pot!',
+                            'IT-Guy: Then he blamed the coffee maker manufacturer.',
+                            'IT-Guy: Never change, Niilo!'
                         ],
                         [
-                            'Did you see the latest Niilo22 video?',
-                            'He reviewed a frozen pizza...',
-                            'But forgot to take the plastic off before putting it in the oven!',
-                            'What a legend!'
+                            'IT-Guy: Did you see the latest Niilo22 video?',
+                            'IT-Guy: He reviewed a frozen pizza...',
+                            'IT-Guy: But forgot to take the plastic off before putting it in the oven!',
+                            'IT-Guy: What a legend!'
                         ]
                     ];
                     const story = stories[Math.floor(Math.random() * stories.length)];
@@ -547,9 +547,9 @@ Game.GameScene = class GameScene extends Phaser.Scene {
 
                     Game.state = Game.state || {};
                     if (Game.state.examScore !== undefined) {
-                        this.dialogue.show(['I hope you did well!']);
+                        this.dialogue.show(['IT-Guy: I hope you did well!']);
                     } else {
-                        this.dialogue.show(['Please take a seat.']);
+                        this.dialogue.show(['IT-Guy: Please take a seat.']);
                     }
                     interacted = true;
                 }
@@ -570,12 +570,12 @@ Game.GameScene = class GameScene extends Phaser.Scene {
 
                     Game.state = Game.state || {};
                     if (Game.state.examNpcTraded) {
-                        this.dialogue.show(['Good luck on the exam!']);
+                        this.dialogue.show(['Serveri: Good luck on the exam!']);
                     } else {
                         this.dialogue.show(['Ask the Serveri if he has a pencil you could borrow?'], null, [
                             {
                                 text: 'Ask', color: '#006600', hoverColor: '#00cc00', onClick: () => {
-                                    this.dialogue.show(['Perhaps I have one, but what am I gonna get in return?'], () => {
+                                    this.dialogue.show(['Serveri: Perhaps I have one, but what am I gonna get in return?'], () => {
                                         // Open backpack in "offer" mode — player picks an item to give
                                         this._openExamNpcOffer();
                                     });
@@ -583,6 +583,42 @@ Game.GameScene = class GameScene extends Phaser.Scene {
                             },
                             {
                                 text: 'Leave', color: '#880000', hoverColor: '#cc0000', onClick: () => { }
+                            }
+                        ]);
+                    }
+                    interacted = true;
+                }
+
+                if (!interacted && this.drunkard && targetX === this.drunkard.tileX && targetY === this.drunkard.tileY) {
+                    if (this.facing === 'up') this.drunkard.facing = 'down';
+                    else if (this.facing === 'down') this.drunkard.facing = 'up';
+                    else if (this.facing === 'left') this.drunkard.facing = 'right';
+                    else if (this.facing === 'right') this.drunkard.facing = 'left';
+
+                    switch (this.drunkard.facing) {
+                        case 'down': this.drunkard.sprite.setFrame(0); break;
+                        case 'up': this.drunkard.sprite.setFrame(4); break;
+                        case 'left': this.drunkard.sprite.setFrame(8); break;
+                        case 'right': this.drunkard.sprite.setFrame(12); break;
+                    }
+
+                    Game.state = Game.state || {};
+                    if (Game.state.drunkardSatisfied) {
+                        this.dialogue.show(['Drunkard: *hic*... Jallu is good... *zzzz*']);
+                    } else {
+                        this.dialogue.show([
+                            'Drunkard: *hic*... Ihahaa I ha haa.. hepo hirnahtaa *burp*...',
+                            'Drunkard: Give me a bottle of Jallu!'
+                        ], null, [
+                            {
+                                text: 'Sure', color: '#006600', hoverColor: '#00cc00', onClick: () => {
+                                    this._handleDrunkardGiveJallu();
+                                }
+                            },
+                            {
+                                text: 'Nope', color: '#880000', hoverColor: '#cc0000', onClick: () => {
+                                    this.dialogue.show(['Drunkard: But its my favorite drink, a fucking free one! *hic*']);
+                                }
                             }
                         ]);
                     }
@@ -646,7 +682,7 @@ Game.GameScene = class GameScene extends Phaser.Scene {
                     interacted = true;
                 } else if (targetTileIndex === 196 || targetTileIndex === 68) {
                     const old = this.energy;
-                    this.energy = Math.min(200, this.energy + 50);
+                    this.energy = Math.min(200, this.energy + 40);
                     if (this.addEnergyDiff) {
                         this.addEnergyDiff(this.energy - old);
                     }
@@ -665,7 +701,7 @@ Game.GameScene = class GameScene extends Phaser.Scene {
                         y: targetY
                     });
 
-                    this.dialogue.show(['You snack on berries from the bush.\n +50 energy']);
+                    this.dialogue.show(['You snack on berries from the bush.\n +40 energy']);
                     interacted = true;
                 } else if (targetTileIndex === 478 || targetTileIndex === 414) {
                     Game.state = Game.state || {};
@@ -690,6 +726,10 @@ Game.GameScene = class GameScene extends Phaser.Scene {
                                         Game.state = Game.state || {};
                                         Game.state.hasSlept = true;
                                         Game.state.sleptInBed = true;
+                                        if (Game.state.timeHour === undefined || Game.state.timeHour < 9 || (Game.state.timeHour === 9 && Game.state.timeMinute < 5)) {
+                                            Game.state.timeHour = 9;
+                                            Game.state.timeMinute = 5;
+                                        }
 
                                         if (this.backpack) {
                                             const watch = this.backpack.items.find(i => i.id === 'watch');
@@ -723,6 +763,7 @@ Game.GameScene = class GameScene extends Phaser.Scene {
                                             sleepEl.style.display = 'none';
                                             this.cameras.main.fadeIn(1000, 0, 0, 0, (cam, prog) => {
                                                 if (prog === 1) {
+                                                    this.updateNightLighting();
                                                     this.walkBackFromBench(this.tileX, this.tileY);
                                                 }
                                             });
@@ -750,8 +791,47 @@ Game.GameScene = class GameScene extends Phaser.Scene {
                             if (this.energy < 50) {
                                 const old = this.energy;
                                 this.energy = 50;
+                                const energyRestored = Math.max(1, Math.min(50, 50 - old));
                                 this.addEnergyDiff(this.energy - old);
-                                this.dialogue.show(['You rested on the bench.', 'You feel a bit better.'], () => {
+
+                                // Flat minutes proportion: 5 minutes at 1 energy restored, 30 minutes at 50 energy restored
+                                const minutesPassed = Math.round(5 + (energyRestored - 1) * (25 / 49));
+
+                                Game.state = Game.state || {};
+                                const currentHour = Game.state.timeHour !== undefined ? Game.state.timeHour : 4;
+                                const currentMinute = Game.state.timeMinute !== undefined ? Game.state.timeMinute : 16;
+
+                                const totalMinutes = currentHour * 60 + currentMinute + minutesPassed;
+                                const newHour = Math.floor(totalMinutes / 60);
+                                const newMinute = totalMinutes % 60;
+
+                                // Monotonically update time
+                                if (newHour > currentHour || (newHour === currentHour && newMinute > currentMinute)) {
+                                    Game.state.timeHour = newHour;
+                                    Game.state.timeMinute = newMinute;
+                                }
+
+                                const finalHour = Game.state.timeHour;
+                                const finalMinute = Game.state.timeMinute;
+
+                                // Update watch item description in backpack if present
+                                if (this.backpack && this.backpack.items) {
+                                    const watch = this.backpack.items.find(i => i.id === 'watch');
+                                    if (watch) {
+                                        const minStr = finalMinute < 10 ? `0${finalMinute}` : `${finalMinute}`;
+                                        watch.desc = `The time is ${finalHour}:${minStr}.`;
+                                    }
+                                }
+
+                                // Update night lighting if time advanced past 6:00
+                                this.updateNightLighting();
+
+                                const benchDialogue = ['You rested on the bench.', 'You feel a bit better.'];
+                                if (finalHour >= 6) {
+                                    benchDialogue.push('I wonder what time it is');
+                                }
+
+                                this.dialogue.show(benchDialogue, () => {
                                     this.walkBackFromBench(this.tileX, this.tileY);
                                 });
                             } else {
@@ -1139,6 +1219,23 @@ Game.GameScene = class GameScene extends Phaser.Scene {
             this.setIdleFrame();
         }
 
+        // Spawn Drunkard if in savilahti
+        if (this.drunkard) {
+            this.drunkard.sprite.destroy();
+            this.drunkard = null;
+        }
+
+        if (this.currentArea.name === 'savilahti') {
+            const dx = 51;
+            const dy = 59;
+            this.drunkard = {
+                tileX: dx,
+                tileY: dy,
+                facing: 'down',
+                sprite: this.add.sprite(dx * Game.TILE_SIZE, dy * Game.TILE_SIZE - 4, 'juoppo', 0).setOrigin(0, 0).setDepth(10)
+            };
+        }
+
         // Camera bounds — center small areas
         const areaWidthPx = this.currentArea.width * Game.TILE_SIZE;
         const areaHeightPx = this.currentArea.height * Game.TILE_SIZE;
@@ -1158,6 +1255,8 @@ Game.GameScene = class GameScene extends Phaser.Scene {
         }
 
         this.cameras.main.setBounds(boundX, boundY, boundW, boundH);
+
+        this.updateNightLighting();
 
         const endLoadingEl = document.getElementById('game-loading');
         if (endLoadingEl) {
@@ -1315,23 +1414,91 @@ Game.GameScene = class GameScene extends Phaser.Scene {
                 this.isCollapsing = true;
                 this.isTransitioning = true; // Lock all further input updates completely
 
-                // Show sleep frame immediately
-                this.player.setTexture('playerextra');
-                this.player.setFrame(1);
+                Game.state = Game.state || {};
+                const currentHour = Game.state.timeHour !== undefined ? Game.state.timeHour : 4;
+                const canGroundSleep = !Game.state.sleptInBed && !Game.state.hasCollapsedBefore && currentHour < 8;
 
-                if (this.dialogue && !this.dialogue.active) {
-                    this.dialogue.show(['You collapse from exhaustion.'], () => {
-                        // Reset drunk effect in case it was active
-                        if (this.sys && this.sys.game && this.sys.game.canvas) {
-                            this.sys.game.canvas.style.filter = 'none';
-                        }
-                        // Brief delay to ensure input events finish propagating before scene shutdown
-                        this.time.delayedCall(50, () => {
-                            const finalScore = (Game.state && Game.state.examScore) ? Game.state.examScore : 0;
-                            this.scene.start('GameOverScene', { passed: false, score: finalScore });
+                if (!canGroundSleep) {
+                    // Player loses: collapsed after sleeping in bed, collapsed twice, or time >= 8
+                    this.player.setTexture('playerextra');
+                    this.player.setFrame(1);
+
+                    if (this.dialogue && !this.dialogue.active) {
+                        this.dialogue.show(['You collapse from exhaustion.'], () => {
+                            if (this.sys && this.sys.game && this.sys.game.canvas) {
+                                this.sys.game.canvas.style.filter = 'none';
+                            }
+                            this.time.delayedCall(50, () => {
+                                const finalScore = (Game.state && Game.state.examScore) ? Game.state.examScore : 0;
+                                this.scene.start('GameOverScene', { passed: false, score: finalScore });
+                            });
                         });
-                    });
+                    }
+                    return;
                 }
+
+                // First collapse when time < 8: Ground sleep sequence
+                Game.state.hasCollapsedBefore = true;
+
+                if (Game.state.timeHour === undefined || Game.state.timeHour < 8 || (Game.state.timeHour === 8 && Game.state.timeMinute < 15)) {
+                    Game.state.timeHour = 8;
+                    Game.state.timeMinute = 15;
+                }
+
+                if (this.backpack) {
+                    const watch = this.backpack.items.find(i => i.id === 'watch');
+                    if (watch) {
+                        watch.desc = 'The time is 8:15.';
+                    }
+                }
+
+                const old = this.energy;
+                this.energy = Math.min(200, 50);
+                if (this.addEnergyDiff) {
+                    this.addEnergyDiff(this.energy - old);
+                }
+
+                this.player.setTexture('playerextra', 1);
+
+                this.cameras.main.fadeOut(1000, 0, 0, 0, (camera, progress) => {
+                    if (progress === 1) {
+                        let sleepEl = document.getElementById('game-sleep-text');
+                        if (!sleepEl) {
+                            sleepEl = document.createElement('div');
+                            sleepEl.id = 'game-sleep-text';
+                            sleepEl.style.position = 'absolute';
+                            sleepEl.style.top = '50%';
+                            sleepEl.style.left = '50%';
+                            sleepEl.style.transform = 'translate(-50%, -50%)';
+                            sleepEl.style.color = '#ffffff';
+                            sleepEl.style.fontFamily = "'Pokemon Classic', 'Courier New', monospace";
+                            sleepEl.style.fontSize = '24px';
+                            sleepEl.style.textShadow = '2px 2px 0 #000';
+                            sleepEl.style.textAlign = 'center';
+                            sleepEl.style.zIndex = '9999';
+                            sleepEl.style.pointerEvents = 'none';
+                            sleepEl.style.lineHeight = '2';
+                            document.body.appendChild(sleepEl);
+                        }
+                        sleepEl.innerText = 'Zzz...\n\nThe clock advances to 8:15\n\nYou sleep on the ground';
+                        sleepEl.style.display = 'block';
+
+                        this.time.delayedCall(4000, () => {
+                            sleepEl.style.display = 'none';
+                            this.cameras.main.fadeIn(1000, 0, 0, 0, (cam, prog) => {
+                                if (prog === 1) {
+                                    this.setIdleFrame();
+                                    if (this.sys && this.sys.game && this.sys.game.canvas) {
+                                        this.sys.game.canvas.style.filter = 'none';
+                                    }
+                                    this.updateNightLighting();
+                                    this.isCollapsing = false;
+                                    this.isTransitioning = false;
+                                }
+                            });
+                        });
+                    }
+                });
                 return;
             }
 
@@ -1549,6 +1716,8 @@ Game.GameScene = class GameScene extends Phaser.Scene {
                 if (Game.state.examScore !== undefined) {
                     shouldDecrease = false;
                 } else if (Game.state.collectedShoes >= 2 && Game.state.totalSteps % 3 === 0) {
+                    shouldDecrease = false;
+                } else if (Game.state.timeHour >= 8 && Game.state.totalSteps % 5 === 0) {
                     shouldDecrease = false;
                 }
 
@@ -1832,7 +2001,7 @@ Game.GameScene = class GameScene extends Phaser.Scene {
             this.isTransitioning = true; // lock player out
 
             if (!this.police.hasRanOnce) {
-                this.dialogue.show(["You don't look well, how about we go sleep in the police station?"], null, [
+                this.dialogue.show(["Cop: You don't look well, how about we go sleep in the police station?"], null, [
                     {
                         text: 'Accept', color: '#006600', hoverColor: '#00cc00', onClick: () => {
                             this._sendPlayerToJail();
@@ -1853,7 +2022,7 @@ Game.GameScene = class GameScene extends Phaser.Scene {
                     }
                 ]);
             } else {
-                this.dialogue.show(["And where are you planning to go then?"], () => {
+                this.dialogue.show(["Cop: And where are you planning to go then?"], () => {
                     this._sendPlayerToJail();
                 });
             }
@@ -1977,6 +2146,10 @@ Game.GameScene = class GameScene extends Phaser.Scene {
                     Game.state = Game.state || {};
                     Game.state.hasSlept = true;
                     Game.state.sleptInJail = true;
+                    if (Game.state.timeHour === undefined || Game.state.timeHour < 9 || (Game.state.timeHour === 9 && Game.state.timeMinute < 5)) {
+                        Game.state.timeHour = 9;
+                        Game.state.timeMinute = 5;
+                    }
                     if (this.backpack) {
                         const watch = this.backpack.items.find(i => i.id === 'watch');
                         if (watch) {
@@ -2003,7 +2176,7 @@ Game.GameScene = class GameScene extends Phaser.Scene {
                                                 if (prog3 === 1) {
                                                     this.dialogue.show([
                                                         'The police drop you off at Snellmania',
-                                                        'Oh no, I have an exam!'
+                                                        'The clock is 9! I have an exam!'
                                                     ], () => {
                                                         this.isTransitioning = false;
                                                     });
@@ -2273,6 +2446,113 @@ Game.GameScene = class GameScene extends Phaser.Scene {
             this.dialogue.show(['You received a Pencil!']);
         } else {
             this.dialogue.show(['I have no use for that']);
+        }
+    }
+
+    _handleDrunkardGiveJallu() {
+        if (!this.backpack || !this.backpack.items) return;
+        const jalluItem = this.backpack.items.find(i => i.id === 'jallu');
+
+        if (!jalluItem) {
+            this.dialogue.show(['Drunkard: Hey! You don\'t even have any Jallu! *hic*']);
+            return;
+        }
+
+        if (typeof jalluItem.cl !== 'undefined' && jalluItem.cl <= 0) {
+            // Bottle is empty! Drunkard throws a weak punch with -10 energy
+            const old = this.energy;
+            this.energy = Math.max(0, this.energy - 10);
+            if (this.addEnergyDiff) {
+                this.addEnergyDiff(this.energy - old);
+            }
+            this.dialogue.show([
+                'Drunkard: This bottle is empty! *WHACK*',
+                'The drunkard throws a weak punch at you! (-10 Energy)'
+            ]);
+        } else {
+            // Bottle has Jallu! Give Jallu, receive 3€
+            this.backpack.items = this.backpack.items.filter(i => i !== jalluItem);
+
+            Game.state = Game.state || {};
+            Game.state.money = (Game.state.money !== undefined ? Game.state.money : 2) + 3;
+            Game.state.drunkardSatisfied = true;
+
+            let walletItem = this.backpack.items.find(i => i.id === 'wallet');
+            if (walletItem) {
+                walletItem.name = `Wallet ${Game.state.money}€`;
+            } else {
+                this.backpack.items.push({
+                    id: 'wallet',
+                    name: `Wallet ${Game.state.money}€`,
+                    desc: 'Contains your money.',
+                    canUse: false
+                });
+            }
+
+            this.dialogue.show([
+                'Drunkard: Thanks buddy! Here\'s 3€ for your troubles!',
+                'Whatever...'
+            ]);
+        }
+    }
+
+    updateNightLighting() {
+        const isNight = (Game.state && Game.state.timeHour !== undefined ? Game.state.timeHour : 4) < 6;
+
+        // Cleanup existing streetlight glow objects
+        if (this.streetlightGlows) {
+            this.streetlightGlows.forEach(g => g && g.destroy && g.destroy());
+            this.streetlightGlows = [];
+        }
+
+        if (!isNight) {
+            if (this.nightOverlay) {
+                this.nightOverlay.setVisible(false);
+            }
+            return;
+        }
+
+        const areaWidthPx = (this.currentArea ? this.currentArea.width : 50) * Game.TILE_SIZE;
+        const areaHeightPx = (this.currentArea ? this.currentArea.height : 50) * Game.TILE_SIZE;
+
+        if (!this.nightOverlay) {
+            this.nightOverlay = this.add.rectangle(
+                0, 0,
+                Math.max(areaWidthPx, 2500),
+                Math.max(areaHeightPx, 2500),
+                0x0c1033, // Soft midnight blue tint
+                0.12      // Soft darkness opacity
+            ).setOrigin(0, 0).setDepth(1800);
+        } else {
+            this.nightOverlay.setSize(Math.max(areaWidthPx, 2500), Math.max(areaHeightPx, 2500));
+            this.nightOverlay.setVisible(true);
+        }
+
+        // Add 3-tile diameter warm glow circles over all streetlight tiles (ID 3136)
+        this.streetlightGlows = [];
+        const radiusPx = (3 * Game.TILE_SIZE) / 2; // 3 tiles diameter = 48px -> 24px radius
+
+        if (this.tileData) {
+            for (let y = 0; y < this.tileData.length; y++) {
+                for (let x = 0; x < this.tileData[y].length; x++) {
+                    if (this.tileData[y][x] === 3136) {
+                        const centerX = x * Game.TILE_SIZE + Game.TILE_SIZE / 2;
+                        const centerY = y * Game.TILE_SIZE + Game.TILE_SIZE / 2;
+
+                        const glow = this.add.circle(
+                            centerX,
+                            centerY,
+                            radiusPx,
+                            0xe6a832, // Soft warm amber streetlight glow
+                            0.16     // Soft glow intensity
+                        ).setOrigin(0.5, 0.5)
+                            .setDepth(1801)
+                            .setBlendMode(Phaser.BlendModes.ADD);
+
+                        this.streetlightGlows.push(glow);
+                    }
+                }
+            }
         }
     }
 };

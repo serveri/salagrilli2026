@@ -21,7 +21,7 @@ Game.Backpack = class Backpack {
             { id: 'jallu', name: 'Jallu', desc: 'Some kind of strong liquor. Would taste better in a mix', canUse: true, cl: 75 },
             { id: 'key', name: 'Nappi avain', desc: 'A key found in the grass.', canUse: false },
             { id: 'map', name: 'Town Map', desc: 'A map showing Kuopio. \nI live in Neulamäki.', canUse: true },
-            { id: 'energy_drink', name: 'Energy drink', desc: 'Classic MegaShopper energy drink, what a throwback!', canUse: true },
+            { id: 'energy_drink', name: 'Energy drink', desc: 'Classic MegaShopper energy drink, what a throwback! Restores 100 energy.', canUse: true },
             { id: 'wallet', name: `Wallet ${startingMoney}€`, desc: 'Contains your money.', canUse: false },
             { id: 'note', name: 'Reminder Note', desc: ['"Remember to feed the cat.. "', '"Exam today at 10:00 in SN100!"', '..Can\'t forget!'], canUse: false },
             { id: 'watch', name: 'Watch', desc: 'It says 4:16 ..I think', canUse: false }
@@ -398,8 +398,8 @@ Game.Backpack = class Backpack {
                 this.scene.speedModifierSteps = 35;
             }
 
-            // Remove from backpack
-            this.items = this.items.filter(i => i.id !== item.id);
+            // Remove from backpack (only this specific item instance)
+            this.items = this.items.filter(i => i !== item);
             this.selectedItem = null;
 
             if (this.scene.dialogue) {
@@ -491,7 +491,7 @@ Game.Backpack = class Backpack {
         } else if (item.id.startsWith('berry')) {
             if (this.scene && typeof this.scene.energy !== 'undefined') {
                 const old = this.scene.energy;
-                this.scene.energy = Math.min(200, this.scene.energy + 50);
+                this.scene.energy = Math.min(200, this.scene.energy + 40);
                 if (this.scene.addEnergyDiff) {
                     this.scene.addEnergyDiff(this.scene.energy - old);
                 }
@@ -504,7 +504,7 @@ Game.Backpack = class Backpack {
             if (this.scene.dialogue) {
                 this.scene.dialogue.show([
                     `You ate the ${item.name}!`,
-                    `Restored 50 energy.`
+                    `Restored 40 energy.`
                 ], () => { this.open(); });
             }
         } else if (item.id === 'protein_bar') {

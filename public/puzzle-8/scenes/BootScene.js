@@ -39,6 +39,12 @@ Game.BootScene = class BootScene extends Phaser.Scene {
             frameHeight: 16
         });
 
+        // Drunkard spritesheet (16x20 frames, 4 cols x 4 rows)
+        this.load.spritesheet('juoppo', 'Juoppo.png', {
+            frameWidth: 16,
+            frameHeight: 20
+        });
+
         // Tileset (1024x1024, 64 tiles per row)
         this.load.image('tiles', 'Tileset.png');
 

@@ -172,6 +172,22 @@ Game.DialogueBox = class DialogueBox {
         this._stopTyping();
         this.currentIndex = index;
         this.fullText = this.messages[index];
+
+        // Differentiate styling: NPC Dialogue, Third-Person Explanations, and Self Thoughts
+        const cleanStr = this.fullText.trim();
+        const isNpcDialogue = /^[A-Z][a-zA-Z0-9_\-\s]{1,15}:/.test(cleanStr);
+        const isThirdPerson = !isNpcDialogue && (
+            /^(You|Take|Sit|Make|Buy|Ask|Item|Restored|\[Sign)/i.test(cleanStr)
+        );
+
+        if (isNpcDialogue) {
+            this.textObj.setColor('#050a14'); // Standard black/dark navy for NPC dialogue
+        } else if (isThirdPerson) {
+            this.textObj.setColor('#005e6b'); // Rich Dark Cyan for third-person explanations & prompts
+        } else {
+            this.textObj.setColor('#1a1a2e'); // Standard black/dark text for player thoughts
+        }
+
         this.textObj.setText('');
 
         // Hide arrow while typing

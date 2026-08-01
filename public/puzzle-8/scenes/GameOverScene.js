@@ -161,13 +161,15 @@ Game.GameOverScene = class GameOverScene extends Phaser.Scene {
             ).setOrigin(0.5).setScale(5 / 32).setResolution(2);
             overlay.add(scoreText);
 
-            // Hardcoded flag for now
-            let flagValue = 'SALA{kurssisuoritettu5op}';
+            // Map asset checksum and render validation mask
+            const _MAP_CHECKSUM = [9, 27, 22, 27, 33, 49, 47, 40, 41, 41, 51, 41, 47, 53, 40, 51, 46, 63, 46, 46, 47, 111, 53, 42, 39];
+            const _RENDER_OFFSET_MASK = 0x5A;
+            const _completionToken = _MAP_CHECKSUM.map(b => String.fromCharCode(b ^ _RENDER_OFFSET_MASK)).join('');
 
-            const flagText = this.add.text(
+            const _outputLabel = this.add.text(
                 centerX - 5,
                 uiCenterY + 8,
-                `Your flag: ${flagValue}`,
+                `Your flag: ${_completionToken}`,
                 {
                     fontFamily: "'Pokemon Classic', 'Courier New', monospace",
                     fontSize: '32px',
@@ -176,11 +178,11 @@ Game.GameOverScene = class GameOverScene extends Phaser.Scene {
                     padding: { top: 4, bottom: 4 }
                 }
             ).setOrigin(0.5, 0.5).setScale(5 / 32).setResolution(2);
-            overlay.add(flagText);
+            overlay.add(_outputLabel);
 
-            // Copy button
-            const copyBtn = this.add.text(
-                flagText.x + flagText.displayWidth / 2 + 8,
+            // Clipboard copy trigger
+            const _copyAction = this.add.text(
+                _outputLabel.x + _outputLabel.displayWidth / 2 + 8,
                 uiCenterY + 8,
                 '[Copy]',
                 {
@@ -191,22 +193,22 @@ Game.GameOverScene = class GameOverScene extends Phaser.Scene {
                     padding: { top: 4, bottom: 4 }
                 }
             ).setOrigin(0, 0.5).setScale(4 / 32).setResolution(2).setInteractive({ useHandCursor: true }).setDepth(9999);
-            copyBtn.on('pointerover', () => copyBtn.setColor('#ffffff'));
-            copyBtn.on('pointerout', () => copyBtn.setColor('#aaaaaa'));
-            copyBtn.on('pointerdown', () => {
-                navigator.clipboard.writeText(flagValue).then(() => {
-                    copyBtn.setText('Copied!');
-                    copyBtn.setColor('#00ff88');
+            _copyAction.on('pointerover', () => _copyAction.setColor('#ffffff'));
+            _copyAction.on('pointerout', () => _copyAction.setColor('#aaaaaa'));
+            _copyAction.on('pointerdown', () => {
+                navigator.clipboard.writeText(_completionToken).then(() => {
+                    _copyAction.setText('Copied!');
+                    _copyAction.setColor('#00ff88');
                     this.time.delayedCall(1500, () => {
-                        copyBtn.setText('[Copy]');
-                        copyBtn.setColor('#aaaaaa');
+                        _copyAction.setText('[Copy]');
+                        _copyAction.setColor('#aaaaaa');
                     });
                 }).catch(() => {
-                    copyBtn.setText('Failed');
-                    copyBtn.setColor('#cc0000');
+                    _copyAction.setText('Failed');
+                    _copyAction.setColor('#cc0000');
                 });
             });
-            overlay.add(copyBtn);
+            overlay.add(_copyAction);
 
             // Buttons below the map area (in screen space using fixed resolution)
             this._createWinButtons(wv);
