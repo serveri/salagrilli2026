@@ -7,7 +7,7 @@ Game.TILE_SIZE = 16;
 Game.SCALE = 4;
 Game.TWEEN_DURATION = 160;
 Game.TAP_DELAY = 45;
-Game.testingmode = false;
+Game.testingmode = true;
 
 // Shared Game Settings & Persistence
 Game.settings = Game.settings || {
@@ -85,7 +85,8 @@ Game.INSPECT_MESSAGES = {
     1750: ['Locked, I should have guessed'], 3072: ['The light bulb is burning into my eyes!'], 3136: ['Put that light away!'], 612: ['Books: Linux Torvalds - GNU/Linux 101: The importance of programming socks,', '..How to craft a nuclear device, in Minecraft'], 676: ['Books: Linux Torvalds - GNU/Linux 101: The importance of programming socks,', '.. Chad.Gepede - How to craft a nuclear device, in Minecraft'],
     3012: ['Its a barrel, or a pipe maybe'], 519: ['I sniff my rose this morning, yes'], 584: ['I sniff my rose this morning, yes'], 3081: ['A flimsy bike rack'], 290: ['I sniff my rose this morning, yes'], 1056: ['That hat must have been left by one of the bussiness students'], 1120: ['That hat must have been left by one of the bussiness students'], 1057: ['M\'lady'], 1121: ['I found him!'], 1122: ['Mice don\'t wear hats'],
     1058: ['Mice don\'t wear hats'], 662: ['Restaurant Hunter has closed down for good', 'You shed a small tear'], 113: ['Locked', 'I\'m not gonna break into the offices of our nice staff!'], 228: ['Restaurant is not open right now'], 1119: ['No exam paper at this seat'], 805: ['Books: S.Javasteel - Differences of japanese and finnish binary tree gardens', '...S.Alterman: Mechanical humans and their superiority'], 869: ['Books: S.Javasteel - Differences of japanese and finnish binary tree gardens', '...S.Alterman: Mechanical humans and their superiority'],
-    3264: ['Bus schedule: Every 5 minutes after 7 am'], 3200: ['Bus schedule: Every 5 minutes after 7 am'], 545: ['Exam paper ready to go! I\'m nervous!']
+    3264: ['Bus 4 schedule: Every 5 minutes to Neulamäki'], 3200: ['Bus 4 schedule: Every 5 minutes to Neulamäki'], 545: ['Exam paper ready to go! I\'m nervous!'],
+    246: ['Smoked salmon -like sandvich'], 310: ['Smoked salmon -like sandvich']
 };
 
 Game.SIGN_MESSAGES = {
@@ -162,6 +163,7 @@ Game.MAP_TRANSITIONS = {
     'Laitos': {
         byCoord: {
             '43,9': { targetMap: '/puzzle-8/data/savilahti.csv', targetX: 16, targetY: 42 },
+            '43,8': { targetMap: '/puzzle-8/data/savilahti.csv', targetX: 16, targetY: 42 },
             '43,10': { targetMap: '/puzzle-8/data/savilahti.csv', targetX: 16, targetY: 42 },
             '45,18': { targetMap: '/puzzle-8/data/savilahti.csv', targetX: 14, targetY: 50 },
             '46,18': { targetMap: '/puzzle-8/data/savilahti.csv', targetX: 14, targetY: 50 }

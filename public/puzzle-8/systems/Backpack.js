@@ -24,7 +24,7 @@ Game.Backpack = class Backpack {
             { id: 'energy_drink', name: 'Energy drink', desc: 'Classic MegaShopper energy drink, what a throwback! Restores 100 energy.', canUse: true },
             { id: 'wallet', name: `Wallet ${startingMoney}€`, desc: 'Contains your money.', canUse: false },
             { id: 'note', name: 'Reminder Note', desc: ['"Remember to feed the cat.. "', '"Exam today at 10:00 in SN100!"', '..Can\'t forget!'], canUse: false },
-            { id: 'watch', name: 'Watch', desc: 'It says 4:16 ..I think', canUse: false }
+            { id: 'watch', name: 'Watch', desc: 'It says 4:16 ..quite late', canUse: false }
         ];
 
         if (Game.testingmode) {
@@ -311,7 +311,7 @@ Game.Backpack = class Backpack {
             const x = startX + c * (slotW + spacingX);
             const y = startY + r * (slotH + spacingY);
 
-            const isSelected = this.selectedItem && this.selectedItem.id === item.id;
+            const isSelected = this.selectedItem === item;
 
             // Slot Background box
             const bgRect = this.scene.add.rectangle(
@@ -335,7 +335,7 @@ Game.Backpack = class Backpack {
 
             // Slot click interaction: clicking an item selects it, clicking it again deselects it!
             bgRect.on('pointerdown', () => {
-                if (this.selectedItem && this.selectedItem.id === item.id) {
+                if (this.selectedItem === item) {
                     this.selectedItem = null;
                 } else {
                     this.selectedItem = item;
@@ -408,10 +408,10 @@ Game.Backpack = class Backpack {
                     `Restored 100 energy.`
                 ], () => { this.open(); });
             }
-        } else if (item.id === 'jallu' || item.id === 'gambina') {
-            if (item.cl <= 0) {
+        } else if (item.id === 'jallu' || item.id === 'gambina' || item.id === 'jallukanto') {
+            if (!item.canUse || item.cl <= 0) {
                 if (this.scene.dialogue) {
-                    this.scene.dialogue.show(['The bottle is empty..'], () => { this.open(); });
+                    this.scene.dialogue.show(['The bottle is empty!'], () => { this.open(); });
                 }
                 this.selectedItem = null;
                 return;
@@ -430,6 +430,11 @@ Game.Backpack = class Backpack {
                 if (item.cl <= 0) {
                     item.canUse = false;
                 }
+
+                if (item.id === 'jallukanto') {
+                    item.desc = `Hyeena ry's legendary tree stump full of Jallu. ${item.cl}cl left`;
+                }
+
                 const old = this.scene.energy;
                 const energyChange = Math.floor(Math.random() * 18) - 5; // Random between -5 and +12
                 this.scene.energy = Math.max(0, Math.min(200, this.scene.energy + energyChange));
@@ -437,7 +442,7 @@ Game.Backpack = class Backpack {
                     this.scene.addEnergyDiff(this.scene.energy - old);
                 }
 
-                if (item.id === 'jallu') {
+                if (item.id === 'jallu' || item.id === 'jallukanto') {
                     this.scene.reverseX = Math.random() < 0.5;
                     this.scene.reverseY = Math.random() < 0.5;
                     this.scene.reverseControlsSteps = (this.scene.reverseControlsSteps || 0) + 15;
@@ -455,9 +460,12 @@ Game.Backpack = class Backpack {
 
             this.selectedItem = null;
 
-            const drinkMsg = item.id === 'gambina'
-                ? 'You drink raw Gambina alone, what a disgrace!'
-                : 'You take a sip of raw Jallu';
+            let drinkMsg = 'You take a sip of raw Jallu';
+            if (item.id === 'gambina') {
+                drinkMsg = 'You drink raw Gambina alone, what a disgrace!';
+            } else if (item.id === 'jallukanto') {
+                drinkMsg = 'You take a sip from Hyeena ry\'s legendary Jallukanto!';
+            }
 
             if (this.scene.dialogue) {
                 this.scene.dialogue.show([
@@ -507,7 +515,7 @@ Game.Backpack = class Backpack {
                     `Restored 40 energy.`
                 ], () => { this.open(); });
             }
-        } else if (item.id === 'protein_bar') {
+        } else if (item.id === 'protein_bar' || item.id === 'square_sandwich' || item.id === 'sandwich') {
             if (this.scene && typeof this.scene.energy !== 'undefined') {
                 const old = this.scene.energy;
                 this.scene.energy = Math.min(200, this.scene.energy + 60);
@@ -516,7 +524,7 @@ Game.Backpack = class Backpack {
                 }
             }
 
-            // Remove protein bar from backpack
+            // Remove protein bar / sandwich from backpack
             this.items = this.items.filter(i => i !== item);
             this.selectedItem = null;
 

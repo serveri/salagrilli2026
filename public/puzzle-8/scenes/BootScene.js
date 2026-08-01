@@ -45,6 +45,12 @@ Game.BootScene = class BootScene extends Phaser.Scene {
             frameHeight: 20
         });
 
+        // Hyeena spritesheet (16x20 frames)
+        this.load.spritesheet('hyeena', 'Hyeena.png', {
+            frameWidth: 16,
+            frameHeight: 20
+        });
+
         // Tileset (1024x1024, 64 tiles per row)
         this.load.image('tiles', 'Tileset.png');
 

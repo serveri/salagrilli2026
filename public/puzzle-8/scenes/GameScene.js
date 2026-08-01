@@ -158,6 +158,9 @@ Game.GameScene = class GameScene extends Phaser.Scene {
         // Shop system
         this.shop = new Game.Shop(this);
 
+        // NPC Manager system
+        this.npcManager = new Game.NpcManager(this);
+
         this.openBackpackSafely = () => {
             if (this.player.anims.isPlaying) {
                 this.player.anims.stop();
@@ -206,29 +209,7 @@ Game.GameScene = class GameScene extends Phaser.Scene {
 
                 const targetTileIndex = this.tileData[targetY][targetX];
 
-                let interacted = false;
-
-                if (this.sleepingServeri && targetX === this.sleepingServeri.tileX && targetY === this.sleepingServeri.tileY) {
-                    Game.state = Game.state || {};
-                    if (!Game.state.serveriWoken) {
-                        this.dialogue.show(['The serveri is fast asleep']);
-                    } else {
-                        if (!Game.state.cheatSheetGiven) {
-                            this.dialogue.show(['Serveri: That delicous smell of coffee woke me up!', 'Serveri: Look, I got this cheat sheet..', 'Serveri: Take it, I\'m probably not gonna make it to the exam anyway..'], () => {
-                                this.backpack.items.push({
-                                    id: 'cheat_sheet',
-                                    name: 'Cheat sheet',
-                                    desc: 'Looks useful for the exam.',
-                                    canUse: false
-                                });
-                                Game.state.cheatSheetGiven = true;
-                            });
-                        } else {
-                            this.dialogue.show(['Serveri: Good luck on the exam!']);
-                        }
-                    }
-                    interacted = true;
-                }
+                let interacted = this.npcManager ? this.npcManager.handleInteraction(targetX, targetY) : false;
 
                 if (!interacted && targetTileIndex === 700) {
                     Game.state = Game.state || {};
@@ -406,6 +387,117 @@ Game.GameScene = class GameScene extends Phaser.Scene {
                     interacted = true;
                 }
 
+                if (!interacted && (targetTileIndex === 246 || targetTileIndex === 310)) {
+                    this.dialogue.show(['Buy something from the vending machine?'], null, [
+                        {
+                            text: 'Yes', color: '#006600', hoverColor: '#00cc00', onClick: () => {
+                                if (this.shop) {
+                                    this.shop.open([
+                                        {
+                                            id: 'energy_drink',
+                                            name: 'Rad bull 7€',
+                                            price: 7,
+                                            desc: 'Rad bull energy drink. Restores 80 energy.',
+                                            itemData: {
+                                                id: 'energy_drink',
+                                                name: 'Rad bull',
+                                                desc: 'Rad bull energy drink. Restores 80 energy.',
+                                                canUse: true
+                                            }
+                                        },
+                                        {
+                                            id: 'square_sandwich',
+                                            name: 'Square sandwich 5€',
+                                            price: 5,
+                                            desc: 'Smoked salmon -like sandwich. Restores 60 energy.',
+                                            itemData: {
+                                                id: 'square_sandwich',
+                                                name: 'Square sandwich',
+                                                desc: 'Smoked salmon -like sandwich. Restores 60 energy.',
+                                                canUse: true
+                                            }
+                                        }
+                                    ]);
+                                }
+                            }
+                        },
+                        {
+                            text: 'No', color: '#880000', hoverColor: '#cc0000', onClick: () => { }
+                        }
+                    ]);
+                    interacted = true;
+                }
+
+                if (!interacted && (targetTileIndex === 3086 || targetTileIndex === 3150 || targetTileIndex === 3214)) {
+                    const currentHour = (Game.state && Game.state.timeHour !== undefined) ? Game.state.timeHour : 4;
+                    if (currentHour >= 8) {
+                        this.dialogue.show(['The bus is no longer running today.']);
+                    } else {
+                        this.dialogue.show(['Ride bus to Neulamäki? (2€)'], null, [
+                            {
+                                text: 'Yes', color: '#006600', hoverColor: '#00cc00', onClick: () => {
+                                    Game.state = Game.state || {};
+                                    const currentMoney = Game.state.money !== undefined ? Game.state.money : 2;
+                                    if (currentMoney < 2) {
+                                        this.dialogue.show(['You don\'t have enough money! (Costs 2€)']);
+                                    } else {
+                                        Game.state.money = currentMoney - 2;
+                                        let walletItem = this.backpack && this.backpack.items ? this.backpack.items.find(i => i.id === 'wallet') : null;
+                                        if (walletItem) {
+                                            walletItem.name = `Wallet ${Game.state.money}€`;
+                                        }
+
+                                        this.isTransitioning = true;
+                                        this.player.anims.stop();
+                                        this.setIdleFrame();
+
+                                        this.cameras.main.fadeOut(1000, 0, 0, 0, (camera, progress) => {
+                                            if (progress === 1) {
+                                                let sleepEl = document.getElementById('game-sleep-text');
+                                                if (!sleepEl) {
+                                                    sleepEl = document.createElement('div');
+                                                    sleepEl.id = 'game-sleep-text';
+                                                    sleepEl.style.position = 'absolute';
+                                                    sleepEl.style.top = '50%';
+                                                    sleepEl.style.left = '50%';
+                                                    sleepEl.style.transform = 'translate(-50%, -50%)';
+                                                    sleepEl.style.color = '#ffffff';
+                                                    sleepEl.style.fontFamily = "'Pokemon Classic', 'Courier New', monospace";
+                                                    sleepEl.style.fontSize = '24px';
+                                                    sleepEl.style.textShadow = '2px 2px 0 #000';
+                                                    sleepEl.style.textAlign = 'center';
+                                                    sleepEl.style.zIndex = '9999';
+                                                    sleepEl.style.pointerEvents = 'none';
+                                                    sleepEl.style.lineHeight = '2';
+                                                    document.body.appendChild(sleepEl);
+                                                }
+                                                sleepEl.innerText = 'You arrive at neulamäki';
+                                                sleepEl.style.display = 'block';
+
+                                                this.time.delayedCall(2500, () => {
+                                                    sleepEl.style.display = 'none';
+                                                    this.loadArea('/puzzle-8/data/serveriquest.csv', 38, 31).then(() => {
+                                                        this.setIdleFrame();
+                                                        this.cameras.main.fadeIn(1000, 0, 0, 0, (cam, prog) => {
+                                                            if (prog === 1) {
+                                                                this.isTransitioning = false;
+                                                            }
+                                                        });
+                                                    });
+                                                });
+                                            }
+                                        });
+                                    }
+                                }
+                            },
+                            {
+                                text: 'No', color: '#880000', hoverColor: '#cc0000', onClick: () => { }
+                            }
+                        ]);
+                    }
+                    interacted = true;
+                }
+
                 const isPrismaMainShop = this.currentArea && this.currentArea.name === 'Prisma' && (
                     (targetX === 21 && targetY === 10) || (targetX === 22 && targetY === 10) ||
                     (targetX === 26 && targetY === 10) || (targetX === 27 && targetY === 10)
@@ -531,99 +623,7 @@ Game.GameScene = class GameScene extends Phaser.Scene {
                     interacted = true;
                 }
 
-                if (!interacted && this.examAssistant && targetX === this.examAssistant.tileX && targetY === this.examAssistant.tileY) {
-                    // Face the player
-                    if (this.facing === 'up') this.examAssistant.facing = 'down';
-                    else if (this.facing === 'down') this.examAssistant.facing = 'up';
-                    else if (this.facing === 'left') this.examAssistant.facing = 'right';
-                    else if (this.facing === 'right') this.examAssistant.facing = 'left';
 
-                    switch (this.examAssistant.facing) {
-                        case 'down': this.examAssistant.sprite.setFrame(0); break;
-                        case 'up': this.examAssistant.sprite.setFrame(4); break;
-                        case 'left': this.examAssistant.sprite.setFrame(8); break;
-                        case 'right': this.examAssistant.sprite.setFrame(12); break;
-                    }
-
-                    Game.state = Game.state || {};
-                    if (Game.state.examScore !== undefined) {
-                        this.dialogue.show(['IT-Guy: I hope you did well!']);
-                    } else {
-                        this.dialogue.show(['IT-Guy: Please take a seat.']);
-                    }
-                    interacted = true;
-                }
-
-                if (!interacted && this.examNpc && targetX === this.examNpc.tileX && targetY === this.examNpc.tileY) {
-                    // Face the player
-                    if (this.facing === 'up') this.examNpc.facing = 'down';
-                    else if (this.facing === 'down') this.examNpc.facing = 'up';
-                    else if (this.facing === 'left') this.examNpc.facing = 'right';
-                    else if (this.facing === 'right') this.examNpc.facing = 'left';
-
-                    switch (this.examNpc.facing) {
-                        case 'down': this.examNpc.sprite.setFrame(0); break;
-                        case 'up': this.examNpc.sprite.setFrame(4); break;
-                        case 'left': this.examNpc.sprite.setFrame(8); break;
-                        case 'right': this.examNpc.sprite.setFrame(12); break;
-                    }
-
-                    Game.state = Game.state || {};
-                    if (Game.state.examNpcTraded) {
-                        this.dialogue.show(['Serveri: Good luck on the exam!']);
-                    } else {
-                        this.dialogue.show(['Ask the Serveri if he has a pencil you could borrow?'], null, [
-                            {
-                                text: 'Ask', color: '#006600', hoverColor: '#00cc00', onClick: () => {
-                                    this.dialogue.show(['Serveri: Perhaps I have one, but what am I gonna get in return?'], () => {
-                                        // Open backpack in "offer" mode — player picks an item to give
-                                        this._openExamNpcOffer();
-                                    });
-                                }
-                            },
-                            {
-                                text: 'Leave', color: '#880000', hoverColor: '#cc0000', onClick: () => { }
-                            }
-                        ]);
-                    }
-                    interacted = true;
-                }
-
-                if (!interacted && this.drunkard && targetX === this.drunkard.tileX && targetY === this.drunkard.tileY) {
-                    if (this.facing === 'up') this.drunkard.facing = 'down';
-                    else if (this.facing === 'down') this.drunkard.facing = 'up';
-                    else if (this.facing === 'left') this.drunkard.facing = 'right';
-                    else if (this.facing === 'right') this.drunkard.facing = 'left';
-
-                    switch (this.drunkard.facing) {
-                        case 'down': this.drunkard.sprite.setFrame(0); break;
-                        case 'up': this.drunkard.sprite.setFrame(4); break;
-                        case 'left': this.drunkard.sprite.setFrame(8); break;
-                        case 'right': this.drunkard.sprite.setFrame(12); break;
-                    }
-
-                    Game.state = Game.state || {};
-                    if (Game.state.drunkardSatisfied) {
-                        this.dialogue.show(['Drunkard: *hic*... Jallu is good... *zzzz*']);
-                    } else {
-                        this.dialogue.show([
-                            'Drunkard: *hic*... Ihahaa I ha haa.. hepo hirnahtaa *burp*...',
-                            'Drunkard: Give me a bottle of Jallu!'
-                        ], null, [
-                            {
-                                text: 'Sure', color: '#006600', hoverColor: '#00cc00', onClick: () => {
-                                    this._handleDrunkardGiveJallu();
-                                }
-                            },
-                            {
-                                text: 'Nope', color: '#880000', hoverColor: '#cc0000', onClick: () => {
-                                    this.dialogue.show(['Drunkard: But its my favorite drink, a fucking free one! *hic*']);
-                                }
-                            }
-                        ]);
-                    }
-                    interacted = true;
-                }
 
                 if (!interacted && this.isDoorLocked(targetX, targetY)) {
                     this.handleLockedDoor(targetX, targetY);
@@ -1051,6 +1051,8 @@ Game.GameScene = class GameScene extends Phaser.Scene {
             }
         }
 
+        this.updateBusTiles();
+
         // Rebuild Tilemap
         if (this.tilemap) this.tilemap.destroy();
 
@@ -1103,137 +1105,8 @@ Game.GameScene = class GameScene extends Phaser.Scene {
         this.setIdleFrame();
 
         // Spawn Police if in serveriquest
-        if (this.police) {
-            this.police.sprite.destroy();
-            this.police = null;
-        }
-
-        if (this.currentArea.name === 'serveriquest' && (!Game.state || !Game.state.hasSlept)) {
-            const px = 25;
-            const py = 52;
-            this.police = {
-                tileX: px,
-                tileY: py,
-                facing: 'down',
-                isMoving: false,
-                hasSeenPlayer: false,
-                isStunned: false,
-                sprite: this.add.sprite(px * Game.TILE_SIZE, py * Game.TILE_SIZE - 2, 'poliisi', 0).setOrigin(0, 0).setDepth(10)
-            };
-        }
-
-        // Spawn Assistant if in Laitos
-        if (this.assistant) {
-            this.assistant.sprite.destroy();
-            this.assistant = null;
-        }
-        if (this.sleepingServeri) {
-            this.sleepingServeri.sprite.destroy();
-            this.sleepingServeri = null;
-        }
-
-        if (this.currentArea.name === 'Laitos') {
-            const ax = 20;
-            const ay = 9;
-            this.assistant = {
-                tileX: ax,
-                tileY: ay,
-                facing: 'down',
-                sprite: this.add.sprite(ax * Game.TILE_SIZE, ay * Game.TILE_SIZE - 4, 'opetusavustaja', 0).setOrigin(0, 0).setDepth(10)
-            };
-
-            Game.state = Game.state || {};
-            const sy = Game.state.serveriWoken ? 8 : 7;
-            const tex = Game.state.serveriWoken ? 'player' : 'playerextra';
-            const frame = Game.state.serveriWoken ? 0 : 1;
-            this.sleepingServeri = {
-                tileX: 28,
-                tileY: sy,
-                facing: 'down',
-                sprite: this.add.sprite(28 * Game.TILE_SIZE, sy * Game.TILE_SIZE - 2, tex, frame).setOrigin(0, 0).setDepth(10)
-            };
-        }
-
-        // Spawn ServeriNPC if in Exam
-        if (this.examNpc) {
-            this.examNpc.sprite.destroy();
-            this.examNpc = null;
-        }
-
-        if (this.currentArea.name === 'Exam') {
-            const nx = 12;
-            const ny = 33;
-            this.examNpc = {
-                tileX: nx,
-                tileY: ny,
-                facing: 'down',
-                sprite: this.add.sprite(nx * Game.TILE_SIZE, ny * Game.TILE_SIZE, 'serverinpc', 0).setOrigin(0, 0).setDepth(10)
-            };
-
-            // Spawn exam assistant at 13,5
-            const eax = 13;
-            const eay = 5;
-            this.examAssistant = {
-                tileX: eax,
-                tileY: eay,
-                facing: 'down',
-                sprite: this.add.sprite(eax * Game.TILE_SIZE, eay * Game.TILE_SIZE - 4, 'opetusavustaja', 0).setOrigin(0, 0).setDepth(10)
-            };
-        } else {
-            if (this.examAssistant) {
-                this.examAssistant.sprite.destroy();
-                this.examAssistant = null;
-            }
-        }
-
-        // Spawn Shopkeep if in NeulamaenSale
-        if (this.shopkeep) {
-            this.shopkeep.sprite.destroy();
-            this.shopkeep = null;
-        }
-
-        if (this.currentArea.name === 'NeulamaenSale') {
-            const skx = 9;
-            const sky = 4;
-            this.shopkeep = {
-                tileX: skx,
-                tileY: sky,
-                facing: 'down',
-                sprite: this.add.sprite(skx * Game.TILE_SIZE, sky * Game.TILE_SIZE - 4, 'shopkeep', 0).setOrigin(0, 0).setDepth(10)
-            };
-        }
-
-        // Spawn Shopkeeps if in Prisma
-        if (this.prismaShopkeeps) {
-            this.prismaShopkeeps.forEach(sk => sk.sprite && sk.sprite.destroy());
-            this.prismaShopkeeps = [];
-        }
-
-        if (this.currentArea.name === 'Prisma') {
-            this.prismaShopkeeps = [
-                { tileX: 22, tileY: 10, facing: 'left', sprite: this.add.sprite(22 * Game.TILE_SIZE, 10 * Game.TILE_SIZE - 4, 'shopkeep', 8).setOrigin(0, 0).setDepth(10) },
-                { tileX: 27, tileY: 10, facing: 'left', sprite: this.add.sprite(27 * Game.TILE_SIZE, 10 * Game.TILE_SIZE - 4, 'shopkeep', 8).setOrigin(0, 0).setDepth(10) },
-                { tileX: 8, tileY: 18, facing: 'right', sprite: this.add.sprite(8 * Game.TILE_SIZE, 18 * Game.TILE_SIZE - 4, 'shopkeep', 12).setOrigin(0, 0).setDepth(10) }
-            ];
-            this.facing = 'up';
-            this.setIdleFrame();
-        }
-
-        // Spawn Drunkard if in savilahti
-        if (this.drunkard) {
-            this.drunkard.sprite.destroy();
-            this.drunkard = null;
-        }
-
-        if (this.currentArea.name === 'savilahti') {
-            const dx = 51;
-            const dy = 59;
-            this.drunkard = {
-                tileX: dx,
-                tileY: dy,
-                facing: 'down',
-                sprite: this.add.sprite(dx * Game.TILE_SIZE, dy * Game.TILE_SIZE - 4, 'juoppo', 0).setOrigin(0, 0).setDepth(10)
-            };
+        if (this.npcManager) {
+            this.npcManager.spawnNpcsForArea(this.currentArea.name);
         }
 
         // Camera bounds — center small areas
@@ -1407,7 +1280,7 @@ Game.GameScene = class GameScene extends Phaser.Scene {
 
             let hasEnergyItems = false;
             if (this.backpack && this.backpack.items) {
-                hasEnergyItems = this.backpack.items.some(i => i.id === 'energy_drink' || i.id === 'protein_bar' || i.id === 'cup_of_coffee');
+                hasEnergyItems = this.backpack.items.some(i => i.id === 'energy_drink' || i.id === 'protein_bar' || i.id === 'cup_of_coffee' || i.id === 'square_sandwich' || i.id === 'sandwich' || (i.id && i.id.startsWith('berry')));
             }
 
             if (!hasEnergyItems) {
@@ -1453,7 +1326,7 @@ Game.GameScene = class GameScene extends Phaser.Scene {
                 }
 
                 const old = this.energy;
-                this.energy = Math.min(200, 50);
+                this.energy = Math.min(200, 60);
                 if (this.addEnergyDiff) {
                     this.addEnergyDiff(this.energy - old);
                 }
@@ -1730,7 +1603,7 @@ Game.GameScene = class GameScene extends Phaser.Scene {
                     Game.state.startedSteps = (Game.state.startedSteps || 0) + 1;
                     if (Game.state.startedSteps === 5) {
                         if (this.dialogue) {
-                            this.dialogue.show(['And where have my keys gone..?']);
+                            this.dialogue.show(['I should probably go home to sleep.. but I seem to have lost my keys?!']);
                         }
                     }
                 }
@@ -1924,6 +1797,17 @@ Game.GameScene = class GameScene extends Phaser.Scene {
             const coordKey = `${this.tileX},${this.tileY}`;
             const transition = areaTransitions.byCoord[coordKey];
             if (transition) {
+                if (transition.targetMap && transition.targetMap.includes('Exam.csv')) {
+                    const currentHour = (Game.state && Game.state.timeHour !== undefined) ? Game.state.timeHour : 4;
+                    if (currentHour < 6) {
+                        this.dialogue.show(['Snellmania opens at 6']);
+                        return false;
+                    }
+                    if (Game.state && Game.state.examScore !== undefined) {
+                        this.dialogue.show(['You have already completed the exam!']);
+                        return false;
+                    }
+                }
                 if (!transition.requiredItem || this.hasItem(transition.requiredItem)) {
                     this.triggerMapTransition(transition.targetMap, transition.targetX, transition.targetY, transition.exitDir);
                     return true;
@@ -1935,6 +1819,17 @@ Game.GameScene = class GameScene extends Phaser.Scene {
         if (areaTransitions.edgeTransitions) {
             if (this.tileY === 0 && areaTransitions.edgeTransitions.top) {
                 const transition = areaTransitions.edgeTransitions.top;
+                if (transition.targetMap && transition.targetMap.includes('Exam.csv')) {
+                    const currentHour = (Game.state && Game.state.timeHour !== undefined) ? Game.state.timeHour : 4;
+                    if (currentHour < 6) {
+                        this.dialogue.show(['Snellmania opens at 6']);
+                        return false;
+                    }
+                    if (Game.state && Game.state.examScore !== undefined) {
+                        this.dialogue.show(['You have already completed the exam!']);
+                        return false;
+                    }
+                }
                 this.triggerMapTransition(transition.targetMap, transition.targetX, transition.targetY, transition.exitDir);
                 return true;
             }
@@ -1944,6 +1839,17 @@ Game.GameScene = class GameScene extends Phaser.Scene {
         if (areaTransitions.byTile) {
             const transition = areaTransitions.byTile[currentTile];
             if (transition) {
+                if (transition.targetMap && transition.targetMap.includes('Exam.csv')) {
+                    const currentHour = (Game.state && Game.state.timeHour !== undefined) ? Game.state.timeHour : 4;
+                    if (currentHour < 6) {
+                        this.dialogue.show(['Snellmania opens at 6']);
+                        return false;
+                    }
+                    if (Game.state && Game.state.examScore !== undefined) {
+                        this.dialogue.show(['You have already completed the exam!']);
+                        return false;
+                    }
+                }
                 this.triggerMapTransition(transition.targetMap, transition.targetX, transition.targetY, transition.exitDir);
                 return true;
             }
@@ -2204,13 +2110,18 @@ Game.GameScene = class GameScene extends Phaser.Scene {
     }
 
     isNpcAt(x, y) {
+        if (this.npcManager && this.npcManager.isNpcAt) {
+            return this.npcManager.isNpcAt(x, y);
+        }
         const npcs = [
             this.assistant,
             this.sleepingServeri,
             this.examNpc,
             this.examAssistant,
+            this.examPencilNpc,
             this.shopkeep,
             ...(this.prismaShopkeeps || []),
+            this.drunkard,
             this.police
         ];
         return npcs.some(npc => npc && npc.tileX === x && npc.tileY === y);
@@ -2451,7 +2362,7 @@ Game.GameScene = class GameScene extends Phaser.Scene {
 
     _handleDrunkardGiveJallu() {
         if (!this.backpack || !this.backpack.items) return;
-        const jalluItem = this.backpack.items.find(i => i.id === 'jallu');
+        const jalluItem = this.backpack.items.find(i => i.id === 'jallu' || i.id === 'jallukanto');
 
         if (!jalluItem) {
             this.dialogue.show(['Drunkard: Hey! You don\'t even have any Jallu! *hic*']);
@@ -2470,11 +2381,18 @@ Game.GameScene = class GameScene extends Phaser.Scene {
                 'The drunkard throws a weak punch at you! (-10 Energy)'
             ]);
         } else {
-            // Bottle has Jallu! Give Jallu, receive 3€
-            this.backpack.items = this.backpack.items.filter(i => i !== jalluItem);
-
             Game.state = Game.state || {};
-            Game.state.money = (Game.state.money !== undefined ? Game.state.money : 2) + 3;
+            const isKanto = jalluItem.id === 'jallukanto';
+            const rewardMoney = isKanto ? 5 : 3;
+
+            if (isKanto) {
+                jalluItem.cl = Math.max(0, jalluItem.cl - 75);
+                jalluItem.desc = `Hyeena ry's legendary tree stump full of Jallu. ${jalluItem.cl}cl left`;
+            } else {
+                this.backpack.items = this.backpack.items.filter(i => i !== jalluItem);
+            }
+
+            Game.state.money = (Game.state.money !== undefined ? Game.state.money : 2) + rewardMoney;
             Game.state.drunkardSatisfied = true;
 
             let walletItem = this.backpack.items.find(i => i.id === 'wallet');
@@ -2489,15 +2407,54 @@ Game.GameScene = class GameScene extends Phaser.Scene {
                 });
             }
 
-            this.dialogue.show([
-                'Drunkard: Thanks buddy! Here\'s 3€ for your troubles!',
-                'Whatever...'
-            ]);
+            if (isKanto) {
+                this.dialogue.show([
+                    'Drunkard: Thanks buddy! Here\'s 5€ for your troubles!',
+                    'Hyeena is probably not gonna get that back..'
+                ]);
+            } else {
+                this.dialogue.show([
+                    'Drunkard: Thanks buddy! Here\'s 3€ for your troubles!',
+                    'Whatever...'
+                ]);
+            }
+        }
+    }
+
+    updateBusTiles() {
+        if (!this.currentArea || !this.tileData) return;
+        const currentHour = (Game.state && Game.state.timeHour !== undefined) ? Game.state.timeHour : 4;
+        if (currentHour >= 8) {
+            if (this.currentArea.name === 'snellmania') {
+                if (this.tileData[16]) this.tileData[16][51] = 3212;
+                if (this.tileData[17]) this.tileData[17][51] = 3276;
+                if (this.tileData[18]) this.tileData[18][51] = 2833;
+                if (this.layer) {
+                    this.layer.putTileAt(3212, 51, 16);
+                    this.layer.putTileAt(3276, 51, 17);
+                    this.layer.putTileAt(2833, 51, 18);
+                }
+            } else if (this.currentArea.name === 'savilahti') {
+                if (this.tileData[8]) this.tileData[8][55] = 2767;
+                if (this.tileData[9]) this.tileData[9][55] = 2767;
+                if (this.tileData[10]) this.tileData[10][55] = 2767;
+                if (this.layer) {
+                    this.layer.putTileAt(2767, 55, 8);
+                    this.layer.putTileAt(2767, 55, 9);
+                    this.layer.putTileAt(2767, 55, 10);
+                }
+            }
         }
     }
 
     updateNightLighting() {
-        const isNight = (Game.state && Game.state.timeHour !== undefined ? Game.state.timeHour : 4) < 6;
+        this.updateBusTiles();
+
+        const indoorAreas = ['NeulamaenSale', 'House', 'Laitos', 'Prisma', 'Exam'];
+        const currentAreaName = this.currentArea ? this.currentArea.name : '';
+        const isIndoor = indoorAreas.includes(currentAreaName);
+
+        const isNight = !isIndoor && (Game.state && Game.state.timeHour !== undefined ? Game.state.timeHour : 4) < 6;
 
         // Cleanup existing streetlight glow objects
         if (this.streetlightGlows) {
