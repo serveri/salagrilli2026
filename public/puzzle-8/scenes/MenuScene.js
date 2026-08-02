@@ -20,12 +20,26 @@ Game.MenuScene = class MenuScene extends Phaser.Scene {
         const aboutGroup = this.add.group();
 
         // --- Main Menu Elements ---
-        const title = this.add.text(width / 2, height / 3 - 30, 'ServeriQuest', {
+        const titleScale = Game.SCALE * 2;
+        const titleImg = this.add.image(0, 0, 'title').setScale(titleScale);
+        const titleText = this.add.text(0, 0, 'Serveri\nQuest', {
             fontFamily: 'Pokemon Classic',
-            fontSize: '32px',
-            color: '#ffffff'
-        }).setOrigin(0.5);
-        menuGroup.add(title);
+            fontSize: '48px',
+            color: '#ffffff',
+            align: 'center',
+            lineSpacing: 6
+        }).setOrigin(0, 0.5);
+
+        const gap = 24;
+        const totalWidth = titleImg.displayWidth + gap + titleText.displayWidth;
+        const titleX = (width - totalWidth) / 2;
+        const titleY = height / 3 - 35;
+
+        titleImg.setPosition(titleX + titleImg.displayWidth / 2, titleY);
+        titleText.setPosition(titleX + titleImg.displayWidth + gap, titleY);
+
+        menuGroup.add(titleImg);
+        menuGroup.add(titleText);
 
         // START Button
         const startBtn = this.add.image(width / 2, height / 2 + 14, 'btn');
@@ -177,7 +191,7 @@ Game.MenuScene = class MenuScene extends Phaser.Scene {
         settingsGroup.add(settingsBackBtnLabel);
 
         // --- About View Elements ---
-        const aboutText = this.add.text(width / 2, height / 2 - 115, 'About ServeriQuest\n\nThis is an adventure following the life of Serveri mouse, in the fictional world of Kuopio.\nHaving tiny mouse legs is hard work, so walking around will tire you out. Socializing is pretty exhausting, too.\n\nBeat the game and get the flag!\n\nYou may need to restart a couple of times. It builds character.\n\nControls\nMove: WASD / Arrows\nInteract: Space\nBackpack: E / I\n\nCredit\nPokemon Classic font by TheLouster115\nisaiah658\'s Pixel Pack #2\nEverything else by https://github.com/RemesTop', {
+        const aboutText = this.add.text(width / 2, height / 2 - 115, 'About ServeriQuest\n\nThis is an adventure following the life of Serveri mouse, in the fictional world of Kuopio.\nMoving tiny mouse legs is hard work, so walking around will tire you out.\n\nBeat the game and get the flag!\n\nYou may need to restart a couple of times. It builds character.\n\nControls\nMove: WASD / Arrows\nInteract: Space\nBackpack: E / I\n\nCredit\nPokemon Classic font by TheLouster115\nisaiah658\'s Pixel Pack #2\nEverything else by https://github.com/RemesTop', {
             fontFamily: 'Pokemon Classic',
             fontSize: '18px',
             color: '#ffffff',

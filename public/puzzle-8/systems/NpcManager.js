@@ -95,6 +95,14 @@ Game.NpcManager = class NpcManager {
                 facing: 'right',
                 sprite: scene.add.sprite(2 * Game.TILE_SIZE, 4 * Game.TILE_SIZE - 2, 'player', 12).setOrigin(0, 0).setDepth(10)
             };
+
+            // Exam Serveri Zyn at (17, 34) - player texture
+            scene.examServeriZyn = {
+                tileX: 17,
+                tileY: 34,
+                facing: 'down',
+                sprite: scene.add.sprite(17 * Game.TILE_SIZE, 34 * Game.TILE_SIZE - 2, 'player', 0).setOrigin(0, 0).setDepth(10)
+            };
         }
 
         // 4. Shopkeep in NeulamaenSale
@@ -107,24 +115,36 @@ Game.NpcManager = class NpcManager {
             };
         }
 
-        // 5. Prisma Shopkeeps
+        // 5. Prisma Shopkeeps & serverinpc2
         if (areaName === 'Prisma') {
             scene.prismaShopkeeps = [
                 { tileX: 22, tileY: 10, facing: 'left', sprite: scene.add.sprite(22 * Game.TILE_SIZE, 10 * Game.TILE_SIZE - 4, 'shopkeep', 8).setOrigin(0, 0).setDepth(10) },
                 { tileX: 27, tileY: 10, facing: 'left', sprite: scene.add.sprite(27 * Game.TILE_SIZE, 10 * Game.TILE_SIZE - 4, 'shopkeep', 8).setOrigin(0, 0).setDepth(10) },
                 { tileX: 8, tileY: 18, facing: 'right', sprite: scene.add.sprite(8 * Game.TILE_SIZE, 18 * Game.TILE_SIZE - 4, 'shopkeep', 12).setOrigin(0, 0).setDepth(10) }
             ];
+            scene.serverinpc2 = {
+                tileX: 5,
+                tileY: 3,
+                facing: 'down',
+                sprite: scene.add.sprite(5 * Game.TILE_SIZE, 3 * Game.TILE_SIZE, 'serverinpc', 0).setOrigin(0, 0).setDepth(10)
+            };
             scene.facing = 'up';
             scene.setIdleFrame();
         }
 
-        // 6. Drunkard in savilahti
+        // 6. Drunkard & Hacker in savilahti
         if (areaName === 'savilahti') {
             scene.drunkard = {
                 tileX: 51,
                 tileY: 59,
                 facing: 'down',
                 sprite: scene.add.sprite(51 * Game.TILE_SIZE, 59 * Game.TILE_SIZE - 4, 'juoppo', 0).setOrigin(0, 0).setDepth(10)
+            };
+            scene.hacker = {
+                tileX: 24,
+                tileY: 24,
+                facing: 'down',
+                sprite: scene.add.sprite(24 * Game.TILE_SIZE, 24 * Game.TILE_SIZE - 4, 'hacker', 0).setOrigin(0, 0).setDepth(10)
             };
         }
 
@@ -141,7 +161,7 @@ Game.NpcManager = class NpcManager {
 
     destroyAll() {
         const scene = this.scene;
-        ['police', 'assistant', 'sleepingServeri', 'examNpc', 'examAssistant', 'examPencilNpc', 'examStudent1', 'examStudent2', 'examStudent3', 'shopkeep', 'drunkard', 'hyeena'].forEach(key => {
+        ['police', 'assistant', 'sleepingServeri', 'examNpc', 'examAssistant', 'examPencilNpc', 'examStudent1', 'examStudent2', 'examStudent3', 'shopkeep', 'drunkard', 'hyeena', 'serverinpc2', 'examServeriZyn', 'hacker'].forEach(key => {
             if (scene[key] && scene[key].sprite) {
                 scene[key].sprite.destroy();
                 scene[key] = null;
@@ -300,6 +320,107 @@ Game.NpcManager = class NpcManager {
             return true;
         }
 
+        // 10. ServeriNPC 2 in Prisma at (5, 3)
+        if (scene.serverinpc2 && targetX === scene.serverinpc2.tileX && targetY === scene.serverinpc2.tileY) {
+            this._faceNpc(scene.serverinpc2);
+            Game.state = Game.state || {};
+            const hasSinglesBasket = scene.backpack && scene.backpack.items && scene.backpack.items.some(i => i.id === 'singles_basket');
+
+            if (Game.state.exchangedNumbersWithServeri2) {
+                scene.dialogue.show(['Serveri: Don\'t forget to text me later!']);
+            } else if (hasSinglesBasket) {
+                scene.dialogue.show(['Hi! You have a singles basket, do you want to exchange phone numbers?'], null, [
+                    {
+                        text: 'Yes', color: '#006600', hoverColor: '#00cc00', onClick: () => {
+                            Game.state.exchangedNumbersWithServeri2 = true;
+                            scene.dialogue.show([
+                                'Yay! Hit me up later',
+                                'You blush and nod',
+                                'The exciting interaction lifted your spirits'
+                            ], () => {
+                                if (typeof scene.energy !== 'undefined') {
+                                    const old = scene.energy;
+                                    scene.energy = Math.min(200, scene.energy + 50);
+                                    if (scene.addEnergyDiff) {
+                                        scene.addEnergyDiff(scene.energy - old);
+                                    }
+                                }
+                            });
+                        }
+                    },
+                    {
+                        text: 'No', color: '#880000', hoverColor: '#cc0000', onClick: () => { }
+                    }
+                ]);
+            } else {
+                scene.dialogue.show(['Hi, do we know each other?']);
+            }
+            return true;
+        }
+
+        // 11. Exam Serveri Zyn at (17, 34)
+        if (scene.examServeriZyn && targetX === scene.examServeriZyn.tileX && targetY === scene.examServeriZyn.tileY) {
+            this._faceNpc(scene.examServeriZyn);
+            scene.dialogue.show(['Yo! Last night was crazy! Zyn zyn zyn is still ringing in my ears']);
+            return true;
+        }
+
+        // 12. Hacker in savilahti at (24, 24)
+        if (scene.hacker && targetX === scene.hacker.tileX && targetY === scene.hacker.tileY) {
+            this._faceNpc(scene.hacker);
+            Game.state = Game.state || {};
+
+            if (Game.state.isOverclocked) {
+                scene.dialogue.show([
+                    'Hacker: Your CPU is already running at max clock speed!',
+                    'Hacker: Any higher and your mouse brain will melt. Maintain OPSEC!'
+                ]);
+            } else {
+                const radBullIndex = scene.backpack && scene.backpack.items
+                    ? scene.backpack.items.findIndex(i => i.id === 'energy_drink' || (i.name && i.name.toLowerCase().includes('rad bull')))
+                    : -1;
+
+                if (radBullIndex !== -1) {
+                    scene.dialogue.show([
+                        'Huh? Are you talking to me? OPSEC!',
+                        'Wait... is that a Rad bull? Give me that and I will overclock your CPU kernel!'
+                    ], null, [
+                        {
+                            text: 'Yes', color: '#006600', hoverColor: '#00cc00', onClick: () => {
+                                if (scene.backpack && scene.backpack.items) {
+                                    scene.backpack.items.splice(radBullIndex, 1);
+                                }
+                                Game.state.isOverclocked = true;
+                                scene.dialogue.show([
+                                    'Hacker: *gulp gulp gulp* Ahhh, caffeine!',
+                                    'Hacker: *clackity clack clack*',
+                                    'Compiling custom kernel module...',
+                                    'Overclock successful! +100 Energy and movement speed increased by 15%!'
+                                ], () => {
+                                    if (typeof scene.energy !== 'undefined') {
+                                        const old = scene.energy;
+                                        scene.energy = Math.min(200, scene.energy + 100);
+                                        if (scene.addEnergyDiff) {
+                                            scene.addEnergyDiff(scene.energy - old);
+                                        }
+                                    }
+                                });
+                            }
+                        },
+                        {
+                            text: 'No', color: '#880000', hoverColor: '#cc0000', onClick: () => { }
+                        }
+                    ]);
+                } else {
+                    scene.dialogue.show([
+                        'Huh? Are you talking to me? OPSEC!',
+                        'You look sluggish... Bring me a Rad bull and I\'ll overclock your CPU kernel!'
+                    ]);
+                }
+            }
+            return true;
+        }
+
         return false;
     }
 
@@ -318,7 +439,10 @@ Game.NpcManager = class NpcManager {
             ...(scene.prismaShopkeeps || []),
             scene.drunkard,
             scene.hyeena,
-            scene.police
+            scene.police,
+            scene.serverinpc2,
+            scene.examServeriZyn,
+            scene.hacker
         ];
         return npcs.some(npc => npc && npc.tileX === x && npc.tileY === y);
     }

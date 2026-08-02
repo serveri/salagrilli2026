@@ -4,24 +4,34 @@ window.Game = window.Game || {};
 
 Game.EXAM_QUESTIONS = [
     {
+        question: 'Put the following functions in the order of growth rate',
+        words: ['n', 'n^2', '2^n', 'log n'],
+        answer: ['log n', 'n', 'n^2', '2^n']
+    },
+    {
         question: 'Please, for the love of sanity, how do we start a Java program?',
         words: ['public', 'static', 'void', 'main', 'private', 'please'],
         answer: ['public', 'static', 'void', 'main']
     },
     {
-        question: 'If the autograder fails your code, what is your highly sophisticated debugging strategy?',
+        question: 'a = 1\nb = a + (a + 1) * (a + 2) + (a + 3) \na += 4 \nprint(a, b)',
+        words: ['5 19', '1 20', '5 20'],
+        answer: ['5 19']
+    },
+    {
+        question: 'If the program you wrote fails to run, what is your debugging strategy?',
         words: ['print', 'stuff', 'until', 'it', 'works', 'cry'],
         answer: ['print', 'stuff', 'until', 'it', 'works']
     },
     {
-        question: 'The code crashes on my computer but not yours. What is your legally binding defense?',
+        question: 'The code works on my computer but not yours. What is your legally binding defense?',
         words: ['it', 'works', 'on', 'my', 'machine', 'Java'],
         answer: ['it', 'works', 'on', 'my', 'machine']
     },
     {
-        question: 'What is the universally accepted name for your absolute final Excercise file?',
-        words: ['untitled', 'version', 'three', 'real', 'done', 'Excercise'],
-        answer: ['Excercise', 'version', 'three', 'real', 'done']
+        question: 'What is the universally accepted name for your absolute final assignment file?',
+        words: ['untitled', 'version', 'three', 'real', 'done', 'Assigment'],
+        answer: ['Assigment', 'version', 'three', 'real', 'done']
     },
     {
         question: 'How do you politely ask Java to output text to the screen?',
@@ -75,7 +85,7 @@ Game.EXAM_QUESTIONS = [
     },
     {
         question: "Complete the sentence: Java code runs on the...",
-        words: ["Java", "CPU", "browser", "printer", "Virtual", "Machine"],
+        words: ["Vs code", "CPU", "browser", "printer", "Virtual", "Machine"],
         answer: ["Virtual", "Machine"]
     },
     {
@@ -95,7 +105,7 @@ Game.EXAM_QUESTIONS = [
     },
     {
         question: "A variable stores...",
-        words: ["a", "value", "sandwich", "regret", "hamsters", "wifi"],
+        words: ["a", "value", "sandwich", "regret", "word", "wifi"],
         answer: ["a", "value"]
     },
     {

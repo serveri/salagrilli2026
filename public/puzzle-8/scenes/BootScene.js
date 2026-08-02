@@ -45,6 +45,12 @@ Game.BootScene = class BootScene extends Phaser.Scene {
             frameHeight: 20
         });
 
+        // Hacker spritesheet (16x20 frames)
+        this.load.spritesheet('hacker', 'hacker.png', {
+            frameWidth: 16,
+            frameHeight: 20
+        });
+
         // Hyeena spritesheet (16x16 frames)
         this.load.spritesheet('hyeena', 'Hyeena.png', {
             frameWidth: 16,
@@ -53,6 +59,9 @@ Game.BootScene = class BootScene extends Phaser.Scene {
 
         // Tileset (1024x1024, 64 tiles per row)
         this.load.image('tiles', 'Tileset.png');
+
+        // Title image asset
+        this.load.image('title', 'Title.png');
 
         // Menu button assets
         this.load.image('btn', 'menubutton.png');
@@ -98,6 +107,9 @@ Game.BootScene = class BootScene extends Phaser.Scene {
 
         // Lose screen image
         this.load.image('ratlost', 'ratlost.png');
+
+        // Zyn Zyn Zyn audio track
+        this.load.audio('zynzyn', 'Sound/zynzyn.mp3');
     }
 
     create() {

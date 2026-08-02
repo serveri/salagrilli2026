@@ -91,11 +91,16 @@ Game.GameScene = class GameScene extends Phaser.Scene {
         // Auto focus canvas on click
         this.input.on('pointerdown', () => { window.focus(); });
 
-        // Create Player Sprite
+        // Check intro sleeping state
+        this.isIntroSleeping = (!Game.state || !Game.state.hasSlept);
+
+        // Create Player Sprite (start with sleeping frame if intro)
+        const initialTex = this.isIntroSleeping ? 'playerextra' : 'player';
+        const initialFrame = this.isIntroSleeping ? 1 : 0;
         this.player = this.add.sprite(
             this.tileX * Game.TILE_SIZE,
             this.tileY * Game.TILE_SIZE,
-            'player', 1
+            initialTex, initialFrame
         );
         this.player.setOrigin(0, 0);
         this.player.setDepth(10);
@@ -121,28 +126,36 @@ Game.GameScene = class GameScene extends Phaser.Scene {
             this.cameras.main.setVisible(true);
             this.cameras.main.fadeIn(900, 0, 0, 0);
 
+
+
             // Darken world for intro sleeping sequence
             const darkOverlay = this.add.rectangle(0, 0, this.currentArea.width * Game.TILE_SIZE, this.currentArea.height * Game.TILE_SIZE, 0x000000, 0.45)
                 .setOrigin(0, 0)
                 .setDepth(1900);
 
-            // Show intro dialogue with slower typing speed (50ms per character)
             this.player.setTexture('playerextra', 1);
-            this.dialogue.show([
-                'Zzzz.. \n \n \n Press space to continue..',
-                '..Huh?',
-                'I feel tired..\nWhere even am I??'
-            ], () => {
-                this.tweens.add({
-                    targets: darkOverlay,
-                    alpha: 0,
-                    duration: 800,
-                    onComplete: () => {
-                        darkOverlay.destroy();
-                    }
-                });
-                this.setIdleFrame();
-            }, [], 50);
+
+            // Delay start dialogue box until location text has faded
+            this.time.delayedCall(1800, () => {
+                this.player.setTexture('playerextra', 1);
+                // Show intro dialogue with slower typing speed (50ms per character)
+                this.dialogue.show([
+                    'Zzzz.. \n \n \n Press space to continue..',
+                    '..Huh?',
+                    'I feel tired..\nWhere even am I??'
+                ], () => {
+                    this.tweens.add({
+                        targets: darkOverlay,
+                        alpha: 0,
+                        duration: 800,
+                        onComplete: () => {
+                            darkOverlay.destroy();
+                        }
+                    });
+                    this.isIntroSleeping = false;
+                    this.setIdleFrame();
+                }, [], 50);
+            });
         });
 
         // Dialogue system
@@ -378,6 +391,34 @@ Game.GameScene = class GameScene extends Phaser.Scene {
                     }
 
                     this.dialogue.show(['You found 5€!']);
+                    interacted = true;
+                }
+
+                if (!interacted && (targetTileIndex === 503 || targetTileIndex === 504)) {
+                    const isSingles = targetTileIndex === 503;
+                    const itemObj = isSingles ? {
+                        id: 'singles_basket',
+                        name: 'Singles basket',
+                        desc: 'A pink singles basket from Prisma.',
+                        canUse: false
+                    } : {
+                        id: 'shopping_basket',
+                        name: 'Shopping basket',
+                        desc: 'A standard shopping basket from Prisma.',
+                        canUse: false
+                    };
+
+                    this.tileData[targetY][targetX] = 439;
+                    if (this.layer) {
+                        this.layer.putTileAt(439, targetX, targetY);
+                    }
+
+                    if (this.backpack) {
+                        this.backpack.items.push(itemObj);
+                    }
+
+                    const basketName = isSingles ? 'Singles basket' : 'Shopping basket';
+                    this.dialogue.show([`You took a ${basketName}.`]);
                     interacted = true;
                 }
 
@@ -688,16 +729,21 @@ Game.GameScene = class GameScene extends Phaser.Scene {
                 }
 
                 if (!interacted && targetTileIndex === 1055) {
-                    this.dialogue.show(['Sit down for the exam?'], null, [
-                        {
-                            text: 'Yes', color: '#006600', hoverColor: '#00cc00', onClick: () => {
-                                this.exam.open();
+                    Game.state = Game.state || {};
+                    if (Game.state.examScore !== undefined) {
+                        this.dialogue.show(['You have already completed the exam!']);
+                    } else {
+                        this.dialogue.show(['Sit down for the exam?'], null, [
+                            {
+                                text: 'Yes', color: '#006600', hoverColor: '#00cc00', onClick: () => {
+                                    this.exam.open();
+                                }
+                            },
+                            {
+                                text: 'No', color: '#880000', hoverColor: '#cc0000', onClick: () => { }
                             }
-                        },
-                        {
-                            text: 'No', color: '#880000', hoverColor: '#cc0000', onClick: () => { }
-                        }
-                    ]);
+                        ]);
+                    }
                     interacted = true;
                 }
 
@@ -729,7 +775,12 @@ Game.GameScene = class GameScene extends Phaser.Scene {
                     interacted = true;
                 } else if (targetTileIndex === 478 || targetTileIndex === 414) {
                     Game.state = Game.state || {};
-                    if (!Game.state.hasSlept) {
+                    const currentHour = Game.state.timeHour !== undefined ? Game.state.timeHour : 4;
+                    if (Game.state.hasSlept) {
+                        this.dialogue.show(['You have already slept. You don\'t want to oversleep!']);
+                    } else if (currentHour >= 9) {
+                        this.dialogue.show(['It is already past 9:00! It\'s too late to sleep!']);
+                    } else {
                         this.isTransitioning = true;
                         this.player.play(`walk-${this.facing}`, true);
                         this.tweens.add({
@@ -796,11 +847,11 @@ Game.GameScene = class GameScene extends Phaser.Scene {
                                 });
                             }
                         });
-                    } else {
-                        this.dialogue.show(['You have already slept. You don\'t want to oversleep!']);
                     }
                     interacted = true;
-                } else if ([2, 3, 133, 197, 134, 198].includes(targetTileIndex)) {
+                } else if ([2, 3, 133, 197, 134, 198, 1179, 1180, 475, 539, 1245, 1309, 1181].includes(targetTileIndex)) {
+                    const isSofa = [1179, 1180, 475, 539, 1245, 1309, 1181].includes(targetTileIndex);
+                    const objectName = isSofa ? 'sofa' : 'bench';
                     this.isTransitioning = true;
                     this.player.play(`walk-${this.facing}`, true);
                     this.tweens.add({
@@ -850,16 +901,34 @@ Game.GameScene = class GameScene extends Phaser.Scene {
                                 // Update night lighting if time advanced past 6:00
                                 this.updateNightLighting();
 
-                                const benchDialogue = ['You rested on the bench.', 'You feel a bit better.'];
-                                if (finalHour >= 6) {
-                                    benchDialogue.push('I wonder what time it is');
+                                if (totalMinutes >= 600) {
+                                    this.dialogue.show([`You rested on the ${objectName} for too long and missed the exam!`], () => {
+                                        if (this.sys && this.sys.game && this.sys.game.canvas) {
+                                            this.sys.game.canvas.style.filter = 'none';
+                                        }
+                                        this.cameras.main.fadeOut(1000, 0, 0, 0, (camera, progress) => {
+                                            if (progress === 1) {
+                                                const finalScore = (Game.state && Game.state.examScore) ? Game.state.examScore : 0;
+                                                this.scene.start('GameOverScene', { passed: false, score: finalScore });
+                                            }
+                                        });
+                                    });
+                                    return;
                                 }
 
-                                this.dialogue.show(benchDialogue, () => {
+                                const restDialogue = [`You rested on the ${objectName}.`, 'You feel a bit better.'];
+                                if (finalHour === 9 && finalMinute >= 30) {
+                                    const minsLeft = 600 - (finalHour * 60 + finalMinute);
+                                    restDialogue.push(`I need to hurry to the exam! ${minsLeft} minutes left`);
+                                } else if (finalHour >= 6) {
+                                    restDialogue.push('I wonder what time it is');
+                                }
+
+                                this.dialogue.show(restDialogue, () => {
                                     this.walkBackFromBench(this.tileX, this.tileY);
                                 });
                             } else {
-                                this.dialogue.show(['You are not tired enough to rest.'], () => {
+                                this.dialogue.show([`You are not tired enough to rest on the ${objectName}.`], () => {
                                     this.walkBackFromBench(this.tileX, this.tileY);
                                 });
                             }
@@ -975,11 +1044,12 @@ Game.GameScene = class GameScene extends Phaser.Scene {
 
     async loadArea(csvPath, startTileX, startTileY) {
         let loadingEl = document.getElementById('game-loading');
+        const isServeriquest = csvPath.includes('serveriquest');
         if (!loadingEl) {
             loadingEl = document.createElement('div');
             loadingEl.id = 'game-loading';
             loadingEl.style.position = 'absolute';
-            loadingEl.style.top = '50%';
+            loadingEl.style.top = '38%';
             loadingEl.style.left = '50%';
             loadingEl.style.transform = 'translate(-50%, -50%)';
             loadingEl.style.color = '#ffffff';
@@ -988,10 +1058,12 @@ Game.GameScene = class GameScene extends Phaser.Scene {
             loadingEl.style.zIndex = '9999';
             loadingEl.style.textShadow = '2px 2px 0 #000';
             loadingEl.style.pointerEvents = 'none';
-            loadingEl.innerText = 'LOADING...';
             document.body.appendChild(loadingEl);
         }
+        loadingEl.innerText = isServeriquest ? 'Somewhere in Neulamäki' : 'LOADING...';
         loadingEl.style.display = 'block';
+        loadingEl.style.opacity = '1';
+        loadingEl.style.transition = '';
 
         const response = await fetch(csvPath);
         const text = await response.text();
@@ -1008,6 +1080,10 @@ Game.GameScene = class GameScene extends Phaser.Scene {
             width: this.tileData[0].length,
             height: this.tileData.length
         };
+
+        if (this.currentArea.name !== 'Prisma' && this.backpack && this.backpack.items) {
+            this.backpack.items = this.backpack.items.filter(i => i.id !== 'singles_basket' && i.id !== 'shopping_basket');
+        }
 
         this.tileX = startTileX;
         this.tileY = startTileY;
@@ -1157,7 +1233,18 @@ Game.GameScene = class GameScene extends Phaser.Scene {
 
         const endLoadingEl = document.getElementById('game-loading');
         if (endLoadingEl) {
-            endLoadingEl.style.display = 'none';
+            const isServeriquest = csvPath.includes('serveriquest');
+            const holdDelay = isServeriquest ? 1300 : 300;
+
+            endLoadingEl.style.transition = 'opacity 0.35s ease-out';
+            setTimeout(() => {
+                endLoadingEl.style.opacity = '0';
+                setTimeout(() => {
+                    endLoadingEl.style.display = 'none';
+                    endLoadingEl.style.opacity = '1';
+                    endLoadingEl.style.transition = '';
+                }, 350);
+            }, holdDelay);
         }
     }
 
@@ -1275,6 +1362,10 @@ Game.GameScene = class GameScene extends Phaser.Scene {
     }
 
     setIdleFrame() {
+        if (this.isIntroSleeping) {
+            this.player.setTexture('playerextra', 1);
+            return;
+        }
         if (this.player.texture.key !== 'player') {
             this.player.setTexture('player');
         }
@@ -1434,7 +1525,14 @@ Game.GameScene = class GameScene extends Phaser.Scene {
             return;
         }
 
-        const isWalkable = Game.WALKABLE_TILES.has(targetTileIndex);
+        let isWalkable = Game.WALKABLE_TILES.has(targetTileIndex);
+
+        //Allow for one way tiles such as sideways doors
+        if (targetTileIndex === 199 && this.facing !== 'right') {
+            isWalkable = false;
+        } else if (targetTileIndex === 200 && this.facing !== 'left') {
+            isWalkable = false;
+        }
 
 
         const cliffs = {
@@ -1544,6 +1642,9 @@ Game.GameScene = class GameScene extends Phaser.Scene {
         if (this.speedModifierSteps > 0 && this.speedModifier) {
             totalMoveDuration *= this.speedModifier;
         }
+        if (Game.state && Game.state.isOverclocked) {
+            totalMoveDuration *= 0.85;
+        }
 
         if (isJumping) {
             totalMoveDuration = jumpDistance === 2
@@ -1609,18 +1710,35 @@ Game.GameScene = class GameScene extends Phaser.Scene {
                 Game.state = Game.state || {};
                 Game.state.totalSteps = (Game.state.totalSteps || 0) + 1;
 
-                let shouldDecrease = true;
-                if (Game.state.examScore !== undefined) {
-                    shouldDecrease = false;
-                } else if (Game.state.collectedShoes >= 2 && Game.state.totalSteps % 3 === 0) {
-                    shouldDecrease = false;
-                } else if (Game.state.timeHour >= 8 && Game.state.totalSteps % 5 === 0) {
-                    shouldDecrease = false;
+                const landingTileIndex = this.tileData[finalTargetY][finalTargetX];
+                const isSpiky = (landingTileIndex === 324 || landingTileIndex === 325); //Spiky tiles id 324 and 325
+                const hasShoes = (Game.state.collectedShoes >= 2);
+
+                if (isSpiky && !Game.state.spikyTileStepped) {
+                    Game.state.spikyTileStepped = true;
+                    if (this.dialogue) {
+                        this.dialogue.show(['Ouch, you walk on sharp stones!']);
+                    }
                 }
 
-                if (shouldDecrease) {
-                    this.energy = Math.max(0, this.energy - 1);
+                if (isSpiky && !hasShoes) {
+                    // Spiky tile without shoes: Always consumes 2 energy, ignoring morning/passive effects
+                    this.energy = Math.max(0, this.energy - 2);
                     this.addEnergyDiff(this.energy - old);
+                } else {
+                    let shouldDecrease = true;
+                    if (Game.state.examScore !== undefined) {
+                        shouldDecrease = false;
+                    } else if (hasShoes && Game.state.totalSteps % 3 === 0) {
+                        shouldDecrease = false;
+                    } else if (Game.state.timeHour >= 8 && Game.state.totalSteps % 5 === 0) {
+                        shouldDecrease = false;
+                    }
+
+                    if (shouldDecrease) {
+                        this.energy = Math.max(0, this.energy - 1);
+                        this.addEnergyDiff(this.energy - old);
+                    }
                 }
 
                 if ((Game.state.startedSteps || 0) < 5) {
@@ -1821,17 +1939,6 @@ Game.GameScene = class GameScene extends Phaser.Scene {
             const coordKey = `${this.tileX},${this.tileY}`;
             const transition = areaTransitions.byCoord[coordKey];
             if (transition) {
-                if (transition.targetMap && transition.targetMap.includes('Exam.csv')) {
-                    const currentHour = (Game.state && Game.state.timeHour !== undefined) ? Game.state.timeHour : 4;
-                    if (currentHour < 6) {
-                        this.dialogue.show(['Snellmania opens at 6']);
-                        return false;
-                    }
-                    if (Game.state && Game.state.examScore !== undefined) {
-                        this.dialogue.show(['You have already completed the exam!']);
-                        return false;
-                    }
-                }
                 if (!transition.requiredItem || this.hasItem(transition.requiredItem)) {
                     this.triggerMapTransition(transition.targetMap, transition.targetX, transition.targetY, transition.exitDir);
                     return true;
@@ -1843,17 +1950,6 @@ Game.GameScene = class GameScene extends Phaser.Scene {
         if (areaTransitions.edgeTransitions) {
             if (this.tileY === 0 && areaTransitions.edgeTransitions.top) {
                 const transition = areaTransitions.edgeTransitions.top;
-                if (transition.targetMap && transition.targetMap.includes('Exam.csv')) {
-                    const currentHour = (Game.state && Game.state.timeHour !== undefined) ? Game.state.timeHour : 4;
-                    if (currentHour < 6) {
-                        this.dialogue.show(['Snellmania opens at 6']);
-                        return false;
-                    }
-                    if (Game.state && Game.state.examScore !== undefined) {
-                        this.dialogue.show(['You have already completed the exam!']);
-                        return false;
-                    }
-                }
                 this.triggerMapTransition(transition.targetMap, transition.targetX, transition.targetY, transition.exitDir);
                 return true;
             }
@@ -1863,17 +1959,6 @@ Game.GameScene = class GameScene extends Phaser.Scene {
         if (areaTransitions.byTile) {
             const transition = areaTransitions.byTile[currentTile];
             if (transition) {
-                if (transition.targetMap && transition.targetMap.includes('Exam.csv')) {
-                    const currentHour = (Game.state && Game.state.timeHour !== undefined) ? Game.state.timeHour : 4;
-                    if (currentHour < 6) {
-                        this.dialogue.show(['Snellmania opens at 6']);
-                        return false;
-                    }
-                    if (Game.state && Game.state.examScore !== undefined) {
-                        this.dialogue.show(['You have already completed the exam!']);
-                        return false;
-                    }
-                }
                 this.triggerMapTransition(transition.targetMap, transition.targetX, transition.targetY, transition.exitDir);
                 return true;
             }
@@ -2363,6 +2448,8 @@ Game.GameScene = class GameScene extends Phaser.Scene {
                     this.dialogue.show(['You received a Pencil!']);
                 }
             );
+        } else if (item.id === 'jallukanto') {
+            this.dialogue.show(['How did you even get that?? ..well unfortunately I only drink Gambina']);
         } else if (item.id === 'jallu') {
             this.dialogue.show(['No, I only drink Gambina']);
         } else if (item.id === 'gambina') {

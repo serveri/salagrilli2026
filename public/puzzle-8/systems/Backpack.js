@@ -20,8 +20,9 @@ Game.Backpack = class Backpack {
         this.items = [
             { id: 'jallu', name: 'Jallu', desc: 'Some kind of strong liquor. Would taste better in a mix', canUse: true, cl: 75 },
             { id: 'key', name: 'Nappi avain', desc: 'A key found in the grass.', canUse: false },
-            { id: 'map', name: 'Town Map', desc: 'A map showing Kuopio. \nI live in Neulamäki.', canUse: true },
-            { id: 'energy_drink', name: 'Rad bull', desc: 'Rad bull energy drink. Restores 80 energy.', canUse: true },
+            { id: 'map', name: 'Town Map', desc: 'A map showing Kuopio. \n1: My home\n2: CS Department\n3: Snellmania', canUse: true },
+            { id: 'energy_drink', name: 'Rad bull', desc: 'Small Rad bull energy drink. Restores 80 energy.', canUse: true },
+            { id: 'speaker', name: 'Speaker', desc: 'Plays your favorite jam: Zyn Zyn Zyn.', canUse: true },
             { id: 'wallet', name: `Wallet ${startingMoney}€`, desc: 'Contains your money.', canUse: false },
             { id: 'note', name: 'Reminder Note', desc: ['"Remember to feed the cat.. "', '"Exam today at 10:00 in SN100!"', '..Can\'t forget!'], canUse: false },
             { id: 'watch', name: 'Watch', desc: 'It says 4:16 ..quite late', canUse: false }
@@ -602,6 +603,43 @@ Game.Backpack = class Backpack {
                         }
                     });
                 });
+            }
+        } else if (item.id === 'speaker') {
+            this.selectedItem = null;
+            const volumePercent = (window.Game && window.Game.settings && window.Game.settings.volume !== undefined)
+                ? window.Game.settings.volume
+                : 80;
+            const vol = volumePercent / 100;
+
+            if (volumePercent <= 0) {
+                if (this.scene.dialogue) {
+                    this.scene.dialogue.show([
+                        'The speaker is silent because Volume is set to 0% in settings!'
+                    ], () => { this.open(); });
+                }
+            } else {
+                try {
+                    if (this.scene.sound && typeof this.scene.sound.add === 'function') {
+                        if (this.scene.zynSound) {
+                            this.scene.zynSound.stop();
+                        }
+                        this.scene.zynSound = this.scene.sound.add('zynzyn');
+                        this.scene.zynSound.play({ volume: vol });
+                    } else {
+                        const audio = new Audio('/puzzle-8/assets/Sound/zynzyn.mp3');
+                        audio.volume = vol;
+                        audio.play();
+                    }
+                } catch (e) {
+                    console.error('Audio playback error:', e);
+                }
+
+                if (this.scene.dialogue) {
+                    this.scene.dialogue.show([
+                        '🎵 Zyn zyn zyn 🎵',
+                        `Volume: ${volumePercent}%`
+                    ], () => { this.open(); });
+                }
             }
         } else {
             if (this.scene.dialogue) {
