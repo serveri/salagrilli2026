@@ -218,6 +218,7 @@ Game.Exam = class Exam {
         this.timeRemaining = Math.floor(150 + (playerEnergy / 200) * 150);
 
         Game.state = Game.state || {};
+        Game.state.hasEnteredExam = true;
         if (!Game.state.hasSlept) {
             this._scheduleBlur();
         }
