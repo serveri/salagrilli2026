@@ -3,11 +3,12 @@ import { computed, onMounted, ref } from 'vue'
 import PuzzleCard from './components/PuzzleCard.vue'
 import PuzzleModal from './components/PuzzleModal.vue'
 import ChatWidgetLoader from './components/ChatWidgetLoader.vue'
+import TerminalFeed from './components/TerminalFeed.vue'
 import { puzzles } from './data/puzzles.js'
 import { challenges } from './data/challenges.js'
 import { useProgress } from './composables/useProgress.js'
 
-const { isSolved, solvedCount } = useProgress()
+const { isSolved, solvedCount, solvedList } = useProgress()
 
 // Merge each puzzle with its precomputed challenge (salt/iv/ciphertext) so a card
 // carries everything the modal needs to validate a flag client-side.
@@ -30,11 +31,11 @@ onMounted(() => {
 </script>
 
 <template>
-  <div class="relative min-h-screen overflow-hidden bg-black">
+  <div class="relative min-h-screen overflow-x-hidden bg-black">
     <ChatWidgetLoader />
 
     <header
-      class="absolute left-0 top-0 flex w-full items-center justify-between p-6 sm:p-8"
+      class="absolute left-0 top-0 flex w-full items-center justify-between p-6 sm:p-8 z-10"
       :class="mounted ? 'animate-fade-up' : 'opacity-0'"
     >
       <a
@@ -63,6 +64,14 @@ onMounted(() => {
         </a>
       </div>
     </header>
+
+    <!-- Decrypted intel text list placed in header area -->
+    <div
+      class="absolute left-52 sm:left-72 top-8 z-10 max-w-xs sm:max-w-sm pointer-events-auto"
+      :class="mounted ? 'animate-fade-in' : 'opacity-0'"
+    >
+      <TerminalFeed :solved-list="solvedList" />
+    </div>
 
     <main class="flex min-h-screen items-center justify-center px-6 py-28 sm:py-16">
       <section

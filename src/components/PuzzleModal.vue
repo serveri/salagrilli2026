@@ -108,7 +108,9 @@ function close() {
           >
             {{ item.id }}
           </span>
-          <h2 class="text-lg font-semibold">Task {{ item.id }}</h2>
+          <h2 class="text-lg font-semibold">
+            Task {{ item.id }}<template v-if="item.title">: {{ item.title }}</template>
+          </h2>
         </div>
 
         <button
