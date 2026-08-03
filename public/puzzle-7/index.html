@@ -1,16 +1,19 @@
 <!DOCTYPE html>
 <html lang="fi">
+
 <head>
-    <meta charset="UTF-8"/>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Salagrillit 2026 – Task 7</title>
 
-    <meta name="description" content="Solve a series of puzzles to uncover the time and location of Salagrillit, a summer BBQ event by students @ Serveri ry." />
+    <meta name="description"
+        content="Solve a series of puzzles to uncover the time and location of Salagrillit, a summer BBQ event by students @ Serveri ry." />
 
     <meta property="og:type" content="website" />
     <meta property="og:site_name" content="Serveri ry" />
     <meta property="og:title" content="Salagrillit 2026 – Task 7" />
-    <meta property="og:description" content="Solve a series of puzzles to uncover the time and location of Salagrillit, a summer BBQ event by students @ Serveri ry." />
+    <meta property="og:description"
+        content="Solve a series of puzzles to uncover the time and location of Salagrillit, a summer BBQ event by students @ Serveri ry." />
     <meta property="og:image" content="https://salagrillit.serveriry.fi/og-image.png" />
     <meta property="og:image:width" content="1200" />
     <meta property="og:image:height" content="630" />
@@ -19,7 +22,8 @@
 
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:title" content="Salagrillit 2026 – Task 7" />
-    <meta name="twitter:description" content="Solve a series of puzzles to uncover the time and location of Salagrillit, a summer BBQ event by students @ Serveri ry." />
+    <meta name="twitter:description"
+        content="Solve a series of puzzles to uncover the time and location of Salagrillit, a summer BBQ event by students @ Serveri ry." />
     <meta name="twitter:image" content="https://salagrillit.serveriry.fi/og-image.png" />
     <style>
         :root {
@@ -36,7 +40,8 @@
             box-sizing: border-box;
         }
 
-        html, body {
+        html,
+        body {
             margin: 0;
             min-height: 100%;
             background: #02030a;
@@ -59,9 +64,9 @@
             position: fixed;
             inset: 0;
             background: radial-gradient(120% 80% at 50% -10%, rgba(60, 110, 220, 0.35), transparent 60%),
-            radial-gradient(60% 50% at 15% 0%, rgba(90, 60, 200, 0.25), transparent 70%),
-            radial-gradient(60% 50% at 85% 0%, rgba(20, 130, 200, 0.22), transparent 70%),
-            linear-gradient(180deg, #05132e 0%, #030718 55%, #01030a 100%);
+                radial-gradient(60% 50% at 15% 0%, rgba(90, 60, 200, 0.25), transparent 70%),
+                radial-gradient(60% 50% at 85% 0%, rgba(20, 130, 200, 0.22), transparent 70%),
+                linear-gradient(180deg, #05132e 0%, #030718 55%, #01030a 100%);
             z-index: -2;
         }
 
@@ -70,7 +75,7 @@
             position: fixed;
             inset: 0;
             background: conic-gradient(from 200deg at 50% -5%, transparent 0deg, rgba(120, 170, 255, 0.06) 20deg, transparent 40deg),
-            conic-gradient(from 320deg at 50% -5%, transparent 0deg, rgba(120, 170, 255, 0.06) 20deg, transparent 40deg);
+                conic-gradient(from 320deg at 50% -5%, transparent 0deg, rgba(120, 170, 255, 0.06) 20deg, transparent 40deg);
             z-index: -1;
             pointer-events: none;
         }
@@ -380,7 +385,8 @@
             background: radial-gradient(120% 200% at 50% -40%, #d99b12, #a3720a 80%);
         }
 
-        .opt.selected .txt, .opt.selected .letter {
+        .opt.selected .txt,
+        .opt.selected .letter {
             color: #1a1200;
             text-shadow: none;
         }
@@ -393,7 +399,8 @@
             background: radial-gradient(120% 200% at 50% -40%, #1faf5a, #0c6b34 80%);
         }
 
-        .opt.correct .txt, .opt.correct .letter {
+        .opt.correct .txt,
+        .opt.correct .letter {
             color: #fff;
         }
 
@@ -405,7 +412,8 @@
             background: radial-gradient(120% 200% at 50% -40%, #d6323a, #7d151b 80%);
         }
 
-        .opt.wrong .txt, .opt.wrong .letter {
+        .opt.wrong .txt,
+        .opt.wrong .letter {
             color: #fff;
         }
 
@@ -419,9 +427,12 @@
         }
 
         @keyframes flash {
-            0%, 100% {
+
+            0%,
+            100% {
                 filter: brightness(1);
             }
+
             50% {
                 filter: brightness(1.6);
             }
@@ -632,373 +643,371 @@
         }
     </style>
 </head>
+
 <body>
-<!-- START -->
-<section class="screen active" id="screen-start">
-    <div class="center">
-        <h1 class="logo-title">Haluatko<span>IT&#8209;miljonääriksi?</span></h1>
-        <p class="tagline">
-            15 kysymystä. 3 oljenkortta. Yksi väärä vastaus, ja lähdet kotiin.
-            Vastaa kaikkiin oikein ja voitat lipun.
-        </p>
-        <button class="cta" id="startBtn">Aloita peli</button>
-    </div>
-</section>
+    <!-- START -->
+    <section class="screen active" id="screen-start">
+        <div class="center">
+            <h1 class="logo-title">Haluatko<span>IT&#8209;miljonääriksi?</span></h1>
+            <p class="tagline">
+                15 kysymystä. 3 oljenkortta. Yksi väärä vastaus, ja lähdet kotiin.
+                Vastaa kaikkiin oikein ja voitat lipun.
+            </p>
+            <button class="cta" id="startBtn">Aloita peli</button>
+        </div>
+    </section>
 
-<!-- GAME -->
-<section class="screen" id="screen-game">
-    <div class="topbar">
-        <div style="text-align:center">
-            <div class="lifelines">
-                <button class="ll" id="ll-fifty" title="Puolita: poistaa kaksi väärää vastausta">50:50</button>
-                <button class="ll" id="ll-audience" title="StackOverflow-äänestys"><span class="ic">📊</span></button>
-                <button class="ll" id="ll-phone" title="Soita seniorille"><span class="ic">📞</span></button>
+    <!-- GAME -->
+    <section class="screen" id="screen-game">
+        <div class="topbar">
+            <div style="text-align:center">
+                <div class="lifelines">
+                    <button class="ll" id="ll-fifty" title="Puolita: poistaa kaksi väärää vastausta">50:50</button>
+                    <button class="ll" id="ll-audience" title="StackOverflow-äänestys"><span
+                            class="ic">📊</span></button>
+                    <button class="ll" id="ll-phone" title="Soita seniorille"><span class="ic">📞</span></button>
+                </div>
+                <div class="ll-label">oljenkorret</div>
             </div>
-            <div class="ll-label">oljenkorret</div>
         </div>
-    </div>
 
-    <div class="stage">
-        <div class="qwrap">
-            <div class="qcounter" id="qcounter"></div>
-            <div class="hex question">
-                <div class="fill"><span id="qtext"></span></div>
+        <div class="stage">
+            <div class="qwrap">
+                <div class="qcounter" id="qcounter"></div>
+                <div class="hex question">
+                    <div class="fill"><span id="qtext"></span></div>
+                </div>
+                <div class="answers" id="answers"></div>
             </div>
-            <div class="answers" id="answers"></div>
+            <aside class="ladder" id="ladder"></aside>
         </div>
-        <aside class="ladder" id="ladder"></aside>
-    </div>
-</section>
+    </section>
 
-<!-- LOSE -->
-<section class="screen" id="screen-lose">
-    <div class="center">
-        <p class="lose-title">Väärin meni!</p>
-        <p class="endnote" id="loseText"></p>
-        <button class="cta" id="retryBtn">Yritä uudelleen</button>
-    </div>
-</section>
-
-<!-- WIN -->
-<section class="screen" id="screen-win">
-    <div class="center">
-        <h1 class="logo-title win-title">Olet IT&#8209;miljonääri! 🏆</h1>
-        <p class="endnote">Kaikki 15 kysymystä oikein. Olet ansainnut Jallu shotin</p>
-        <div class="flagbox">
-            <small>Lippu</small>
-            <span id="flagText"></span>
+    <!-- LOSE -->
+    <section class="screen" id="screen-lose">
+        <div class="center">
+            <p class="lose-title">Väärin meni!</p>
+            <p class="endnote" id="loseText"></p>
+            <button class="cta" id="retryBtn">Yritä uudelleen</button>
         </div>
+    </section>
+
+    <!-- WIN -->
+    <section class="screen" id="screen-win">
+        <div class="center">
+            <h1 class="logo-title win-title">Olet IT&#8209;miljonääri! 🏆</h1>
+            <p class="endnote">Kaikki 15 kysymystä oikein. Olet ansainnut Jallu shotin</p>
+            <div class="flagbox">
+                <small>Lippu</small>
+                <span id="flagText"></span>
+            </div>
+        </div>
+    </section>
+
+    <!-- Overlay for audience / phone -->
+    <div class="overlay" id="overlay">
+        <div class="card" id="overlayCard"></div>
     </div>
-</section>
 
-<!-- Overlay for audience / phone -->
-<div class="overlay" id="overlay">
-    <div class="card" id="overlayCard"></div>
-</div>
+    <script>
+        (function () {
+            var PRIZES = [
+                '100 bits', '200 bits', '300 bits', '500 bits', '1 000 bits',
+                '2 000 bits', '4 000 bits', '8 000 bits', '16 000 bits', '32 000 bits',
+                '64 000 bits', '125 000 bits', '250 000 bits', '500 000 bits', '1 000 000 bits',
+            ];
+            var SAFE = [4, 9]; // indices that are guaranteed levels (1 000 bits, 32 000 bits)
 
-<script>
-    (function () {
-        var PRIZES = [
-            '100 bits', '200 bits', '300 bits', '500 bits', '1 000 bits',
-            '2 000 bits', '4 000 bits', '8 000 bits', '16 000 bits', '32 000 bits',
-            '64 000 bits', '125 000 bits', '250 000 bits', '500 000 bits', '1 000 000 bits',
-        ];
-        var SAFE = [4, 9]; // indices that are guaranteed levels (1 000 bits, 32 000 bits)
+            // c = index of the correct option (0..3)
+            var QUESTIONS = [
+                {
+                    q: 'Mitä lyhenne "HTML" tarkoittaa?',
+                    a: ['HyperText Markup Language', 'High Tech Modern Language', 'Home Tool Markup Logic', 'Hyperlink Text Machine Language'],
+                    c: 0
+                },
+                {
+                    q: 'Kuinka monta bittiä on yhdessä tavussa (engl. byte)?',
+                    a: ['4', '8', '16', '32'], c: 1
+                },
+                {
+                    q: 'Mikä näistä on ohjelmointikieli?',
+                    a: ['Kobra', 'Mamba', 'Python', 'Anaconda'], c: 2
+                },
+                {
+                    q: 'Mitä binäärilukua 1010 vastaa desimaalijärjestelmässä?',
+                    a: ['5', '8', '10', '12'], c: 2
+                },
+                {
+                    q: 'Millä protokolla ladataan verkkosivuja selaimeen?',
+                    a: ['SMTP', 'HTTP', 'FTP', 'SSH'], c: 1
+                },
+                {
+                    q: 'Mitä ohjelmaa Linus Torvalds EI ole kehittänyt?',
+                    a: ['Linux', 'Subsurface', 'Git', 'MySQL'], c: 3
+                },
+                {
+                    q: 'Missä yliopistossa Linux Torvalds opiskeli vuonna 1991?',
+                    a: ['Kuopion Yliopisto', 'Helsingin Yliopisto', 'Oulun yliopisto', 'Turun yliopisto'], c: 1
+                },
+                {
+                    q: 'Mikä tietorakenne toimii periaatteella LIFO (Last In, First Out)?',
+                    a: ['Jono (queue)', 'Pino (stack)', 'Linkitetty lista', 'Hajautustaulu'], c: 1
+                },
+                {
+                    q: 'Mikä seuraavista on tunnetun julkisen DNS-palvelimen IPv4-osoite?',
+                    a: ['192.168.0.0', '255.255.255.255', '1.0.0.1', '127.0.0.1'], c: 2
+                },
+                {
+                    q: 'Mikä on binäärihaun (binary search) pahimman tapauksen aikavaativuus?',
+                    a: ['O(1)', 'O(log n)', 'O(n)', 'O(n log n)'], c: 1
+                },
+                {
+                    q: 'Minkä eläimen raato aiheutti historian ensimmäisen virallisen tietokonebugin vuonna 1947?',
+                    a: ['Torakan', 'Yöperhosen', 'Hiiren', 'Sudenkorennon'], c: 1
+                },
+                {
+                    q: 'Mille yritykselle Linus Torvalds sanoi "___, FUCK YOU"',
+                    a: ['Apple', 'Microsoft', 'Nvidia', 'Intel'], c: 2
+                },
+                {
+                    q: 'Mihin lukuun HTTP-virhekoodi "I\'m a teapot" viittaa?',
+                    a: ['200', '404', '418', '500'], c: 2
+                },
+                {
+                    q: 'Minä vuonna Serveri ry perustettiin?',
+                    a: ['1998', '1985', '1991', '1987'], c: 3
+                },
+                {
+                    q: 'Millä nimellä kutsutaan algoritmeja, jotka eivät pyri löytämään optimaalista ratkaisua, vaan "riittävän hyvän" ratkaisun kohtuullisessa ajassa?',
+                    a: ['Heuristiset algoritmit', 'Deterministiset algoritmit', 'Rekursiiviset algoritmit', 'Symmetriset algoritmit'],
+                    c: 0
+                },
+            ];
 
-        // c = index of the correct option (0..3)
-        var QUESTIONS = [
-            {
-                q: 'Mitä lyhenne "HTML" tarkoittaa?',
-                a: ['HyperText Markup Language', 'High Tech Modern Language', 'Home Tool Markup Logic', 'Hyperlink Text Machine Language'],
-                c: 0
-            },
-            {
-                q: 'Kuinka monta bittiä on yhdessä tavussa (engl. byte)?',
-                a: ['4', '8', '16', '32'], c: 1
-            },
-            {
-                q: 'Mikä näistä on ohjelmointikieli?',
-                a: ['Kobra', 'Mamba', 'Python', 'Anaconda'], c: 2
-            },
-            {
-                q: 'Mitä binäärilukua 1010 vastaa desimaalijärjestelmässä?',
-                a: ['5', '8', '10', '12'], c: 2
-            },
-            {
-                q: 'Millä protokolla ladataan verkkosivuja selaimeen?',
-                a: ['SMTP', 'HTTP', 'FTP', 'SSH'], c: 1
-            },
-            {
-                q: 'Mitä ohjelmaa Linus Torvalds EI ole kehittänyt?',
-                a: ['Linux', 'Subsurface', 'Git', 'MySQL'], c: 3
-            },
-            {
-                q: 'Missä yliopistossa Linux Torvalds opiskeli vuonna 1991?',
-                a: ['Kuopion Yliopisto', 'Hensingin Yliopisto', 'Oulun yliopisto', 'Turun yliopisto'], c: 1
-            },
-            {
-                q: 'Mikä tietorakenne toimii periaatteella LIFO (Last In, First Out)?',
-                a: ['Jono (queue)', 'Pino (stack)', 'Linkitetty lista', 'Hajautustaulu'], c: 1
-            },
-            {
-                q: 'Mikä seuraavista on tunnetun julkisen DNS-palvelimen IPv4-osoite?',
-                a: ['192.168.0.0', '255.255.255.255', '1.0.0.1', '127.0.0.1'], c: 2
-            },
-            {
-                q: 'Mikä on binäärihaun (binary search) pahimman tapauksen aikavaativuus?',
-                a: ['O(1)', 'O(log n)', 'O(n)', 'O(n log n)'], c: 1
-            },
-            {
-                q: 'Minkä eläimen raato aiheutti historian ensimmäisen virallisen tietokonebugin vuonna 1947?',
-                a: ['Torakan', 'Yöperhosen', 'Hiiren', 'Sudenkorennon'], c: 1
-            },
-            {
-                q: 'Mille yritykselle Linus Torvalds sanoi "___, FUCK YOU"',
-                a: ['Apple', 'Microsoft', 'Nvidia', 'Intel'], c: 2
-            },
-            {
-                q: 'Mihin lukuun HTTP-virhekoodi "I\'m a teapot" viittaa?',
-                a: ['200', '404', '418', '500'], c: 2
-            },
-            {
-                q: 'Minä vuonna Serveri ry perustettiin?',
-                a: ['1998', '1985', '1991', '1987'], c: 3
-            },
-            {
-                q: 'Mitä nimitystä käytetään algoritmeista, jotka eivät välttämättä löydä teoreettisesti parasta mahdollista ratkaisua, vaan pyrkivät löytämään "riittävän hyvän" ratkaisun kohtuullisessa ajassa (esim. reitityksessä)?',
-                a: ['Heuristiset algoritmit', 'Deterministiset algoritmit', 'Rekursiiviset algoritmit', 'Symmetriset algoritmit'],
-                c: 0
-            },
-        ];
+            var LETTERS = ['A', 'B', 'C', 'D'];
 
-        var LETTERS = ['A', 'B', 'C', 'D'];
+            var el = function (id) {
+                return document.getElementById(id);
+            };
+            var screens = {
+                start: el('screen-start'), game: el('screen-game'),
+                lose: el('screen-lose'), win: el('screen-win'),
+            };
 
-        var el = function (id) {
-            return document.getElementById(id);
-        };
-        var screens = {
-            start: el('screen-start'), game: el('screen-game'),
-            lose: el('screen-lose'), win: el('screen-win'),
-        };
-
-        const C = 'U0FMQXsxVF9NMUxKME40NFIxfQ==';
-        function show(name) {
-            Object.keys(screens).forEach(function (k) {
-                screens[k].classList.toggle('active', k === name);
-            });
-        }
-
-        var state = {};
-
-        function reset() {
-            state = {level: 0, locked: false, hidden: [], lifelines: {fifty: false, audience: false, phone: false}};
-        }
-
-        function renderLadder() {
-            var out = '';
-            for (var i = PRIZES.length - 1; i >= 0; i--) {
-                var cls = 'rung';
-                if (i === state.level) cls += ' current';
-                else if (i < state.level) cls += ' passed';
-                if (SAFE.indexOf(i) !== -1) cls += ' safe';
-                out += '<div class="' + cls + '"><span class="n">' + (i + 1) + '</span><span>' + PRIZES[i] + '</span></div>';
-            }
-            el('ladder').innerHTML = out;
-        }
-
-        function renderQuestion() {
-            var Q = QUESTIONS[state.level];
-            el('qcounter').innerHTML = 'Kysymys <b>' + (state.level + 1) + '</b> / 15 &nbsp;·&nbsp; ' + PRIZES[state.level];
-            el('qtext').textContent = Q.q;
-            var html = '';
-            for (var i = 0; i < 4; i++) {
-                html += '<button class="hex opt" data-i="' + i + '">' +
-                    '<div class="fill"><span class="letter">' + LETTERS[i] + ':</span>' +
-                    '<span class="txt"></span></div></button>';
-            }
-            var ans = el('answers');
-            ans.innerHTML = html;
-            // set text safely
-            ans.querySelectorAll('.opt').forEach(function (btn) {
-                var i = Number(btn.dataset.i);
-                btn.querySelector('.txt').textContent = Q.a[i];
-                btn.addEventListener('click', function () {
-                    choose(i, btn);
+            const C = 'U0FMQXsxVF9NMUxKME40NFIxfQ==';
+            function show(name) {
+                Object.keys(screens).forEach(function (k) {
+                    screens[k].classList.toggle('active', k === name);
                 });
-            });
-            renderLadder();
-            updateLifelineButtons();
-        }
+            }
 
-        function choose(i, btn) {
-            if (state.locked || btn.classList.contains('hidden-opt')) return;
-            state.locked = true;
-            btn.classList.add('selected', 'locked');
-            var correct = QUESTIONS[state.level].c;
-            setTimeout(function () {
-                if (i === correct) {
-                    btn.classList.remove('selected');
-                    btn.classList.add('correct', 'blink');
-                    setTimeout(function () {
-                        state.level++;
-                        if (state.level >= QUESTIONS.length) {
-                            el('flagText').textContent = atob(C);
-                            show('win');
-                        } else {
-                            state.locked = false;
-                            renderQuestion();
-                        }
-                    }, 1200);
-                } else {
-                    btn.classList.remove('selected');
-                    btn.classList.add('wrong');
-                    // reveal the correct one
-                    var right = el('answers').querySelector('.opt[data-i="' + correct + '"]');
-                    if (right) right.classList.add('correct', 'blink');
-                    setTimeout(function () {
-                        gameOver(correct);
-                    }, 1600);
+            var state = {};
+
+            function reset() {
+                state = { level: 0, locked: false, hidden: [], lifelines: { fifty: false, audience: false, phone: false } };
+            }
+
+            function renderLadder() {
+                var out = '';
+                for (var i = PRIZES.length - 1; i >= 0; i--) {
+                    var cls = 'rung';
+                    if (i === state.level) cls += ' current';
+                    else if (i < state.level) cls += ' passed';
+                    if (SAFE.indexOf(i) !== -1) cls += ' safe';
+                    out += '<div class="' + cls + '"><span class="n">' + (i + 1) + '</span><span>' + PRIZES[i] + '</span></div>';
                 }
-            }, 1200);
-        }
-
-        function gameOver(correctIdx) {
-            var reached = 0;
-            for (var s = 0; s < SAFE.length; s++) {
-                if (state.level > SAFE[s]) reached = SAFE[s] + 1;
+                el('ladder').innerHTML = out;
             }
-            var safeMsg = reached
-                ? 'Turvaraja piti: pääsit <b>' + PRIZES[reached - 1] + '</b> asti. '
-                : '';
-            el('loseText').innerHTML =
-                safeMsg + 'Oikea vastaus oli <b>' + LETTERS[correctIdx] + '</b>. ' +
-                'Lippu irtoaa vain saamalla kaikki 15 oikein, yritä uudelleen.';
-            show('lose');
-        }
 
-        /* ---------------- Lifelines ---------------- */
-        function updateLifelineButtons() {
-            [['fifty', 'll-fifty'], ['audience', 'll-audience'], ['phone', 'll-phone']].forEach(function (p) {
-                var b = el(p[1]);
-                var used = state.lifelines[p[0]];
-                b.disabled = used || state.locked;
-                b.classList.toggle('used', used);
-            });
-        }
-
-        function wrongIndices() {
-            var Q = QUESTIONS[state.level];
-            var arr = [];
-            for (var i = 0; i < 4; i++) {
-                if (i !== Q.c && state.hidden.indexOf(i) === -1) arr.push(i);
+            function renderQuestion() {
+                var Q = QUESTIONS[state.level];
+                el('qcounter').innerHTML = 'Kysymys <b>' + (state.level + 1) + '</b> / 15 &nbsp;·&nbsp; ' + PRIZES[state.level];
+                el('qtext').textContent = Q.q;
+                var html = '';
+                for (var i = 0; i < 4; i++) {
+                    html += '<button class="hex opt" data-i="' + i + '">' +
+                        '<div class="fill"><span class="letter">' + LETTERS[i] + ':</span>' +
+                        '<span class="txt"></span></div></button>';
+                }
+                var ans = el('answers');
+                ans.innerHTML = html;
+                // set text safely
+                ans.querySelectorAll('.opt').forEach(function (btn) {
+                    var i = Number(btn.dataset.i);
+                    btn.querySelector('.txt').textContent = Q.a[i];
+                    btn.addEventListener('click', function () {
+                        choose(i, btn);
+                    });
+                });
+                renderLadder();
+                updateLifelineButtons();
             }
-            return arr;
-        }
 
-        el('ll-fifty').addEventListener('click', function () {
-            if (state.lifelines.fifty || state.locked) return;
-            state.lifelines.fifty = true;
-            var wrong = wrongIndices();
-            // shuffle, keep one, hide two
-            for (var k = wrong.length - 1; k > 0; k--) {
-                var j = Math.floor(Math.random() * (k + 1));
-                var t = wrong[k];
-                wrong[k] = wrong[j];
-                wrong[j] = t;
+            function choose(i, btn) {
+                if (state.locked || btn.classList.contains('hidden-opt')) return;
+                state.locked = true;
+                btn.classList.add('selected', 'locked');
+                var correct = QUESTIONS[state.level].c;
+                setTimeout(function () {
+                    if (i === correct) {
+                        btn.classList.remove('selected');
+                        btn.classList.add('correct', 'blink');
+                        setTimeout(function () {
+                            state.level++;
+                            if (state.level >= QUESTIONS.length) {
+                                el('flagText').textContent = atob(C);
+                                show('win');
+                            } else {
+                                state.locked = false;
+                                renderQuestion();
+                            }
+                        }, 1200);
+                    } else {
+                        btn.classList.remove('selected');
+                        btn.classList.add('wrong');
+                        // reveal the correct one
+                        var right = el('answers').querySelector('.opt[data-i="' + correct + '"]');
+                        if (right) right.classList.add('correct', 'blink');
+                        setTimeout(function () {
+                            gameOver(correct);
+                        }, 1600);
+                    }
+                }, 1200);
             }
-            var hide = wrong.slice(0, 2);
-            hide.forEach(function (i) {
-                state.hidden.push(i);
-                var o = el('answers').querySelector('.opt[data-i="' + i + '"]');
-                if (o) o.classList.add('hidden-opt');
-            });
-            updateLifelineButtons();
-        });
 
-        el('ll-audience').addEventListener('click', function () {
-            if (state.lifelines.audience || state.locked) return;
-            state.lifelines.audience = true;
-            updateLifelineButtons();
-            var Q = QUESTIONS[state.level];
-            var options = [0, 1, 2, 3];
-            // Weight the correct answer highest, but leave room for doubt.
-            var weights = {};
-            var total = 0;
-            options.forEach(function (i) {
-                var w = i === Q.c ? 45 + Math.random() * 25 : 5 + Math.random() * 20;
-                weights[i] = w;
-                total += w;
+            function gameOver(correctIdx) {
+                var reached = 0;
+                for (var s = 0; s < SAFE.length; s++) {
+                    if (state.level > SAFE[s]) reached = SAFE[s] + 1;
+                }
+                var safeMsg = reached
+                    ? 'Turvaraja piti: pääsit <b>' + PRIZES[reached - 1] + '</b> asti. '
+                    : '';
+                el('loseText').innerHTML =
+                    safeMsg + 'Oikea vastaus oli <b>' + LETTERS[correctIdx] + '</b>. ' +
+                    'Lippu irtoaa vain saamalla kaikki 15 oikein, yritä uudelleen.';
+                show('lose');
+            }
+
+            /* ---------------- Lifelines ---------------- */
+            function updateLifelineButtons() {
+                [['fifty', 'll-fifty'], ['audience', 'll-audience'], ['phone', 'll-phone']].forEach(function (p) {
+                    var b = el(p[1]);
+                    var used = state.lifelines[p[0]];
+                    b.disabled = used || state.locked;
+                    b.classList.toggle('used', used);
+                });
+            }
+
+            function wrongIndices() {
+                var Q = QUESTIONS[state.level];
+                var arr = [];
+                for (var i = 0; i < 4; i++) {
+                    if (i !== Q.c && state.hidden.indexOf(i) === -1) arr.push(i);
+                }
+                return arr;
+            }
+
+            el('ll-fifty').addEventListener('click', function () {
+                if (state.lifelines.fifty || state.locked) return;
+                state.lifelines.fifty = true;
+                var wrong = wrongIndices();
+                // shuffle, keep one, hide two
+                for (var k = wrong.length - 1; k > 0; k--) {
+                    var j = Math.floor(Math.random() * (k + 1));
+                    var t = wrong[k];
+                    wrong[k] = wrong[j];
+                    wrong[j] = t;
+                }
+                var hide = wrong.slice(0, 2);
+                hide.forEach(function (i) {
+                    state.hidden.push(i);
+                    var o = el('answers').querySelector('.opt[data-i="' + i + '"]');
+                    if (o) o.classList.add('hidden-opt');
+                });
+                updateLifelineButtons();
             });
-            var rows = options.map(function (i) {
-                return {i: i, pct: Math.round((weights[i] / total) * 100)};
-            });
-            // fix rounding to 100
-            var sum = rows.reduce(function (a, r) {
-                return a + r.pct;
-            }, 0);
-            rows[0].pct += 100 - sum;
-            var bars = rows.map(function (r) {
-                return '<div class="bar-row"><span class="bl">' + LETTERS[r.i] + '</span>' +
-                    '<div class="bar-track"><div class="bar-fill" data-w="' + r.pct + '"></div></div>' +
-                    '<span class="pct">' + r.pct + '%</span></div>';
-            }).join('');
-            openOverlay(
-                '<h3>StackOverflow-äänestys</h3><p class="sub">Näin kehittäjäyhteisö äänesti</p>' +
-                '<div class="bars">' + bars + '</div>'
-            );
-            requestAnimationFrame(function () {
-                document.querySelectorAll('#overlayCard .bar-fill').forEach(function (f) {
-                    f.style.width = f.dataset.w + '%';
+
+            el('ll-audience').addEventListener('click', function () {
+                if (state.lifelines.audience || state.locked) return;
+                state.lifelines.audience = true;
+                updateLifelineButtons();
+                var Q = QUESTIONS[state.level];
+                var options = [0, 1, 2, 3];
+                // Weight the correct answer highest, but leave room for doubt.
+                var weights = {};
+                var total = 0;
+                options.forEach(function (i) {
+                    var w = i === Q.c ? 45 + Math.random() * 25 : 5 + Math.random() * 20;
+                    weights[i] = w;
+                    total += w;
+                });
+                var rows = options.map(function (i) {
+                    return { i: i, pct: Math.round((weights[i] / total) * 100) };
+                });
+                // fix rounding to 100
+                var sum = rows.reduce(function (a, r) {
+                    return a + r.pct;
+                }, 0);
+                rows[0].pct += 100 - sum;
+                var bars = rows.map(function (r) {
+                    return '<div class="bar-row"><span class="bl">' + LETTERS[r.i] + '</span>' +
+                        '<div class="bar-track"><div class="bar-fill" data-w="' + r.pct + '"></div></div>' +
+                        '<span class="pct">' + r.pct + '%</span></div>';
+                }).join('');
+                openOverlay(
+                    '<h3>StackOverflow-äänestys</h3><p class="sub">Näin kehittäjäyhteisö äänesti</p>' +
+                    '<div class="bars">' + bars + '</div>'
+                );
+                requestAnimationFrame(function () {
+                    document.querySelectorAll('#overlayCard .bar-fill').forEach(function (f) {
+                        f.style.width = f.dataset.w + '%';
+                    });
                 });
             });
-        });
 
-        el('ll-phone').addEventListener('click', function () {
-            if (state.lifelines.phone || state.locked) return;
-            state.lifelines.phone = true;
-            updateLifelineButtons();
-            var Q = QUESTIONS[state.level];
-            var sure = Math.random() < 0.7;
-            var line = sure
-                ? 'Tää on helppo — se on <b>' + LETTERS[Q.c] + '</b>. Laita se lukkoon.'
-                : 'En oo satavarma, mut mun vaisto sanoo <b>' + LETTERS[Q.c] + '</b>. Ottaisin sen.';
-            openOverlay(
-                '<h3>Soitit seniorille ☎️</h3><p class="sub">30 sekuntia aikaa</p>' +
-                '<p class="quote">"' + line + '"</p><p class="who">— Senior Dev, 15v kokemusta</p>'
-            );
-        });
+            el('ll-phone').addEventListener('click', function () {
+                if (state.lifelines.phone || state.locked) return;
+                state.lifelines.phone = true;
+                updateLifelineButtons();
+                var Q = QUESTIONS[state.level];
+                var sure = Math.random() < 0.7;
+                var line = sure
+                    ? 'Tää on helppo — se on <b>' + LETTERS[Q.c] + '</b>. Laita se lukkoon.'
+                    : 'En oo satavarma, mut mun vaisto sanoo <b>' + LETTERS[Q.c] + '</b>. Ottaisin sen.';
+                openOverlay(
+                    '<h3>Soitit seniorille ☎️</h3><p class="sub">30 sekuntia aikaa</p>' +
+                    '<p class="quote">"' + line + '"</p><p class="who">— Senior Dev, 15v kokemusta</p>'
+                );
+            });
 
-        function openOverlay(html) {
-            el('overlayCard').innerHTML = html +
-                '<button class="close" id="ovClose">Selvä</button>';
-            el('overlay').classList.add('show');
-            el('ovClose').addEventListener('click', closeOverlay);
-        }
+            function openOverlay(html) {
+                el('overlayCard').innerHTML = html +
+                    '<button class="close" id="ovClose">Selvä</button>';
+                el('overlay').classList.add('show');
+                el('ovClose').addEventListener('click', closeOverlay);
+            }
 
-        function closeOverlay() {
-            el('overlay').classList.remove('show');
-        }
+            function closeOverlay() {
+                el('overlay').classList.remove('show');
+            }
 
-        el('overlay').addEventListener('click', function (e) {
-            if (e.target === el('overlay')) closeOverlay();
-        });
+            el('overlay').addEventListener('click', function (e) {
+                if (e.target === el('overlay')) closeOverlay();
+            });
 
-        function startGame() {
-            reset();
-            show('game');
-            renderQuestion();
-        }
+            function startGame() {
+                reset();
+                show('game');
+                renderQuestion();
+            }
 
-        el('startBtn').addEventListener('click', startGame);
-        el('retryBtn').addEventListener('click', startGame);
-    })();
-</script>
+            el('startBtn').addEventListener('click', startGame);
+            el('retryBtn').addEventListener('click', startGame);
+        })();
+    </script>
 
-<script
-        src="/chat-widget.js"
-        data-puzzle="7"
-        data-api-base="https://salagrillitchat.serveriry.fi"
-        defer
-></script>
+    <script src="/chat-widget.js" data-puzzle="7" data-api-base="https://salagrillitchat.serveriry.fi" defer></script>
 </body>
+
 </html>

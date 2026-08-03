@@ -39,6 +39,12 @@ Game.BootScene = class BootScene extends Phaser.Scene {
             frameHeight: 16
         });
 
+        // ServeriNPC2 spritesheet (16x16 frames, 4 cols x 4 rows)
+        this.load.spritesheet('serverinpc2', 'ServeriNPC2.png', {
+            frameWidth: 16,
+            frameHeight: 16
+        });
+
         // Drunkard spritesheet (16x20 frames, 4 cols x 4 rows)
         this.load.spritesheet('juoppo', 'Juoppo.png', {
             frameWidth: 16,

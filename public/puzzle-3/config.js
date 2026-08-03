@@ -105,7 +105,7 @@ Game.SIGN_MESSAGES = {
     'savilahti_37_23': ['Savonia has been closed due to too destructive AMK final projects'],
     'snellmania_11_45': ['↑ Snellmania lobby'],
     'snellmania_42_22': ['University of eastern finland'],
-    'snellmania_46_47': ['Serveri tip: preparing for the exam makes it easier to pass!'],
+    'snellmania_46_47': ['Serveri tip: Remember to bring a pencil to the exam!'],
     'Exam_4_45': ['Serveri tip: The exam gets way harder if you have not slept, or if your energy is low.', 'But it is passable!'],
     // Add more signs here as needed
 };

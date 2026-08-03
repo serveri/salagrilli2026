@@ -1643,7 +1643,7 @@ Game.GameScene = class GameScene extends Phaser.Scene {
             totalMoveDuration *= this.speedModifier;
         }
         if (Game.state && Game.state.isOverclocked) {
-            totalMoveDuration *= 0.85;
+            totalMoveDuration *= 0.90;
         }
 
         if (isJumping) {
@@ -2277,6 +2277,11 @@ Game.GameScene = class GameScene extends Phaser.Scene {
         if (!this.sys || !this.sys.game || !this.sys.game.canvas) return;
         const canvas = this.sys.game.canvas;
 
+        if (this.currentArea && this.currentArea.name === 'Exam') {
+            Game.state = Game.state || {};
+            Game.state.hasEnteredExam = true;
+        }
+
         let drunkBlur = 0;
         if (this.drunkSteps && this.drunkSteps > 0) {
             if (this.lastDrunkType === 'gambina') {
@@ -2286,6 +2291,12 @@ Game.GameScene = class GameScene extends Phaser.Scene {
             }
         } else if (this.reverseControlsSteps && this.reverseControlsSteps > 0) {
             drunkBlur = Math.min(8, this.reverseControlsSteps / 4);
+        }
+
+        if (Game.state && Game.state.hasEnteredExam) {
+            // One jallu sip (15 steps) produces 3.75px blur
+            const maxOneJalluSipBlur = 3.75;
+            drunkBlur = Math.min(maxOneJalluSipBlur, drunkBlur);
         }
 
         let energyBlur = 0;

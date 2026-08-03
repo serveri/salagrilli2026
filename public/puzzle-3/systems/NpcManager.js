@@ -64,12 +64,12 @@ Game.NpcManager = class NpcManager {
                 sprite: scene.add.sprite(13 * Game.TILE_SIZE, 5 * Game.TILE_SIZE - 4, 'opetusavustaja', 0).setOrigin(0, 0).setDepth(10)
             };
 
-            // Serveri Mouse NPC (serverihiiri) at (16, 32)
+            // Exam Serveri Mouse NPC (with no pencil) at (16, 32)
             scene.examPencilNpc = {
                 tileX: 16,
                 tileY: 32,
-                facing: 'down',
-                sprite: scene.add.sprite(16 * Game.TILE_SIZE, 32 * Game.TILE_SIZE - 2, 'player', 0).setOrigin(0, 0).setDepth(10)
+                facing: 'left',
+                sprite: scene.add.sprite(16 * Game.TILE_SIZE, 32 * Game.TILE_SIZE - 2, 'serverinpc2', 0).setOrigin(0, 0).setDepth(10)
             };
 
             // Exam Student 1 at (9, 7) - facing right (frame 12), player texture, no dialogue
@@ -100,7 +100,7 @@ Game.NpcManager = class NpcManager {
             scene.examServeriZyn = {
                 tileX: 17,
                 tileY: 34,
-                facing: 'down',
+                facing: 'right',
                 sprite: scene.add.sprite(17 * Game.TILE_SIZE, 34 * Game.TILE_SIZE - 2, 'player', 0).setOrigin(0, 0).setDepth(10)
             };
         }
@@ -126,7 +126,7 @@ Game.NpcManager = class NpcManager {
                 tileX: 5,
                 tileY: 3,
                 facing: 'down',
-                sprite: scene.add.sprite(5 * Game.TILE_SIZE, 3 * Game.TILE_SIZE, 'serverinpc', 0).setOrigin(0, 0).setDepth(10)
+                sprite: scene.add.sprite(5 * Game.TILE_SIZE, 3 * Game.TILE_SIZE, 'serverinpc2', 0).setOrigin(0, 0).setDepth(10)
             };
             scene.facing = 'up';
             scene.setIdleFrame();
@@ -237,7 +237,50 @@ Game.NpcManager = class NpcManager {
         // 4. Serveri Mouse NPC in Exam (16, 32)
         if (scene.examPencilNpc && targetX === scene.examPencilNpc.tileX && targetY === scene.examPencilNpc.tileY) {
             this._faceNpc(scene.examPencilNpc);
-            scene.dialogue.show(['Serveri: I forgot my pencil at home! I don\'t think I will pass']);
+            Game.state = Game.state || {};
+
+            if (Game.state.gavePencilToExamServeri) {
+                scene.dialogue.show(['Serveri: Thank you so much for the pencil! Good luck on the exam!']);
+            } else {
+                const pencils = scene.backpack && scene.backpack.items
+                    ? scene.backpack.items.filter(i => i.id === 'pencil' || (i.name && i.name.toLowerCase().includes('pencil')))
+                    : [];
+
+                if (pencils.length >= 2) {
+                    scene.dialogue.show(['Serveri: I forgot my pencil at home! I don\'t think I will pass... Wait, do you have a spare pencil?'], null, [
+                        {
+                            text: 'Give pencil', color: '#006600', hoverColor: '#00cc00', onClick: () => {
+                                const pencilIndex = scene.backpack.items.findIndex(i => i.id === 'pencil' || (i.name && i.name.toLowerCase().includes('pencil')));
+                                if (pencilIndex !== -1) {
+                                    scene.backpack.items.splice(pencilIndex, 1);
+                                }
+                                Game.state.gavePencilToExamServeri = true;
+                                scene.dialogue.show([
+                                    'Serveri: Wow, really? Thank you so much, you are such a kind soul!',
+                                    'Serveri: Good luck on the exam!',
+                                    'Helping a fellow student lifted your spirits!'
+                                ], () => {
+                                    if (typeof scene.energy !== 'undefined') {
+                                        const old = scene.energy;
+                                        scene.energy = Math.min(200, scene.energy + 50);
+                                        if (scene.addEnergyDiff) {
+                                            scene.addEnergyDiff(scene.energy - old);
+                                        }
+                                    }
+                                });
+                            }
+                        },
+                        {
+                            text: 'Keep pencil', color: '#880000', hoverColor: '#cc0000', onClick: () => { }
+                        }
+                    ]);
+                } else {
+                    scene.dialogue.show([
+                        'Serveri: I forgot my pencil at home! I don\'t think I will pass',
+                        'I wish I had a extra pencil to give you'
+                    ]);
+                }
+            }
             return true;
         }
 
@@ -395,11 +438,11 @@ Game.NpcManager = class NpcManager {
                                     'Hacker: *gulp gulp gulp* Ahhh, caffeine!',
                                     'Hacker: *clackity clack clack*',
                                     'Compiling custom kernel module...',
-                                    'Overclock successful! +100 Energy and movement speed increased by 15%!'
+                                    'Overclock successful! +40 Energy and movement speed increased by 10%!'
                                 ], () => {
                                     if (typeof scene.energy !== 'undefined') {
                                         const old = scene.energy;
-                                        scene.energy = Math.min(200, scene.energy + 100);
+                                        scene.energy = Math.min(200, scene.energy + 40);
                                         if (scene.addEnergyDiff) {
                                             scene.addEnergyDiff(scene.energy - old);
                                         }
