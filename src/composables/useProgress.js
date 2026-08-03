@@ -53,5 +53,15 @@ export function useProgress() {
 
   const solvedCount = computed(() => Object.keys(solved).length)
 
-  return { solved, isSolved, rewardFor, markSolved, solvedCount }
+  const solvedList = computed(() => {
+    return Object.entries(solved)
+      .map(([id, data]) => ({
+        id: Number(id),
+        reward: data?.reward ?? '',
+        at: data?.at ?? 0,
+      }))
+      .sort((a, b) => a.id - b.id)
+  })
+
+  return { solved, isSolved, rewardFor, markSolved, solvedCount, solvedList }
 }
