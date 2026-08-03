@@ -66,17 +66,18 @@ export const puzzleKnowledge = {
   },
   3: {
     summary:
-      'A single full-screen image (img9844.png): a heavily colour-shifted selfie taken in ' +
-      'front of a large "Meta" sign, with alt text "meta". The wording and the sign are a pun ' +
-      'pointing at METADATA. The hidden content lives in the image file, not in the visible ' +
-      'pixels.',
+      'A top-down, Pokemon-style browser adventure game called "ServeriQuest", built with ' +
+      'Phaser. You control Serveri the mouse, walk around, talk to characters and manage an ' +
+      'Energy bar. Per the in-game About screen: beat the game and you get the flag, and ' +
+      'there may be other secrets. The flag is revealed inside the game once it is completed.',
     hints: [
-      'Start with the page source (view-source / DevTools). Look at the image, its file name ' +
-        'and its alt text for clues about what kind of thing you are hunting for.',
-      'The big "Meta" sign and the alt text "meta" are a hint: think META-DATA. The answer is ' +
-        'not in what the picture shows, but in the data attached to the file.',
-      'Download the image and inspect its metadata (EXIF / PNG text chunks) with a tool like ' +
-        'exiftool, an online EXIF viewer, or `strings` on the file.',
+      'This is a playable game, not a static puzzle. Walk around, talk to characters and ' +
+        'explore the whole map.',
+      'Keep an eye on the Energy bar and interact with things in the world. Completing the ' +
+        'game is what reveals the flag.',
+      'Check the menu / About screen for context, and do not give up if you get stuck. The ' +
+        'game hints that you may need to restart a couple of times, and that there are hidden ' +
+        'secrets worth looking for.',
     ],
     hasAnswer: false,
   },
@@ -145,18 +146,17 @@ export const puzzleKnowledge = {
   },
   8: {
     summary:
-      'A top-down, Pokemon-style browser adventure game called "ServeriQuest", built with ' +
-      'Phaser. You control Serveri the mouse, walk around, talk to characters and manage an ' +
-      'Energy bar. Per the in-game About screen: beat the game and you get the flag, and ' +
-      'there may be other secrets. The flag is revealed inside the game once it is completed.',
+      'A single full-screen image (img9844.png): a heavily colour-shifted selfie taken in ' +
+      'front of a large "Meta" sign, with alt text "meta". The wording and the sign are a pun ' +
+      'pointing at METADATA. The hidden content lives in the image file, not in the visible ' +
+      'pixels.',
     hints: [
-      'This is a playable game, not a static puzzle. Walk around, talk to characters and ' +
-        'explore the whole map.',
-      'Keep an eye on the Energy bar and interact with things in the world. Completing the ' +
-        'game is what reveals the flag.',
-      'Check the menu / About screen for context, and do not give up if you get stuck. The ' +
-        'game hints that you may need to restart a couple of times, and that there are hidden ' +
-        'secrets worth looking for.',
+      'Start with the page source (view-source / DevTools). Look at the image, its file name ' +
+        'and its alt text for clues about what kind of thing you are hunting for.',
+      'The big "Meta" sign and the alt text "meta" are a hint: think META-DATA. The answer is ' +
+        'not in what the picture shows, but in the data attached to the file.',
+      'Download the image and inspect its metadata (EXIF / PNG text chunks) with a tool like ' +
+        'exiftool, an online EXIF viewer, or `strings` on the file.',
     ],
     hasAnswer: false,
   },

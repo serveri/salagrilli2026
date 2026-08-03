@@ -243,7 +243,7 @@ Game.GameOverScene = class GameOverScene extends Phaser.Scene {
     }
 
     async _loadVictoryMap() {
-        const response = await fetch('/puzzle-8/data/Victory.csv');
+        const response = await fetch('data/Victory.csv');
         const text = await response.text();
         const rows = text.trim().split('\n');
         const tileData = rows.map(r => r.split(',').map(Number));

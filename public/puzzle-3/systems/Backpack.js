@@ -593,7 +593,7 @@ Game.Backpack = class Backpack {
                 ], () => {
                     this.scene.cameras.main.fadeOut(250, 0, 0, 0, (camera, progress) => {
                         if (progress === 1) {
-                            this.scene.loadArea('/puzzle-8/data/Exam.csv', 28, 38).then(() => {
+                            this.scene.loadArea('data/Exam.csv', 28, 38).then(() => {
                                 this.scene.cameras.main.fadeIn(250, 0, 0, 0, (cam, prog) => {
                                     if (prog === 1) {
                                         this.scene.isTransitioning = false;
@@ -626,7 +626,7 @@ Game.Backpack = class Backpack {
                         this.scene.zynSound = this.scene.sound.add('zynzyn');
                         this.scene.zynSound.play({ volume: vol });
                     } else {
-                        const audio = new Audio('/puzzle-8/assets/Sound/zynzyn.mp3');
+                        const audio = new Audio('assets/Sound/zynzyn.mp3');
                         audio.volume = vol;
                         audio.play();
                     }

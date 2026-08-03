@@ -1,53 +1,213 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Salagrillit 2026 – Task 3</title>
 
-    <meta name="description" content="Solve a series of puzzles to uncover the time and location of Salagrillit, a summer BBQ event by students @ Serveri ry." />
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Salagrillit 2026 – Task 3</title>
 
-    <meta property="og:type" content="website" />
-    <meta property="og:site_name" content="Serveri ry" />
-    <meta property="og:title" content="Salagrillit 2026 – Task 3" />
-    <meta property="og:description" content="Solve a series of puzzles to uncover the time and location of Salagrillit, a summer BBQ event by students @ Serveri ry." />
-    <meta property="og:image" content="https://salagrillit.serveriry.fi/og-image.png" />
-    <meta property="og:image:width" content="1200" />
-    <meta property="og:image:height" content="630" />
-    <meta property="og:image:type" content="image/png" />
-    <meta property="og:url" content="https://salagrillit.serveriry.fi/puzzle-3/" />
+  <meta name="description" content="Solve a series of puzzles to uncover the time and location of Salagrillit, a summer BBQ event by students @ Serveri ry." />
 
-    <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:title" content="Salagrillit 2026 – Task 3" />
-    <meta name="twitter:description" content="Solve a series of puzzles to uncover the time and location of Salagrillit, a summer BBQ event by students @ Serveri ry." />
-    <meta name="twitter:image" content="https://salagrillit.serveriry.fi/og-image.png" />
-    <style>
-      html,
-      body {
-        margin: 0;
-        min-height: 100%;
-        background: #000;
-        color: #fff;
-        font-family: system-ui, sans-serif;
-        display: grid;
-        place-items: center;
-        text-align: center;
+  <meta property="og:type" content="website" />
+  <meta property="og:site_name" content="Serveri ry" />
+  <meta property="og:title" content="Salagrillit 2026 – Task 3" />
+  <meta property="og:description" content="Solve a series of puzzles to uncover the time and location of Salagrillit, a summer BBQ event by students @ Serveri ry." />
+  <meta property="og:image" content="https://salagrillit.serveriry.fi/og-image.png" />
+  <meta property="og:image:width" content="1200" />
+  <meta property="og:image:height" content="630" />
+  <meta property="og:image:type" content="image/png" />
+  <meta property="og:url" content="https://salagrillit.serveriry.fi/puzzle-3/" />
+
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="Salagrillit 2026 – Task 3" />
+  <meta name="twitter:description" content="Solve a series of puzzles to uncover the time and location of Salagrillit, a summer BBQ event by students @ Serveri ry." />
+  <meta name="twitter:image" content="https://salagrillit.serveriry.fi/og-image.png" />
+  <style>
+    html,
+    body {
+      margin: 0;
+      padding: 0;
+      width: 100%;
+      height: 100%;
+      background: #0a0a0f;
+      color: #fff;
+      font-family: 'Courier New', Courier, monospace;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+    }
+
+    #game-container {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 10px;
+      background: #181822;
+      border: 2px solid #343446;
+      border-radius: 16px;
+      box-shadow: 0 10px 40px rgba(0, 0, 0, 0.9), inset 0 0 15px rgba(0, 0, 0, 0.6);
+    }
+
+    #canvas-wrapper {
+      position: relative;
+      display: inline-block;
+      border: 2px solid #141420;
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow:
+        0 0 0 2px #262638,
+        0 15px 40px rgba(0, 0, 0, 0.95);
+    }
+
+    #canvas-wrapper canvas {
+      display: block;
+      margin: 0 !important;
+      image-rendering: pixelated;
+      image-rendering: crisp-edges;
+    }
+
+    .crt-overlay {
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      z-index: 10;
+      overflow: hidden;
+      border-radius: 6px;
+      will-change: opacity;
+      transform: translateZ(0);
+      background:
+        /* Glass Screen Diagonal Sheen Glare */
+        linear-gradient(135deg, rgba(255, 255, 255, 0.07) 0%, rgba(255, 255, 255, 0.02) 30%, rgba(0, 0, 0, 0) 60%),
+        /* Visible Horizontal Scanlines */
+        repeating-linear-gradient(to bottom,
+          rgba(0, 0, 0, 0) 0px,
+          rgba(0, 0, 0, 0) 3px,
+          rgba(0, 0, 0, 0.06) 3px,
+          rgba(0, 0, 0, 0.06) 6px),
+        /* CRT Glass Vignette */
+        radial-gradient(ellipse 85% 85% at 50% 50%,
+          rgba(0, 0, 0, 0) 55%,
+          rgba(0, 0, 0, 0.15) 75%,
+          rgba(0, 0, 0, 0.35) 100%);
+      box-shadow: inset 0 0 12px rgba(0, 0, 0, 0.3);
+      animation: crtBreathe 5s ease-in-out infinite alternate;
+    }
+
+
+    /* Ambient phosphor breathing */
+    @keyframes crtBreathe {
+      0% {
+        opacity: 0.9;
       }
-    </style>
-  </head>
-  <body>
-    <img src="img9844.png" alt="meta"
-    style="position : fixed;
-    top : 0;
-    left : 0;
-    width : 100%;
-    height : 100%;">
 
-    <script
-      src="/chat-widget.js"
-      data-puzzle="3"
-      data-api-base="https://salagrillitchat.serveriry.fi"
-      defer
-    ></script>
-  </body>
+      50% {
+        opacity: 0.45;
+      }
+
+      100% {
+        opacity: 1.0;
+      }
+    }
+
+    #ui-wrapper {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 6px;
+      margin-top: -10px;
+      margin-bottom: 10px;
+    }
+
+    #energy-bar-container {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      width: 100%;
+      min-width: 250px;
+      background: #181822;
+      padding: 4px 10px;
+      border: 2px solid #343446;
+      border-radius: 8px;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
+      box-sizing: border-box;
+    }
+
+    #energy-label {
+      font-weight: bold;
+      font-size: 16px;
+      font-family: 'Pokemon Classic', 'Courier New', monospace;
+      color: #fff;
+      text-transform: uppercase;
+    }
+
+    #energy-bar-bg {
+      flex-grow: 1;
+      height: 16px;
+      background: #0a0a0f;
+      border: 2px solid #343446;
+      border-radius: 4px;
+      overflow: hidden;
+      position: relative;
+    }
+
+    #energy-number {
+      position: absolute;
+      top: 35%;
+      left: 30px;
+      transform: translateY(-50%);
+      font-family: 'Pokemon Classic', 'Courier New', monospace;
+      font-size: 13px;
+      color: #fff;
+      text-shadow: 1px 1px 0 #000, -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000;
+      z-index: 2;
+    }
+
+    #energy-bar-fill {
+      height: 100%;
+      width: 75%;
+      /* Default to 150 / 200 energy */
+      background: #FFD700;
+      /* Yellow flat color */
+    }
+  </style>
+  <!-- Phaser 3 CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/phaser@3.80.1/dist/phaser.min.js"></script>
+
+  <!-- Game modules (load order matters: config → systems → scenes → init) -->
+  <script src="config.js"></script>
+  <script src="systems/DialogueBox.js"></script>
+  <script src="systems/Backpack.js"></script>
+  <script src="systems/Shop.js"></script>
+  <script src="systems/Exam.js"></script>
+  <script src="systems/NpcManager.js"></script>
+  <script src="scenes/BootScene.js"></script>
+  <script src="scenes/MenuScene.js"></script>
+  <script src="scenes/GameScene.js"></script>
+  <script src="scenes/GameOverScene.js"></script>
+  <script src="game.js" defer></script>
+</head>
+
+<body>
+  <div id="ui-wrapper">
+    <div id="game-container">
+      <div id="canvas-wrapper">
+        <div class="crt-overlay"></div>
+      </div>
+    </div>
+
+    <div id="energy-bar-container">
+      <div id="energy-label">Energy</div>
+      <div id="energy-bar-bg">
+        <div id="energy-bar-fill"></div>
+        <div id="energy-number"><span id="energy-val">150</span><span id="energy-lost"
+            style="color: #cc0000; display: none; margin-left: 15px; text-shadow: none;"></span></div>
+      </div>
+    </div>
+  </div>
+
+  <script src="/chat-widget.js" data-puzzle="3" data-api-base="https://salagrillitchat.serveriry.fi" defer></script>
+</body>
+
 </html>

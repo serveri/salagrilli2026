@@ -130,71 +130,71 @@ Game.LOCKED_DOORS = {
 Game.MAP_TRANSITIONS = {
     'serveriquest': {
         byTile: {
-            2631: { targetMap: '/puzzle-8/data/NeulamaenSale.csv', targetX: 1, targetY: 2, exitDir: 'down' },
-            2633: { targetMap: '/puzzle-8/data/savilahti.csv', targetX: 26, targetY: 93 },
-            1370: { targetMap: '/puzzle-8/data/House.csv', targetX: 9, targetY: 12, requiredItem: 'Home Key' }
+            2631: { targetMap: 'data/NeulamaenSale.csv', targetX: 1, targetY: 2, exitDir: 'down' },
+            2633: { targetMap: 'data/savilahti.csv', targetX: 26, targetY: 93 },
+            1370: { targetMap: 'data/House.csv', targetX: 9, targetY: 12, requiredItem: 'Home Key' }
         }
     },
     'NeulamaenSale': {
         byTile: {
-            2021: { targetMap: '/puzzle-8/data/serveriquest.csv', targetX: 13, targetY: 48 },
-            2023: { targetMap: '/puzzle-8/data/serveriquest.csv', targetX: 13, targetY: 48 }
+            2021: { targetMap: 'data/serveriquest.csv', targetX: 13, targetY: 48 },
+            2023: { targetMap: 'data/serveriquest.csv', targetX: 13, targetY: 48 }
         }
     },
     'savilahti': {
         byTile: {
-            2631: { targetMap: '/puzzle-8/data/serveriquest.csv', targetX: 57, targetY: 0 }
+            2631: { targetMap: 'data/serveriquest.csv', targetX: 57, targetY: 0 }
         },
         byCoord: {
-            '14,50': { targetMap: '/puzzle-8/data/Laitos.csv', targetX: 45, targetY: 18, requiredItem: 'Nappi avain' },
-            '16,42': { targetMap: '/puzzle-8/data/Laitos.csv', targetX: 43, targetY: 9, requiredItem: 'Nappi avain', exitDir: 'right' },
-            '53,0': { targetMap: '/puzzle-8/data/snellmania.csv', targetX: 46, targetY: 73 },
-            '0,6': { targetMap: '/puzzle-8/data/snellmania.csv', targetX: 8, targetY: 66 },
-            '75,15': { targetMap: '/puzzle-8/data/Prisma.csv', targetX: 2, targetY: 15, exitDir: 'up' },
-            '75,16': { targetMap: '/puzzle-8/data/Prisma.csv', targetX: 2, targetY: 15, exitDir: 'up' }
+            '14,50': { targetMap: 'data/Laitos.csv', targetX: 45, targetY: 18, requiredItem: 'Nappi avain' },
+            '16,42': { targetMap: 'data/Laitos.csv', targetX: 43, targetY: 9, requiredItem: 'Nappi avain', exitDir: 'right' },
+            '53,0': { targetMap: 'data/snellmania.csv', targetX: 46, targetY: 73 },
+            '0,6': { targetMap: 'data/snellmania.csv', targetX: 8, targetY: 66 },
+            '75,15': { targetMap: 'data/Prisma.csv', targetX: 2, targetY: 15, exitDir: 'up' },
+            '75,16': { targetMap: 'data/Prisma.csv', targetX: 2, targetY: 15, exitDir: 'up' }
         }
     },
     'House': {
         byTile: {
-            1829: { targetMap: '/puzzle-8/data/serveriquest.csv', targetX: 38, targetY: 52 },
-            1831: { targetMap: '/puzzle-8/data/serveriquest.csv', targetX: 38, targetY: 52 }
+            1829: { targetMap: 'data/serveriquest.csv', targetX: 38, targetY: 52 },
+            1831: { targetMap: 'data/serveriquest.csv', targetX: 38, targetY: 52 }
         }
     },
     'Laitos': {
         byCoord: {
-            '43,9': { targetMap: '/puzzle-8/data/savilahti.csv', targetX: 16, targetY: 42 },
-            '43,8': { targetMap: '/puzzle-8/data/savilahti.csv', targetX: 16, targetY: 42 },
-            '43,10': { targetMap: '/puzzle-8/data/savilahti.csv', targetX: 16, targetY: 42 },
-            '45,18': { targetMap: '/puzzle-8/data/savilahti.csv', targetX: 14, targetY: 50 },
-            '46,18': { targetMap: '/puzzle-8/data/savilahti.csv', targetX: 14, targetY: 50 }
+            '43,9': { targetMap: 'data/savilahti.csv', targetX: 16, targetY: 42 },
+            '43,8': { targetMap: 'data/savilahti.csv', targetX: 16, targetY: 42 },
+            '43,10': { targetMap: 'data/savilahti.csv', targetX: 16, targetY: 42 },
+            '45,18': { targetMap: 'data/savilahti.csv', targetX: 14, targetY: 50 },
+            '46,18': { targetMap: 'data/savilahti.csv', targetX: 14, targetY: 50 }
         }
     },
     'snellmania': {
         byCoord: {
-            '46,73': { targetMap: '/puzzle-8/data/savilahti.csv', targetX: 53, targetY: 0 },
-            '8,66': { targetMap: '/puzzle-8/data/savilahti.csv', targetX: 0, targetY: 6 },
-            '11,41': { targetMap: '/puzzle-8/data/Exam.csv', targetX: 0, targetY: 37, exitDir: 'right' },
-            '40,19': { targetMap: '/puzzle-8/data/Exam.csv', targetX: 30, targetY: 38 },
-            '40,20': { targetMap: '/puzzle-8/data/Exam.csv', targetX: 30, targetY: 38 }
+            '46,73': { targetMap: 'data/savilahti.csv', targetX: 53, targetY: 0 },
+            '8,66': { targetMap: 'data/savilahti.csv', targetX: 0, targetY: 6 },
+            '11,41': { targetMap: 'data/Exam.csv', targetX: 0, targetY: 37, exitDir: 'right' },
+            '40,19': { targetMap: 'data/Exam.csv', targetX: 30, targetY: 38 },
+            '40,20': { targetMap: 'data/Exam.csv', targetX: 30, targetY: 38 }
         }
     },
     'Exam': {
         byCoord: {
-            '30,37': { targetMap: '/puzzle-8/data/snellmania.csv', targetX: 40, targetY: 20 },
-            '30,38': { targetMap: '/puzzle-8/data/snellmania.csv', targetX: 40, targetY: 20 },
-            '30,39': { targetMap: '/puzzle-8/data/snellmania.csv', targetX: 40, targetY: 20 },
-            '0,38': { targetMap: '/puzzle-8/data/snellmania.csv', targetX: 11, targetY: 41 },
-            '0,37': { targetMap: '/puzzle-8/data/snellmania.csv', targetX: 11, targetY: 41 }
+            '30,37': { targetMap: 'data/snellmania.csv', targetX: 40, targetY: 20 },
+            '30,38': { targetMap: 'data/snellmania.csv', targetX: 40, targetY: 20 },
+            '30,39': { targetMap: 'data/snellmania.csv', targetX: 40, targetY: 20 },
+            '0,38': { targetMap: 'data/snellmania.csv', targetX: 11, targetY: 41 },
+            '0,37': { targetMap: 'data/snellmania.csv', targetX: 11, targetY: 41 }
         }
     },
     'Prisma': {
         byCoord: {
-            '1,15': { targetMap: '/puzzle-8/data/savilahti.csv', targetX: 75, targetY: 15, exitDir: 'left' },
-            '2,15': { targetMap: '/puzzle-8/data/savilahti.csv', targetX: 75, targetY: 15, exitDir: 'left' },
-            '3,15': { targetMap: '/puzzle-8/data/savilahti.csv', targetX: 75, targetY: 15, exitDir: 'left' }
+            '1,15': { targetMap: 'data/savilahti.csv', targetX: 75, targetY: 15, exitDir: 'left' },
+            '2,15': { targetMap: 'data/savilahti.csv', targetX: 75, targetY: 15, exitDir: 'left' },
+            '3,15': { targetMap: 'data/savilahti.csv', targetX: 75, targetY: 15, exitDir: 'left' }
         },
         byTile: {
-            1574: { targetMap: '/puzzle-8/data/savilahti.csv', targetX: 75, targetY: 15, exitDir: 'left' }
+            1574: { targetMap: 'data/savilahti.csv', targetX: 75, targetY: 15, exitDir: 'left' }
         }
     }
 };

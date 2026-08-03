@@ -121,7 +121,7 @@ Game.GameScene = class GameScene extends Phaser.Scene {
         this.cameras.main.setVisible(false);
 
         // Load starting area
-        this.loadArea('/puzzle-8/data/serveriquest.csv', 89, 30).then(() => {
+        this.loadArea('data/serveriquest.csv', 89, 30).then(() => {
             // Camera fade in when game starts (after menu)
             this.cameras.main.setVisible(true);
             this.cameras.main.fadeIn(900, 0, 0, 0);
@@ -541,7 +541,7 @@ Game.GameScene = class GameScene extends Phaser.Scene {
 
                                                 this.time.delayedCall(2500, () => {
                                                     sleepEl.style.display = 'none';
-                                                    this.loadArea('/puzzle-8/data/serveriquest.csv', 38, 31).then(() => {
+                                                    this.loadArea('data/serveriquest.csv', 38, 31).then(() => {
                                                         this.setIdleFrame();
                                                         this.cameras.main.fadeIn(1000, 0, 0, 0, (cam, prog) => {
                                                             if (prog === 1) {
@@ -2154,7 +2154,7 @@ Game.GameScene = class GameScene extends Phaser.Scene {
         this.cameras.main.fadeOut(300, 0, 0, 0, (camera, progress) => {
             if (progress === 1) {
                 // Step 1: Teleport to jail in snellmania.csv at (5, 3)
-                this.loadArea('/puzzle-8/data/snellmania.csv', 5, 3).then(() => {
+                this.loadArea('data/snellmania.csv', 5, 3).then(() => {
                     this.player.setTexture('playerextra', 1); // sleeping frame
 
                     // Advance time
@@ -2185,7 +2185,7 @@ Game.GameScene = class GameScene extends Phaser.Scene {
                                 this.cameras.main.fadeOut(400, 0, 0, 0, (cam2, prog2) => {
                                     if (prog2 === 1) {
                                         darkOverlay.destroy();
-                                        this.loadArea('/puzzle-8/data/snellmania.csv', 42, 1).then(() => {
+                                        this.loadArea('data/snellmania.csv', 42, 1).then(() => {
                                             this.setIdleFrame();
                                             this.cameras.main.fadeIn(400, 0, 0, 0, (cam3, prog3) => {
                                                 if (prog3 === 1) {

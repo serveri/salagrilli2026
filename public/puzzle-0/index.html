@@ -1,94 +1,217 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Salagrillit 2026 – Task 0</title>
 
-    <meta name="description" content="Solve a series of puzzles to uncover the time and location of Salagrillit, a summer BBQ event by students @ Serveri ry." />
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Salagrillit 2026 – Task 0</title>
 
-    <meta property="og:type" content="website" />
-    <meta property="og:site_name" content="Serveri ry" />
-    <meta property="og:title" content="Salagrillit 2026 – Task 0" />
-    <meta property="og:description" content="Solve a series of puzzles to uncover the time and location of Salagrillit, a summer BBQ event by students @ Serveri ry." />
-    <meta property="og:image" content="https://salagrillit.serveriry.fi/og-image.png" />
-    <meta property="og:image:width" content="1200" />
-    <meta property="og:image:height" content="630" />
-    <meta property="og:image:type" content="image/png" />
-    <meta property="og:url" content="https://salagrillit.serveriry.fi/puzzle-0/" />
+  <meta name="description"
+    content="Solve a series of puzzles to uncover the time and location of Salagrillit, a summer BBQ event by students @ Serveri ry." />
 
-    <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:title" content="Salagrillit 2026 – Task 0" />
-    <meta name="twitter:description" content="Solve a series of puzzles to uncover the time and location of Salagrillit, a summer BBQ event by students @ Serveri ry." />
-    <meta name="twitter:image" content="https://salagrillit.serveriry.fi/og-image.png" />
-    <style>
-      html, body {
-        margin: 0;
-        min-height: 100%;
-        background: #111;
-        color: #eee;
-        font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
-        line-height: 1.65;
-      }
-      body {
-        max-width: 640px;
-        margin: 0 auto;
-        padding: 84px 22px 96px;
-      }
-      h1 {
-        font-size: 26px;
-        margin: 0 0 6px;
-      }
-      .lead {
-        color: #aaa;
-        margin: 0 0 32px;
-        font-size: 15px;
-      }
-      h2 {
-        font-size: 17px;
-        margin: 32px 0 8px;
-        color: #fff;
-      }
-      p { margin: 0 0 14px; color: #ddd; }
-      ol { padding-left: 22px; color: #ddd; }
-      li { margin-bottom: 8px; }
-      code {
-        font-family: ui-monospace, "SF Mono", Menlo, monospace;
-        background: #1d1d1d;
-        padding: 2px 6px;
-        border-radius: 4px;
-        font-size: 0.92em;
-        color: #f7e3a8;
-      }
-      .flagbox {
-        margin: 18px 0 6px;
-        display: flex;
-        align-items: center;
-        gap: 12px;
-        flex-wrap: wrap;
-      }
-      .flagbox code {
-        font-size: 18px;
-        padding: 10px 16px;
-        background: #17170f;
-        color: #f7d774;
-      }
-      .copy {
-        border: none;
-        background: #2a2a2a;
-        color: #eee;
-        font: inherit;
-        font-size: 14px;
-        padding: 9px 16px;
-        border-radius: 6px;
-        cursor: pointer;
-      }
-      .copy:hover { background: #333; }
-      .copy.done { color: #7fd18a; }
-      .hint { color: #999; font-size: 14px; }
-    </style>
-  </head>
-  <body>
+  <meta property="og:type" content="website" />
+  <meta property="og:site_name" content="Serveri ry" />
+  <meta property="og:title" content="Salagrillit 2026 – Task 0" />
+  <meta property="og:description"
+    content="Solve a series of puzzles to uncover the time and location of Salagrillit, a summer BBQ event by students @ Serveri ry." />
+  <meta property="og:image" content="https://salagrillit.serveriry.fi/og-image.png" />
+  <meta property="og:image:width" content="1200" />
+  <meta property="og:image:height" content="630" />
+  <meta property="og:image:type" content="image/png" />
+  <meta property="og:url" content="https://salagrillit.serveriry.fi/puzzle-0/" />
+
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="Salagrillit 2026 – Task 0" />
+  <meta name="twitter:description"
+    content="Solve a series of puzzles to uncover the time and location of Salagrillit, a summer BBQ event by students @ Serveri ry." />
+  <meta name="twitter:image" content="https://salagrillit.serveriry.fi/og-image.png" />
+  <style>
+    html,
+    body {
+      margin: 0;
+      min-height: 100%;
+      background: #111;
+      color: #eee;
+      font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+      line-height: 1.65;
+    }
+
+    body {
+      max-width: 640px;
+      margin: 0 auto;
+      padding: 48px 22px 96px;
+    }
+
+    .lang-toggle {
+      display: flex;
+      justify-content: flex-end;
+      gap: 8px;
+      margin-bottom: 28px;
+    }
+
+    .lang-btn {
+      border: 1px solid #333;
+      background: #1a1a1a;
+      color: #888;
+      font: inherit;
+      font-size: 13px;
+      font-weight: 600;
+      padding: 5px 14px;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .lang-btn:hover {
+      background: #252525;
+      color: #ddd;
+    }
+
+    .lang-btn.active {
+      background: #2a2a2a;
+      color: #f7e3a8;
+      border-color: #f7e3a8;
+    }
+
+    h1 {
+      font-size: 26px;
+      margin: 0 0 6px;
+    }
+
+    .lead {
+      color: #aaa;
+      margin: 0 0 32px;
+      font-size: 15px;
+    }
+
+    h2 {
+      font-size: 17px;
+      margin: 32px 0 8px;
+      color: #fff;
+    }
+
+    p {
+      margin: 0 0 14px;
+      color: #ddd;
+    }
+
+    ol {
+      padding-left: 22px;
+      color: #ddd;
+    }
+
+    li {
+      margin-bottom: 8px;
+    }
+
+    code {
+      font-family: ui-monospace, "SF Mono", Menlo, monospace;
+      background: #1d1d1d;
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-size: 0.92em;
+      color: #f7e3a8;
+    }
+
+    .flagbox {
+      margin: 18px 0 6px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .flagbox code {
+      font-size: 18px;
+      padding: 10px 16px;
+      background: #17170f;
+      color: #f7d774;
+    }
+
+    .copy {
+      border: none;
+      background: #2a2a2a;
+      color: #eee;
+      font: inherit;
+      font-size: 14px;
+      padding: 9px 16px;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+
+    .copy:hover {
+      background: #333;
+    }
+
+    .copy.done {
+      color: #7fd18a;
+    }
+
+    .hint {
+      color: #999;
+      font-size: 14px;
+    }
+  </style>
+</head>
+
+<body>
+  <!-- Language Toggle Buttons -->
+  <div class="lang-toggle">
+    <button id="btn-fi" class="lang-btn" type="button">FI</button>
+    <button id="btn-en" class="lang-btn active" type="button">EN</button>
+  </div>
+
+  <!-- FINNISH CONTENT -->
+  <div id="content-fi" class="lang-content" style="display: none;">
+    <h1>Task 0, Ohjeet</h1>
+    <p class="lead">Onko CTF haasteet uutta? Lue eteenpäin, ja sen jälkeen homma on selkiää.</p>
+
+    <h2>Mistä on kyse?</h2>
+    <p>
+      Tämä on pieni <strong>CTF</strong>, "Capture The Flag" -peli. Jokainen tehtävä on
+      puzzle, joka kätkee sisäänsä salaisen tekstipätkän eli <strong>lipun (flagi)</strong>. Ratkaise puzzle, etsi lippu
+      ja
+      avaat
+      palkinnon. Kun keräät palkinnot kaikista tehtävistä, saat selville Salagrillien ajan ja paikan.
+    </p>
+
+    <h2>Miltä lippu näyttää?</h2>
+    <p>Jokaisella lipulla on sama muoto:</p>
+    <p><code>SALA{s0m3_t3xt}</code></p>
+    <p>
+      Kun ratkaiset tehtävän, bongaat jostain tuon muotoisen tekstin. Se voi olla kuvassa, äänessä, koodissa, pelissä
+      tai piilotettuna suoraan itse sivulle. Palauta järjestelmään koko tuo merkkijono aaltosulkeineen päivineen.
+    </p>
+
+    <h2>Miten tätä pelataan?</h2>
+    <ol>
+      <li>Pääsivulla klikkaa numeroitua ympyrää avataksesi tehtävän.</li>
+      <li>Paina <strong>Open task</strong> ja ratkaise tehtävä.</li>
+      <li>Kun löydät lipun, kirjoita se <strong>Submit flag</strong> -kenttään ja palauta.</li>
+      <li>Oikea lippu syötetty → ympyrä muuttuu vihreäksi ja saat palkintosi.</li>
+    </ol>
+
+    <h2>Jäitkö jumiin?</h2>
+    <p>
+      Näetkö oikean alakulman puhekuplan? Se on vihjebotti. Kysy siltä vinkkiä mihin tahansa tehtävään. Botti antaa vain
+      vihjeitä, ei suoria vastauksia, joten pääset silti oivaltamaan itse. Älä kuitenkaan polta koko meidän makkara- ja
+      <code>Jaloviina</code>-budjettia tekoälytokeneihin, kiitos.
+    </p>
+
+    <h2>Kokeile nyt</h2>
+    <p>Tässä on ensimmäinen lippusi. Käy palauttamassa se tehtävään 0:</p>
+    <div class="flagbox">
+      <code class="flag">SALA{W3LC0M3_HUN73R}</code>
+      <button class="copy" type="button" data-copied-text="Kopioitu">Kopioi</button>
+    </div>
+    <p class="hint">
+      Kopioi teksti, palaa Salagrillien sivulle, liitä lippu tehtävän 0 kenttään ja palauta se. Siinä koko peruskuvio.
+      Nyt voitkin käydä loppujen kahdeksan tehtävän kimppuun.
+    </p>
+  </div>
+
+  <!-- ENGLISH CONTENT (DEFAULT) -->
+  <div id="content-en" class="lang-content">
     <h1>Task 0, Start here</h1>
     <p class="lead">New to this? Read on. It takes a minute and then the rest makes sense.</p>
 
@@ -120,42 +243,70 @@
     <h2>Stuck?</h2>
     <p>
       See the chat bubble in the bottom-right corner? That's a hint bot. Ask it for a nudge
-      on any task, it gives hints, not answers, so you still get to solve it yourself. Please don't burn all of the sausage and <code>Jaloviina</code> budget on AI tokens.
+      on any task, it gives hints, not answers, so you still get to solve it yourself. Please don't burn all of the
+      sausage and <code>Jaloviina</code> budget on AI tokens.
     </p>
 
     <h2>Try it now</h2>
     <p>Here is your very first flag. Grab it and go submit it for Task 0:</p>
     <div class="flagbox">
-      <code id="flag">SALA{W3LC0M3_HUN73R}</code>
-      <button class="copy" id="copyBtn" type="button">Copy</button>
+      <code class="flag">SALA{W3LC0M3_HUN73R}</code>
+      <button class="copy" type="button" data-copied-text="Copied">Copy</button>
     </div>
     <p class="hint">
       Copy it, go back to the Salagrilli page, paste it into Task 0's flag box, and Submit.
       That's the whole loop, now the other eight tasks are yours to crack.
     </p>
+  </div>
 
-    <script>
-      (function () {
-        var btn = document.getElementById('copyBtn');
-        var flag = document.getElementById('flag').textContent;
+  <script>
+    (function () {
+      // Language switcher logic
+      var btnFi = document.getElementById('btn-fi');
+      var btnEn = document.getElementById('btn-en');
+      var contentFi = document.getElementById('content-fi');
+      var contentEn = document.getElementById('content-en');
+
+      function setLang(lang) {
+        if (lang === 'fi') {
+          contentFi.style.display = 'block';
+          contentEn.style.display = 'none';
+          btnFi.classList.add('active');
+          btnEn.classList.remove('active');
+        } else {
+          contentFi.style.display = 'none';
+          contentEn.style.display = 'block';
+          btnEn.classList.add('active');
+          btnFi.classList.remove('active');
+        }
+      }
+
+      btnFi.addEventListener('click', function () { setLang('fi'); });
+      btnEn.addEventListener('click', function () { setLang('en'); });
+
+      // Copy button logic
+      var copyButtons = document.querySelectorAll('.copy');
+      copyButtons.forEach(function (btn) {
         btn.addEventListener('click', function () {
-          navigator.clipboard.writeText(flag).then(function () {
-            btn.textContent = 'Copied';
+          var flagBox = btn.previousElementSibling;
+          var flagText = flagBox ? flagBox.textContent : 'SALA{W3LC0M3_HUN73R}';
+          var originalText = btn.textContent;
+          var copiedText = btn.getAttribute('data-copied-text') || 'Copied';
+
+          navigator.clipboard.writeText(flagText).then(function () {
+            btn.textContent = copiedText;
             btn.classList.add('done');
             setTimeout(function () {
-              btn.textContent = 'Copy';
+              btn.textContent = originalText;
               btn.classList.remove('done');
             }, 1500);
-          }).catch(function () {});
+          }).catch(function () { });
         });
-      })();
-    </script>
+      });
+    })();
+  </script>
 
-    <script
-      src="/chat-widget.js"
-      data-puzzle="0"
-      data-api-base="https://salagrillitchat.serveriry.fi"
-      defer
-    ></script>
-  </body>
+  <script src="/chat-widget.js" data-puzzle="0" data-api-base="https://salagrillitchat.serveriry.fi" defer></script>
+</body>
+
 </html>

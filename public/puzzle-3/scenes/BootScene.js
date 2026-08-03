@@ -7,7 +7,7 @@ Game.BootScene = class BootScene extends Phaser.Scene {
     }
 
     preload() {
-        this.load.setPath('/puzzle-8/assets/');
+        this.load.setPath('assets/');
 
         // Player spritesheet (16x16 frames, 4 cols x 4 rows)
         this.load.spritesheet('player', 'ServeriHiiri.png', {
@@ -114,7 +114,7 @@ Game.BootScene = class BootScene extends Phaser.Scene {
 
     create() {
         // Load custom font via FontFace API, then proceed to menu
-        const font = new FontFace('Pokemon Classic', `url('/puzzle-8/assets/Pokemon%20Classic.ttf?v=${Date.now()}')`);
+        const font = new FontFace('Pokemon Classic', `url('assets/Pokemon%20Classic.ttf?v=${Date.now()}')`);
         font.load().then((loadedFont) => {
             document.fonts.add(loadedFont);
             this.scene.start('MenuScene');
