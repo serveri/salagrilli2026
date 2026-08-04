@@ -583,12 +583,12 @@ Game.GameScene = class GameScene extends Phaser.Scene {
                                         },
                                         {
                                             id: 'square_sandwich',
-                                            name: 'Square sandwich 5€',
+                                            name: 'Triangle sandwich 5€',
                                             price: 5,
                                             desc: 'Smoked salmon -like sandwich. Restores 60 energy.',
                                             itemData: {
                                                 id: 'square_sandwich',
-                                                name: 'Square sandwich',
+                                                name: 'Triangle sandwich',
                                                 desc: 'Smoked salmon -like sandwich. Restores 60 energy.',
                                                 canUse: true
                                             }
@@ -974,6 +974,7 @@ Game.GameScene = class GameScene extends Phaser.Scene {
                         onComplete: () => {
                             this.player.anims.stop();
                             this.player.setTexture('playerextra', 1);
+                            this.isSleeping = true;
                             if (this.energy < 50) {
                                 const old = this.energy;
                                 this.energy = 50;
@@ -1527,8 +1528,10 @@ Game.GameScene = class GameScene extends Phaser.Scene {
     }
 
     setIdleFrame() {
-        if (this.isIntroSleeping) {
-            this.player.setTexture('playerextra', 1);
+        if (this.isIntroSleeping || this.isSleeping || (this.player && this.player.texture && this.player.texture.key === 'playerextra')) {
+            if (this.player && this.player.texture && this.player.texture.key !== 'playerextra') {
+                this.player.setTexture('playerextra', 1);
+            }
             return;
         }
         if (this.player.texture.key !== 'player') {
@@ -1851,7 +1854,7 @@ Game.GameScene = class GameScene extends Phaser.Scene {
 
         this.danceStep = (this.danceStep === 0) ? 1 : 0;
 
-        if (!this.isMoving && this.facing === 'down') {
+        if (!this.isMoving && this.facing === 'down' && !this.isSleeping && !this.isIntroSleeping && (this.player && this.player.texture && this.player.texture.key === 'player')) {
             this.setIdleFrame();
         }
 
@@ -2803,6 +2806,7 @@ Game.GameScene = class GameScene extends Phaser.Scene {
             duration: Game.TWEEN_DURATION,
             ease: 'Linear',
             onComplete: () => {
+                this.isSleeping = false;
                 this.player.anims.stop();
                 this.setIdleFrame();
                 this.isTransitioning = false;

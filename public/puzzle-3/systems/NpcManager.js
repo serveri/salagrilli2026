@@ -103,6 +103,22 @@ Game.NpcManager = class NpcManager {
                 facing: 'right',
                 sprite: scene.add.sprite(17 * Game.TILE_SIZE, 34 * Game.TILE_SIZE - 2, 'player', 0).setOrigin(0, 0).setDepth(10)
             };
+
+            // Exam Snack NPC at (19, 40) - facing left (frame 8), serverinpc texture
+            scene.examSnackNpc = {
+                tileX: 19,
+                tileY: 40,
+                facing: 'left',
+                sprite: scene.add.sprite(19 * Game.TILE_SIZE, 40 * Game.TILE_SIZE - 2, 'serverinpc', 8).setOrigin(0, 0).setDepth(10)
+            };
+
+            // Exam Serveri (from Prisma) at (8, 6) - facing right (frame 12), serverinpc2 texture
+            scene.examPrismaServeri = {
+                tileX: 8,
+                tileY: 6,
+                facing: 'right',
+                sprite: scene.add.sprite(8 * Game.TILE_SIZE, 6 * Game.TILE_SIZE - 2, 'serverinpc2', 12).setOrigin(0, 0).setDepth(10)
+            };
         }
 
         // 4. Shopkeep in NeulamaenSale
@@ -202,7 +218,7 @@ Game.NpcManager = class NpcManager {
             scene.hyeenaTurnTimer.remove();
             scene.hyeenaTurnTimer = null;
         }
-        ['police', 'assistant', 'sleepingServeri', 'examNpc', 'examAssistant', 'examPencilNpc', 'examStudent1', 'examStudent2', 'examStudent3', 'shopkeep', 'drunkard', 'hyeena', 'serverinpc2', 'examServeriZyn', 'hacker'].forEach(key => {
+        ['police', 'assistant', 'sleepingServeri', 'examNpc', 'examAssistant', 'examPencilNpc', 'examStudent1', 'examStudent2', 'examStudent3', 'examSnackNpc', 'examPrismaServeri', 'shopkeep', 'drunkard', 'hyeena', 'serverinpc2', 'examServeriZyn', 'hacker'].forEach(key => {
             if (scene[key] && scene[key].sprite) {
                 scene[key].sprite.destroy();
                 scene[key] = null;
@@ -455,6 +471,34 @@ Game.NpcManager = class NpcManager {
             return true;
         }
 
+        // 12. Exam Snack NPC at (19, 40)
+        if (scene.examSnackNpc && targetX === scene.examSnackNpc.tileX && targetY === scene.examSnackNpc.tileY) {
+            this._faceNpc(scene.examSnackNpc);
+            scene.dialogue.show([
+                'Serveri: I need a snack so I can make it through the exam',
+                'Serveri: Vending machines are so expensive though..'
+            ]);
+            return true;
+        }
+
+        // 13. Exam Serveri (from Prisma) at (8, 6)
+        if (scene.examPrismaServeri && targetX === scene.examPrismaServeri.tileX && targetY === scene.examPrismaServeri.tileY) {
+            this._faceNpc(scene.examPrismaServeri);
+            Game.state = Game.state || {};
+            if (Game.state.exchangedNumbersWithServeri2) {
+                scene.dialogue.show([
+                    'Serveri: Hey a familiar face! I was hoping I\'d run into you here~',
+                    'Serveri: Ace this exam, okay? Meet you outside the hall!'
+                ]);
+            } else {
+                scene.dialogue.show([
+                    'Serveri: Oh hi! Are you here for the exam too?',
+                    'Serveri: Wish me luck... I think I\'m gonna need it!'
+                ]);
+            }
+            return true;
+        }
+
         // 12. Hacker in savilahti at (12, 37)
         if (scene.hacker && targetX === scene.hacker.tileX && targetY === scene.hacker.tileY) {
             this._faceNpc(scene.hacker);
@@ -530,8 +574,9 @@ Game.NpcManager = class NpcManager {
             scene.drunkard,
             scene.hyeena,
             scene.police,
-            scene.serverinpc2,
             scene.examServeriZyn,
+            scene.examSnackNpc,
+            scene.examPrismaServeri,
             scene.hacker
         ];
         return npcs.some(npc => npc && npc.tileX === x && npc.tileY === y);
