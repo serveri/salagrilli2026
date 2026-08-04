@@ -365,6 +365,30 @@ Game.GameScene = class GameScene extends Phaser.Scene {
                     interacted = true;
                 }
 
+                if (!interacted && targetTileIndex === 324) {
+                    this.tileData[targetY][targetX] = 0;
+                    if (this.layer) {
+                        this.layer.putTileAt(0, targetX, targetY);
+                    }
+                    Game.state = Game.state || {};
+                    Game.state.collectedSpeakerLocations = Game.state.collectedSpeakerLocations || [];
+                    Game.state.collectedSpeakerLocations.push({ area: this.currentArea.name, x: targetX, y: targetY });
+
+                    if (this.backpack && !this.backpack.items.some(i => i.id === 'speaker')) {
+                        this.backpack.items.push({
+                            id: 'speaker',
+                            name: 'Speaker',
+                            desc: 'Plays your favorite song: Zyn Zyn Zyn.',
+                            canUse: true
+                        });
+                    }
+
+                    if (this.dialogue) {
+                        this.dialogue.show(['You found a Speaker!']);
+                    }
+                    interacted = true;
+                }
+
                 if (!interacted && (targetTileIndex === 262 || targetTileIndex === 502)) {
                     const replacementTile = targetTileIndex === 502 ? 436 : 0;
                     Game.state = Game.state || {};
@@ -1131,6 +1155,16 @@ Game.GameScene = class GameScene extends Phaser.Scene {
             });
         }
 
+        if (Game.state && Game.state.collectedSpeakerLocations) {
+            Game.state.collectedSpeakerLocations.forEach(loc => {
+                if (loc.area === this.currentArea.name) {
+                    if (this.tileData[loc.y] && this.tileData[loc.y][loc.x] === 324) {
+                        this.tileData[loc.y][loc.x] = 0;
+                    }
+                }
+            });
+        }
+
         if (Game.state && Game.state.homeKeyCollected && this.currentArea.name === 'Laitos') {
             for (let y = 0; y < this.tileData.length; y++) {
                 for (let x = 0; x < this.tileData[y].length; x++) {
@@ -1711,7 +1745,7 @@ Game.GameScene = class GameScene extends Phaser.Scene {
                 Game.state.totalSteps = (Game.state.totalSteps || 0) + 1;
 
                 const landingTileIndex = this.tileData[finalTargetY][finalTargetX];
-                const isSpiky = (landingTileIndex === 324 || landingTileIndex === 325); //Spiky tiles id 324 and 325
+                const isSpiky = (landingTileIndex === 325); //Spiky tile id 325
                 const hasShoes = (Game.state.collectedShoes >= 2);
 
                 if (isSpiky && !Game.state.spikyTileStepped) {

@@ -22,7 +22,6 @@ Game.Backpack = class Backpack {
             { id: 'key', name: 'Nappi avain', desc: 'A key found in the grass.', canUse: false },
             { id: 'map', name: 'Town Map', desc: 'A map showing Kuopio. \n1: My home\n2: CS Department\n3: Snellmania', canUse: true },
             { id: 'energy_drink', name: 'Rad bull', desc: 'Small Rad bull energy drink. Restores 80 energy.', canUse: true },
-            { id: 'speaker', name: 'Speaker', desc: 'Plays your favorite song: Zyn Zyn Zyn.', canUse: true },
             { id: 'wallet', name: `Wallet ${startingMoney}€`, desc: 'Contains your money.', canUse: false },
             { id: 'note', name: 'Reminder Note', desc: ['"Remember to feed the cat.. "', '"Exam today at 10:00 in SN100!"', '..Can\'t forget!'], canUse: false },
             { id: 'watch', name: 'Watch', desc: 'It says 4:16 ..quite late', canUse: false }
