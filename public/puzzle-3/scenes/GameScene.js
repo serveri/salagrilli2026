@@ -1370,6 +1370,8 @@ Game.GameScene = class GameScene extends Phaser.Scene {
     }
 
     update(time, delta) {
+        this._updateSpeakerVolume();
+
         // Keep UI systems positioned relative to camera
         if (this.dialogue) {
             this.dialogue.updatePosition();
@@ -1482,6 +1484,19 @@ Game.GameScene = class GameScene extends Phaser.Scene {
         }
     }
 
+    _isCharWithinSpeakerRange(charTileX, charTileY, charAreaName) {
+        if (!this.placedSpeaker || !this.placedSpeaker.sprite || !this.placedSpeaker.sprite.active) {
+            if (this.currentArea && charAreaName && charAreaName !== this.currentArea.name) return false;
+            const dist = Math.hypot(charTileX - this.tileX, charTileY - this.tileY);
+            return dist <= 16;
+        }
+
+        if (this.placedSpeaker.area !== charAreaName) return false;
+
+        const dist = Math.hypot(charTileX - this.placedSpeaker.tileX, charTileY - this.placedSpeaker.tileY);
+        return dist <= 16;
+    }
+
     setIdleFrame() {
         if (this.isIntroSleeping) {
             this.player.setTexture('playerextra', 1);
@@ -1490,7 +1505,9 @@ Game.GameScene = class GameScene extends Phaser.Scene {
         if (this.player.texture.key !== 'player') {
             this.player.setTexture('player');
         }
-        if (this.isSpeakerDancing && !this.isMoving && this.facing === 'down' && this.danceStep === 1) {
+        const currentAreaName = this.currentArea ? this.currentArea.name : '';
+        const inAudioRange = this.isSpeakerDancing && this._isCharWithinSpeakerRange(this.tileX, this.tileY, currentAreaName);
+        if (inAudioRange && !this.isMoving && this.facing === 'down' && this.danceStep === 1) {
             this.player.setFrame(16);
             return;
         }
@@ -1502,8 +1519,42 @@ Game.GameScene = class GameScene extends Phaser.Scene {
         }
     }
 
+    _updateSpeakerVolume() {
+        if (!this.isSpeakerDancing || !window.YTManager || !window.YTManager.isPlaying) return;
+
+        const baseVolume = (window.Game && window.Game.settings && window.Game.settings.volume !== undefined)
+            ? window.Game.settings.volume
+            : 80;
+
+        let effectiveVol = baseVolume;
+
+        if (this.placedSpeaker && this.placedSpeaker.sprite && this.placedSpeaker.sprite.active) {
+            if (this.placedSpeaker.area === this.currentArea.name) {
+                const playerX = this.player ? this.player.x : (this.tileX * Game.TILE_SIZE);
+                const playerY = this.player ? this.player.y : (this.tileY * Game.TILE_SIZE);
+                const speakerX = this.placedSpeaker.sprite.x;
+                const speakerY = this.placedSpeaker.sprite.y;
+
+                const distPx = Phaser.Math.Distance.Between(playerX, playerY, speakerX, speakerY);
+                const tileDist = distPx / Game.TILE_SIZE;
+
+                const maxDist = 16;
+                const factor = Math.max(0, 1 - (tileDist / maxDist));
+                effectiveVol = Math.round(baseVolume * factor);
+            } else {
+                effectiveVol = 0;
+            }
+        }
+
+        if (this._lastAppliedVol !== effectiveVol) {
+            this._lastAppliedVol = effectiveVol;
+            window.YTManager.setVolume(effectiveVol);
+        }
+    }
+
     startSpeakerMusic(volume) {
         if (!window.YTManager) return;
+        this._lastAppliedVol = null;
         const volumePercent = (volume > 1) ? Math.min(100, Math.round(volume)) : Math.round(volume * 100);
 
         window.YTManager.onEndCallback = () => {
@@ -1641,6 +1692,7 @@ Game.GameScene = class GameScene extends Phaser.Scene {
                     if (window.Game && window.Game.settings) {
                         window.Game.settings.volume = newVol;
                     }
+                    this._lastAppliedVol = null;
                     if (window.YTManager) {
                         window.YTManager.setVolume(newVol);
                     }
@@ -1656,6 +1708,7 @@ Game.GameScene = class GameScene extends Phaser.Scene {
                     if (window.Game && window.Game.settings) {
                         window.Game.settings.volume = newVol;
                     }
+                    this._lastAppliedVol = null;
                     if (window.YTManager) {
                         window.YTManager.setVolume(newVol);
                     }
@@ -1754,11 +1807,13 @@ Game.GameScene = class GameScene extends Phaser.Scene {
         }
 
         if (this.dancingNpcs) {
+            const currentAreaName = this.currentArea ? this.currentArea.name : '';
             this.dancingNpcs.forEach(npc => {
                 if (!npc || !npc.sprite || !npc.sprite.active || !npc.isDancing) return;
                 if (npc.facing !== 'down' || npc.isMoving) return;
 
-                if (this.danceStep === 1) {
+                const inRange = this._isCharWithinSpeakerRange(npc.tileX, npc.tileY, currentAreaName);
+                if (inRange && this.danceStep === 1) {
                     npc.sprite.setFrame(16);
                 } else {
                     npc.sprite.setFrame(0);
