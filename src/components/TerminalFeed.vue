@@ -22,7 +22,7 @@ const intelEntries = computed(() => {
   if (props.solvedList.length > 0 && props.solvedList.length >= props.totalCount) {
     entries.push({
       id: 'all-completed',
-      intel: 'All secrets found!',
+      intel: 'All secrets found! A shot of jallu (or ginger shot) earned in the event',
     })
   }
 
