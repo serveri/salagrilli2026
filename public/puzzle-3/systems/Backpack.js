@@ -18,7 +18,7 @@ Game.Backpack = class Backpack {
 
         // Sample Inventory Items
         this.items = [
-            { id: 'jallu', name: 'Jallu', desc: 'Some kind of strong liquor. Would taste better in a mix', canUse: true, cl: 75 },
+            { id: 'jallu', name: 'Jallu', desc: 'Some kind of strong liquor. Would taste better in a mix', canUse: true, cl: 50 },
             { id: 'key', name: 'Nappi avain', desc: 'A key found in the grass.', canUse: false },
             { id: 'map', name: 'Town Map', desc: 'A map showing Kuopio. \n1: My home\n2: CS Department\n3: Snellmania', canUse: true },
             { id: 'energy_drink', name: 'Rad bull', desc: 'Small Rad bull energy drink. Restores 80 energy.', canUse: true },
@@ -201,7 +201,7 @@ Game.Backpack = class Backpack {
                 const btnColor = isPlaying ? '#884400' : '#006600';
                 const btnHoverColor = isPlaying ? '#cc6600' : '#00cc00';
 
-                const playPauseBtn = this.scene.add.text(134, 138, btnLabel, {
+                const playPauseBtn = this.scene.add.text(90, 138, btnLabel, {
                     fontFamily: "'Pokemon Classic', 'Courier New', monospace",
                     fontSize: '32px',
                     color: btnColor
@@ -220,6 +220,22 @@ Game.Backpack = class Backpack {
                     }
                 });
                 this.actionContainer.add(playPauseBtn);
+
+                const volBtn = this.scene.add.text(127, 138, '[Vol]', {
+                    fontFamily: "'Pokemon Classic', 'Courier New', monospace",
+                    fontSize: '32px',
+                    color: '#004488'
+                }).setOrigin(1, 0.5).setInteractive({ useHandCursor: true }).setScale(0.22);
+
+                volBtn.on('pointerover', () => volBtn.setColor('#0088ff'));
+                volBtn.on('pointerout', () => volBtn.setColor('#004488'));
+                volBtn.on('pointerdown', () => {
+                    this.close();
+                    if (this.scene.showSpeakerVolumeMenu) {
+                        this.scene.showSpeakerVolumeMenu();
+                    }
+                });
+                this.actionContainer.add(volBtn);
 
                 const placeBtn = this.scene.add.text(178, 138, '[Place]', {
                     fontFamily: "'Pokemon Classic', 'Courier New', monospace",
@@ -503,7 +519,11 @@ Game.Backpack = class Backpack {
                     item.canUse = false;
                 }
 
-                if (item.id === 'jallukanto') {
+                if (item.id === 'jallu') {
+                    item.name = `Jallu ${item.cl}cl`;
+                } else if (item.id === 'gambina') {
+                    item.name = `Gambina ${item.cl}cl`;
+                } else if (item.id === 'jallukanto') {
                     item.desc = `Hyeena ry's legendary tree stump full of Jallu. ${item.cl}cl left`;
                 }
 
@@ -515,14 +535,21 @@ Game.Backpack = class Backpack {
                 }
 
                 if (item.id === 'jallu' || item.id === 'jallukanto') {
-                    this.scene.reverseX = Math.random() < 0.5;
-                    this.scene.reverseY = Math.random() < 0.5;
-                    this.scene.reverseControlsSteps = (this.scene.reverseControlsSteps || 0) + 15;
+                    if (this.scene.jalluSipCount && this.scene.jalluSipCount >= 1) {
+                        this.scene.reverseX = Math.random() < 0.5;
+                        this.scene.reverseY = Math.random() < 0.5;
+                        this.scene.reverseControlsSteps = (this.scene.reverseControlsSteps || 0) + 15;
+                    }
+                    this.scene.jalluSipCount = (this.scene.jalluSipCount || 0) + 1;
                 }
 
                 this.scene.speedModifier = 1.15;
                 this.scene.speedModifierSteps = (this.scene.speedModifierSteps || 0) + 15;
-                this.scene.drunkSteps = (this.scene.drunkSteps || 0) + 15;
+                const prevDrunk = this.scene.drunkSteps || 0;
+                this.scene.drunkSteps = prevDrunk + 15;
+                if (prevDrunk < 60 && this.scene.drunkSteps >= 60) {
+                    this.scene.drunkSteps += 10;
+                }
                 this.scene.lastDrunkType = item.id;
 
                 if (typeof this.scene.updateDrunkEffect === 'function') {
@@ -543,6 +570,43 @@ Game.Backpack = class Backpack {
                 this.scene.dialogue.show([
                     drinkMsg,
                     'It makes you dizzy..'
+                ], () => { this.open(); });
+            }
+        } else if (item.id === 'xtra_lasagna' || item.id === 'heated_lasagna') {
+            if (!item.canUse || (item.uses !== undefined && item.uses <= 0)) {
+                if (this.scene.dialogue) {
+                    this.scene.dialogue.show(['There is no lasagna left!'], () => { this.open(); });
+                }
+                this.selectedItem = null;
+                return;
+            }
+
+            const isHeated = item.id === 'heated_lasagna';
+            const energyGain = isHeated ? 80 : 65;
+
+            if (this.scene && typeof this.scene.energy !== 'undefined') {
+                const old = this.scene.energy;
+                this.scene.energy = Math.min(200, this.scene.energy + energyGain);
+                if (this.scene.addEnergyDiff) {
+                    this.scene.addEnergyDiff(this.scene.energy - old);
+                }
+            }
+
+            item.uses = (item.uses !== undefined ? item.uses : 2) - 1;
+            if (item.uses <= 0) {
+                this.items = this.items.filter(i => i !== item);
+            } else {
+                const baseName = isHeated ? 'Heated lasagna' : 'Xtra Lasagna';
+                item.name = `${baseName} 1/2`;
+            }
+
+            this.selectedItem = null;
+
+            const eatMsg = isHeated ? 'You ate a portion of delicious heated lasagna!' : 'You ate a portion of cold Xtra lasagna.';
+            if (this.scene.dialogue) {
+                this.scene.dialogue.show([
+                    eatMsg,
+                    `Restored ${energyGain} energy.`
                 ], () => { this.open(); });
             }
         } else if (item.id === 'cup_of_coffee') {

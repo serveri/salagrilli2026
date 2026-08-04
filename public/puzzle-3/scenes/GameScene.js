@@ -128,7 +128,7 @@ Game.GameScene = class GameScene extends Phaser.Scene {
         this.cameras.main.setVisible(false);
 
         // Load starting area
-        this.loadArea('data/serveriquest.csv', 89, 30).then(() => {
+        this.loadArea('data/serveriquest.csv', 89, 30, true).then(() => {
             // Camera fade in when game starts (after menu)
             this.cameras.main.setVisible(true);
             this.cameras.main.fadeIn(900, 0, 0, 0);
@@ -282,6 +282,32 @@ Game.GameScene = class GameScene extends Phaser.Scene {
                             }
                         }
                     ]);
+                    interacted = true;
+                }
+
+                if (!interacted && targetTileIndex === 764) {
+                    const lasagnaItem = this.backpack && this.backpack.items
+                        ? this.backpack.items.find(i => i.id === 'xtra_lasagna')
+                        : null;
+
+                    if (lasagnaItem) {
+                        this.dialogue.show(['Oven. Can heat food.', 'Would you like to heat up your Xtra Lasagna?'], null, [
+                            {
+                                text: 'Heat it', color: '#006600', hoverColor: '#00cc00', onClick: () => {
+                                    const usesLeft = lasagnaItem.uses !== undefined ? lasagnaItem.uses : 2;
+                                    lasagnaItem.id = 'heated_lasagna';
+                                    lasagnaItem.name = usesLeft === 1 ? 'Heated lasagna 1/2' : 'Heated lasagna';
+                                    lasagnaItem.desc = 'Warm delicious lasagna. Restores 80 energy per bite.';
+                                    this.dialogue.show(['BZZZZ... MMMM! The lasagna is now piping hot! (+80 energy per bite)']);
+                                }
+                            },
+                            {
+                                text: 'Leave', color: '#880000', hoverColor: '#cc0000', onClick: () => { }
+                            }
+                        ]);
+                    } else {
+                        this.dialogue.show(['Oven. Can heat food']);
+                    }
                     interacted = true;
                 }
 
@@ -692,7 +718,7 @@ Game.GameScene = class GameScene extends Phaser.Scene {
                                                     name: 'Jallu',
                                                     desc: 'Some kind of strong liquor. Would taste better in a mix',
                                                     canUse: true,
-                                                    cl: 75
+                                                    cl: 50
                                                 }
                                             },
                                             {
@@ -1127,9 +1153,8 @@ Game.GameScene = class GameScene extends Phaser.Scene {
         }
     }
 
-    async loadArea(csvPath, startTileX, startTileY) {
+    async loadArea(csvPath, startTileX, startTileY, isInitialStart = false) {
         let loadingEl = document.getElementById('game-loading');
-        const isServeriquest = csvPath.includes('serveriquest');
         if (!loadingEl) {
             loadingEl = document.createElement('div');
             loadingEl.id = 'game-loading';
@@ -1145,7 +1170,7 @@ Game.GameScene = class GameScene extends Phaser.Scene {
             loadingEl.style.pointerEvents = 'none';
             document.body.appendChild(loadingEl);
         }
-        loadingEl.innerText = isServeriquest ? 'Somewhere in Neulamäki' : 'LOADING...';
+        loadingEl.innerText = isInitialStart ? 'Somewhere in Neulamäki' : 'LOADING...';
         loadingEl.style.display = 'block';
         loadingEl.style.opacity = '1';
         loadingEl.style.transition = '';
@@ -1386,6 +1411,10 @@ Game.GameScene = class GameScene extends Phaser.Scene {
             this.exam.update(time, delta);
         }
 
+        if ((this.drunkSteps && this.drunkSteps > 0) || (this.reverseControlsSteps && this.reverseControlsSteps > 0)) {
+            this.updateDrunkEffect();
+        }
+
         if (this.isTransitioning || (this.dialogue && this.dialogue.active) || (this.backpack && this.backpack.active) || (this.shop && this.shop.isOpen) || this.isMapOpen || this.isExamOpen || this.pendingBackpackOpen) {
             this.resetEnergyLostStack();
             return;
@@ -1488,13 +1517,13 @@ Game.GameScene = class GameScene extends Phaser.Scene {
         if (!this.placedSpeaker || !this.placedSpeaker.sprite || !this.placedSpeaker.sprite.active) {
             if (this.currentArea && charAreaName && charAreaName !== this.currentArea.name) return false;
             const dist = Math.hypot(charTileX - this.tileX, charTileY - this.tileY);
-            return dist <= 16;
+            return dist <= 30;
         }
 
         if (this.placedSpeaker.area !== charAreaName) return false;
 
         const dist = Math.hypot(charTileX - this.placedSpeaker.tileX, charTileY - this.placedSpeaker.tileY);
-        return dist <= 16;
+        return dist <= 30;
     }
 
     setIdleFrame() {
@@ -1538,9 +1567,17 @@ Game.GameScene = class GameScene extends Phaser.Scene {
                 const distPx = Phaser.Math.Distance.Between(playerX, playerY, speakerX, speakerY);
                 const tileDist = distPx / Game.TILE_SIZE;
 
-                const maxDist = 16;
-                const factor = Math.max(0, 1 - (tileDist / maxDist));
-                effectiveVol = Math.round(baseVolume * factor);
+                const minVol = Math.max(1, Math.round(baseVolume * 0.03));
+                const fadeRange = 27;
+
+                if (tileDist <= fadeRange) {
+                    const factor = 1 - (tileDist / fadeRange);
+                    effectiveVol = Math.round(minVol + (baseVolume - minVol) * factor);
+                } else if (tileDist <= 30) {
+                    effectiveVol = minVol;
+                } else {
+                    effectiveVol = 0;
+                }
             } else {
                 effectiveVol = 0;
             }
@@ -1692,6 +1729,12 @@ Game.GameScene = class GameScene extends Phaser.Scene {
                     if (window.Game && window.Game.settings) {
                         window.Game.settings.volume = newVol;
                     }
+                    if (window.Game && typeof window.Game.saveSettings === 'function') {
+                        window.Game.saveSettings();
+                    }
+                    if (window.Game && typeof window.Game.playClickSound === 'function') {
+                        window.Game.playClickSound();
+                    }
                     this._lastAppliedVol = null;
                     if (window.YTManager) {
                         window.YTManager.setVolume(newVol);
@@ -1707,6 +1750,12 @@ Game.GameScene = class GameScene extends Phaser.Scene {
                     const newVol = Math.min(100, curVol + 10);
                     if (window.Game && window.Game.settings) {
                         window.Game.settings.volume = newVol;
+                    }
+                    if (window.Game && typeof window.Game.saveSettings === 'function') {
+                        window.Game.saveSettings();
+                    }
+                    if (window.Game && typeof window.Game.playClickSound === 'function') {
+                        window.Game.playClickSound();
                     }
                     this._lastAppliedVol = null;
                     if (window.YTManager) {
@@ -2440,8 +2489,15 @@ Game.GameScene = class GameScene extends Phaser.Scene {
         if (areaTransitions.byTile) {
             const transition = areaTransitions.byTile[currentTile];
             if (transition) {
-                this.triggerMapTransition(transition.targetMap, transition.targetX, transition.targetY, transition.exitDir);
-                return true;
+                if (!transition.requiredItem || this.hasItem(transition.requiredItem)) {
+                    this.triggerMapTransition(transition.targetMap, transition.targetX, transition.targetY, transition.exitDir);
+                    return true;
+                } else {
+                    if (this.dialogue) {
+                        this.dialogue.show(['The door to my house is locked!', 'I need my Home Key to get inside.']);
+                    }
+                    return true;
+                }
             }
         }
 
@@ -2766,18 +2822,23 @@ Game.GameScene = class GameScene extends Phaser.Scene {
         let drunkBlur = 0;
         if (this.drunkSteps && this.drunkSteps > 0) {
             if (this.lastDrunkType === 'gambina') {
-                drunkBlur = Math.min(3, 1.2 + (this.drunkSteps / 10));
+                drunkBlur = Math.min(3.0, 1.0 + (this.drunkSteps / 10));
             } else {
-                drunkBlur = Math.min(8, this.drunkSteps / 4);
+                drunkBlur = Math.min(3.0, this.drunkSteps / 10.0);
             }
         } else if (this.reverseControlsSteps && this.reverseControlsSteps > 0) {
-            drunkBlur = Math.min(8, this.reverseControlsSteps / 4);
+            drunkBlur = Math.min(3.0, this.reverseControlsSteps / 10.0);
         }
 
         if (Game.state && Game.state.hasEnteredExam) {
-            // One jallu sip (15 steps) produces 3.75px blur
-            const maxOneJalluSipBlur = 3.75;
+            // One sip produces ~2.3px blur in exam
+            const maxOneJalluSipBlur = 2.3;
             drunkBlur = Math.min(maxOneJalluSipBlur, drunkBlur);
+        } else if (this.drunkSteps && this.drunkSteps >= 40) {
+            // High drunkenness (40+ steps out of 70 max for both Jallu and Gambina):
+            // Smoothly transfer/oscillate between 3.0px and 7.0px
+            const sinePulse = (Math.sin(Date.now() / 950) + 1) / 2; // Smooth wave
+            drunkBlur = 3.0 + (sinePulse * 4.0); // Ranges smoothly 3.0px -> 7.0px -> 3.0px
         }
 
         let energyBlur = 0;
@@ -2790,7 +2851,7 @@ Game.GameScene = class GameScene extends Phaser.Scene {
         if (finalBlur <= 0) {
             canvas.style.filter = 'none';
         } else {
-            canvas.style.filter = `blur(${finalBlur}px)`;
+            canvas.style.filter = `blur(${finalBlur.toFixed(2)}px)`;
         }
     }
 

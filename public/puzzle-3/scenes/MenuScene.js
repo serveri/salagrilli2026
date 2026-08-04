@@ -121,6 +121,7 @@ Game.MenuScene = class MenuScene extends Phaser.Scene {
         crtToggleBtn.on('pointerover', () => crtToggleBtn.setAlpha(0.8));
         crtToggleBtn.on('pointerout', () => crtToggleBtn.setAlpha(1.0));
         crtToggleBtn.on('pointerdown', () => {
+            if (Game.playClickSound) Game.playClickSound();
             Game.settings.crtEnabled = !Game.settings.crtEnabled;
             Game.saveSettings();
             Game.applyCRTSettings();
@@ -162,6 +163,7 @@ Game.MenuScene = class MenuScene extends Phaser.Scene {
         volMinusBtn.on('pointerdown', () => {
             Game.settings.volume = Math.max(0, Game.settings.volume - 10);
             Game.saveSettings();
+            if (Game.playClickSound) Game.playClickSound();
             volValueText.setText(`${Game.settings.volume}%`);
         });
 
@@ -170,6 +172,7 @@ Game.MenuScene = class MenuScene extends Phaser.Scene {
         volPlusBtn.on('pointerdown', () => {
             Game.settings.volume = Math.min(100, Game.settings.volume + 10);
             Game.saveSettings();
+            if (Game.playClickSound) Game.playClickSound();
             volValueText.setText(`${Game.settings.volume}%`);
         });
 
@@ -259,10 +262,14 @@ Game.MenuScene = class MenuScene extends Phaser.Scene {
         };
 
         // Mouse click handlers
-        startBtn.on('pointerdown', () => startGame());
+        startBtn.on('pointerdown', () => {
+            if (Game.playClickSound) Game.playClickSound();
+            startGame();
+        });
 
         settingsBtn.on('pointerdown', () => {
             if (starting) return;
+            if (Game.playClickSound) Game.playClickSound();
             settingsBtn.setTexture('btn_pressed');
             this.time.delayedCall(150, () => {
                 settingsBtn.setTexture('btn');
@@ -273,6 +280,7 @@ Game.MenuScene = class MenuScene extends Phaser.Scene {
 
         aboutBtn.on('pointerdown', () => {
             if (starting) return;
+            if (Game.playClickSound) Game.playClickSound();
             aboutBtn.setTexture('btn_pressed');
             this.time.delayedCall(150, () => {
                 aboutBtn.setTexture('btn');
@@ -282,6 +290,7 @@ Game.MenuScene = class MenuScene extends Phaser.Scene {
         });
 
         settingsBackBtn.on('pointerdown', () => {
+            if (Game.playClickSound) Game.playClickSound();
             settingsBackBtn.setTexture('btn_pressed');
             this.time.delayedCall(150, () => {
                 settingsBackBtn.setTexture('btn');
@@ -291,6 +300,7 @@ Game.MenuScene = class MenuScene extends Phaser.Scene {
         });
 
         aboutBackBtn.on('pointerdown', () => {
+            if (Game.playClickSound) Game.playClickSound();
             aboutBackBtn.setTexture('btn_pressed');
             this.time.delayedCall(150, () => {
                 aboutBackBtn.setTexture('btn');

@@ -36,6 +36,20 @@ Game.Shop = class Shop {
                     desc: 'Restores 60 energy.',
                     canUse: true
                 }
+            },
+            {
+                id: 'xtra_lasagna',
+                name: 'Xtra Lasagna 7€',
+                price: 7,
+                desc: 'Pre made lasagna. Would taste better heated up',
+                itemData: {
+                    id: 'xtra_lasagna',
+                    name: 'Xtra Lasagna',
+                    desc: 'Pre made lasagna. Would taste better heated up',
+                    canUse: true,
+                    uses: 2,
+                    maxUses: 2
+                }
             }
         ];
 

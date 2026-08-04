@@ -35,6 +35,52 @@ Game.applyCRTSettings = function () {
     }
 };
 
+Game.playClickSound = function () {
+    try {
+        const vol = (Game.settings && Game.settings.volume !== undefined ? Game.settings.volume : 80) / 100;
+        if (vol <= 0) return;
+
+        const AudioCtx = window.AudioContext || window.webkitAudioContext;
+        if (!AudioCtx) return;
+        if (!Game._audioCtx) {
+            Game._audioCtx = new AudioCtx();
+        }
+        if (Game._audioCtx.state === 'suspended') {
+            Game._audioCtx.resume();
+        }
+
+        const ctx = Game._audioCtx;
+        const now = ctx.currentTime;
+
+        // Classic JRPG / Pokemon Menu Accept ascending dual chime (D5 -> A5)
+        const osc1 = ctx.createOscillator();
+        const osc2 = ctx.createOscillator();
+        const gain = ctx.createGain();
+
+        osc1.type = 'triangle';
+        osc2.type = 'sine';
+
+        // Step from D5 (587Hz) to A5 (880Hz)
+        osc1.frequency.setValueAtTime(587.33, now);
+        osc1.frequency.setValueAtTime(880, now + 0.035);
+
+        osc2.frequency.setValueAtTime(587.33, now);
+        osc2.frequency.setValueAtTime(880, now + 0.035);
+
+        gain.gain.setValueAtTime(vol * 0.12, now);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.09);
+
+        osc1.connect(gain);
+        osc2.connect(gain);
+        gain.connect(ctx.destination);
+
+        osc1.start(now);
+        osc2.start(now);
+        osc1.stop(now + 0.09);
+        osc2.stop(now + 0.09);
+    } catch (e) { }
+};
+
 if (typeof document !== 'undefined') {
     if (document.readyState === 'loading') {
         document.addEventListener('DOMContentLoaded', () => Game.applyCRTSettings());
@@ -111,6 +157,9 @@ Game.SIGN_MESSAGES = {
 };
 
 Game.LOCKED_DOORS = {
+    'serveriquest': [
+        { x: 38, y: 52, requiredItem: 'home_key', msgMissing: ['The door to my house is locked!', 'I need my Home Key to get inside.'], msgHasItem: null }
+    ],
     'savilahti': [
         { x: 14, y: 35, requiredItem: null, failedItem: 'Nappi avain', msgMissing: ['Its locked'], msgHasItem: ['Light on the lock is flashing red..', 'Nappiavain fails to open the door'] },
         { x: 41, y: 32, requiredItem: null, failedItem: 'Nappi avain', msgMissing: ['Its locked'], msgHasItem: ['Light on the lock is flashing red..', 'Nappiavain fails to open the door'] },
@@ -118,9 +167,9 @@ Game.LOCKED_DOORS = {
         { x: 16, y: 42, requiredItem: 'Nappi avain', msgMissing: ['Its locked'], msgHasItem: null }
     ],
     'snellmania': [
-        { x: 39, y: 52, requiredItem: null, failedItem: 'Nappi avain', msgMissing: ['Its locked', 'Let\'s try the other door'], msgHasItem: ['Light on the lock is flashing red..', 'Nappiavain does not in Snellmania'] },
-        { x: 7, y: 55, requiredItem: null, failedItem: 'Nappi avain', msgMissing: ['Its locked', 'Let\'s try the other door'], msgHasItem: ['Light on the lock is flashing red..', 'Nappiavain does not in Snellmania'] },
-        { x: 15, y: 52, requiredItem: null, failedItem: 'Nappi avain', msgMissing: ['Its locked', 'Let\'s try the other door'], msgHasItem: ['Light on the lock is flashing red..', 'Nappiavain does not in Snellmania'] },
+        { x: 39, y: 52, requiredItem: null, failedItem: 'Nappi avain', msgMissing: ['Snellmania is locked!', 'Let\'s try the other door or wait until morning.', 'Tip: You can pass time by resting in bed at home or sitting on a bench.'], msgHasItem: ['Light on the lock is flashing red..', 'Nappiavain does not work in Snellmania.', 'Tip: You can pass time by resting in bed at home or sitting on a bench.'] },
+        { x: 7, y: 55, requiredItem: null, failedItem: 'Nappi avain', msgMissing: ['Snellmania is locked!', 'Let\'s try the other door or wait until morning.', 'Tip: You can pass time by resting in bed at home or sitting on a bench.'], msgHasItem: ['Light on the lock is flashing red..', 'Nappiavain does not work in Snellmania.', 'Tip: You can pass time by resting in bed at home or sitting on a bench.'] },
+        { x: 15, y: 52, requiredItem: null, failedItem: 'Nappi avain', msgMissing: ['Snellmania is locked!', 'Let\'s try the other door or wait until morning.', 'Tip: You can pass time by resting in bed at home or sitting on a bench.'], msgHasItem: ['Light on the lock is flashing red..', 'Nappiavain does not work in Snellmania.', 'Tip: You can pass time by resting in bed at home or sitting on a bench.'] },
     ],
     'Exam': [
         { x: 18, y: 30, requiredItem: 'pencil', msgMissing: ['Oh wait! I need a pencil to enter the exam'], msgHasItem: null }

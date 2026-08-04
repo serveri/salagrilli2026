@@ -156,11 +156,52 @@ Game.NpcManager = class NpcManager {
                 facing: 'down',
                 sprite: scene.add.sprite(37 * Game.TILE_SIZE, 54 * Game.TILE_SIZE - 2, 'hyeena', 0).setOrigin(0, 0).setDepth(10)
             };
+            this.scheduleHyeenaTurn();
         }
+    }
+
+    scheduleHyeenaTurn() {
+        const scene = this.scene;
+        if (!scene.hyeena || !scene.hyeena.sprite || !scene.hyeena.sprite.active) return;
+
+        if (scene.hyeenaTurnTimer) {
+            scene.hyeenaTurnTimer.remove();
+            scene.hyeenaTurnTimer = null;
+        }
+
+        const delay = Phaser.Math.Between(4000, 14000);
+        scene.hyeenaTurnTimer = scene.time.delayedCall(delay, () => {
+            if (!scene.hyeena || !scene.hyeena.sprite || !scene.hyeena.sprite.active) return;
+
+            if (!scene.hyeena.isDancing) {
+                const rand = Math.random();
+                let newFacing = 'down';
+                if (rand < 0.20) {
+                    newFacing = 'left';
+                } else if (rand < 0.40) {
+                    newFacing = 'right';
+                } else {
+                    newFacing = 'down';
+                }
+
+                scene.hyeena.facing = newFacing;
+                switch (newFacing) {
+                    case 'down': scene.hyeena.sprite.setFrame(0); break;
+                    case 'left': scene.hyeena.sprite.setFrame(8); break;
+                    case 'right': scene.hyeena.sprite.setFrame(12); break;
+                }
+            }
+
+            this.scheduleHyeenaTurn();
+        });
     }
 
     destroyAll() {
         const scene = this.scene;
+        if (scene.hyeenaTurnTimer) {
+            scene.hyeenaTurnTimer.remove();
+            scene.hyeenaTurnTimer = null;
+        }
         ['police', 'assistant', 'sleepingServeri', 'examNpc', 'examAssistant', 'examPencilNpc', 'examStudent1', 'examStudent2', 'examStudent3', 'shopkeep', 'drunkard', 'hyeena', 'serverinpc2', 'examServeriZyn', 'hacker'].forEach(key => {
             if (scene[key] && scene[key].sprite) {
                 scene[key].sprite.destroy();
@@ -372,29 +413,35 @@ Game.NpcManager = class NpcManager {
             if (Game.state.exchangedNumbersWithServeri2) {
                 scene.dialogue.show(['Serveri: Don\'t forget to text me later!']);
             } else if (hasSinglesBasket) {
-                scene.dialogue.show(['Hi! You have a singles basket, do you want to exchange phone numbers?'], null, [
-                    {
-                        text: 'Yes', color: '#006600', hoverColor: '#00cc00', onClick: () => {
-                            Game.state.exchangedNumbersWithServeri2 = true;
-                            scene.dialogue.show([
-                                'Yay! Hit me up later',
-                                'You blush and nod',
-                                'The exciting interaction lifted your spirits'
-                            ], () => {
-                                if (typeof scene.energy !== 'undefined') {
-                                    const old = scene.energy;
-                                    scene.energy = Math.min(200, scene.energy + 50);
-                                    if (scene.addEnergyDiff) {
-                                        scene.addEnergyDiff(scene.energy - old);
+                scene.dialogue.show([
+                    'Serveri: Hi! I noticed you have a singles basket!'
+                ], () => {
+                    scene.dialogue.show([
+                        'Would you like to exchange phone numbers?'
+                    ], null, [
+                        {
+                            text: 'Yes', color: '#006600', hoverColor: '#00cc00', onClick: () => {
+                                Game.state.exchangedNumbersWithServeri2 = true;
+                                scene.dialogue.show([
+                                    'Yay! Hit me up later!',
+                                    'You blush and nod',
+                                    'The exciting interaction lifted your spirits!'
+                                ], () => {
+                                    if (typeof scene.energy !== 'undefined') {
+                                        const old = scene.energy;
+                                        scene.energy = Math.min(200, scene.energy + 50);
+                                        if (scene.addEnergyDiff) {
+                                            scene.addEnergyDiff(scene.energy - old);
+                                        }
                                     }
-                                }
-                            });
+                                });
+                            }
+                        },
+                        {
+                            text: 'No', color: '#880000', hoverColor: '#cc0000', onClick: () => { }
                         }
-                    },
-                    {
-                        text: 'No', color: '#880000', hoverColor: '#cc0000', onClick: () => { }
-                    }
-                ]);
+                    ]);
+                });
             } else {
                 scene.dialogue.show(['Hi, do we know each other?']);
             }
