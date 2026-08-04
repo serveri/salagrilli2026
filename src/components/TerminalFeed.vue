@@ -7,18 +7,29 @@ const props = defineProps({
     type: Array,
     default: () => [],
   },
+  totalCount: {
+    type: Number,
+    default: 9,
+  },
 })
 
-// Parsed intel entries with core reward text extracted
 const intelEntries = computed(() => {
-  return props.solvedList.map((item) => ({
+  const entries = props.solvedList.map((item) => ({
     id: item.id,
-    intel: extractCoreIntel(item.reward),
+    intel: String(item.id) === '0' ? 'Started locating the secret grill' : extractCoreIntel(item.reward),
   }))
+
+  if (props.solvedList.length > 0 && props.solvedList.length >= props.totalCount) {
+    entries.push({
+      id: 'all-completed',
+      intel: 'All secrets found!',
+    })
+  }
+
+  return entries
 })
 
-// Typewriter state for newly unlocked rewards
-const typedOutputs = ref({}) // { [taskId]: string }
+const typedOutputs = ref({})
 
 function typeIntel(taskId, text) {
   if (typedOutputs.value[taskId] === text) return

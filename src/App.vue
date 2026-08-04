@@ -65,12 +65,11 @@ onMounted(() => {
       </div>
     </header>
 
-    <!-- Decrypted intel text list placed in header area -->
     <div
       class="absolute left-52 sm:left-72 top-8 z-10 max-w-xs sm:max-w-sm pointer-events-auto"
       :class="mounted ? 'animate-fade-in' : 'opacity-0'"
     >
-      <TerminalFeed :solved-list="solvedList" />
+      <TerminalFeed :solved-list="solvedList" :total-count="items.length" />
     </div>
 
     <main class="flex min-h-screen items-center justify-center px-6 py-28 sm:py-16">
