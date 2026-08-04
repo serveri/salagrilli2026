@@ -492,6 +492,7 @@ Game.NpcManager = class NpcManager {
 
     _faceNpc(npc) {
         if (!npc || !npc.sprite) return;
+        npc.isDancing = false;
         const scene = this.scene;
         if (scene.facing === 'up') npc.facing = 'down';
         else if (scene.facing === 'down') npc.facing = 'up';

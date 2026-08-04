@@ -111,6 +111,12 @@ Game.BootScene = class BootScene extends Phaser.Scene {
             frameHeight: 18
         });
 
+        // Items spritesheet (16x16 frames, 2 cols x 2 rows = 4 frames)
+        this.load.spritesheet('items', 'Items.png', {
+            frameWidth: 16,
+            frameHeight: 16
+        });
+
         // Lose screen image
         this.load.image('ratlost', 'ratlost.png');
 
@@ -119,13 +125,19 @@ Game.BootScene = class BootScene extends Phaser.Scene {
     }
 
     create() {
+        this.anims.create({
+            key: 'speaker_playing',
+            frames: this.anims.generateFrameNumbers('items', { start: 0, end: 3 }),
+            frameRate: 6,
+            repeat: -1
+        });
+
         // Load custom font via FontFace API, then proceed to menu
         const font = new FontFace('Pokemon Classic', `url('assets/Pokemon%20Classic.ttf?v=${Date.now()}')`);
         font.load().then((loadedFont) => {
             document.fonts.add(loadedFont);
             this.scene.start('MenuScene');
         }).catch(() => {
-            // Proceed even if font fails (fallback to monospace)
             console.warn('Pokemon Classic font failed to load, using fallback');
             this.scene.start('MenuScene');
         });

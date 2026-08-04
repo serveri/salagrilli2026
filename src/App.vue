@@ -2,6 +2,7 @@
 import { computed, onMounted, ref } from 'vue'
 import PuzzleCard from './components/PuzzleCard.vue'
 import PuzzleModal from './components/PuzzleModal.vue'
+import InfoModal from './components/InfoModal.vue'
 import ChatWidgetLoader from './components/ChatWidgetLoader.vue'
 import TerminalFeed from './components/TerminalFeed.vue'
 import { puzzles } from './data/puzzles.js'
@@ -10,8 +11,6 @@ import { useProgress } from './composables/useProgress.js'
 
 const { isSolved, solvedCount, solvedList } = useProgress()
 
-// Merge each puzzle with its precomputed challenge (salt/iv/ciphertext) so a card
-// carries everything the modal needs to validate a flag client-side.
 const challengeById = new Map(challenges.map((c) => [c.id, c]))
 const items = puzzles.map((puzzle) => ({
   ...puzzle,
@@ -21,6 +20,7 @@ const items = puzzles.map((puzzle) => ({
 const activeId = ref(null)
 const activeItem = computed(() => items.find((item) => item.id === activeId.value) ?? null)
 
+const showInfoModal = ref(false)
 const mounted = ref(false)
 
 onMounted(() => {
@@ -66,13 +66,17 @@ onMounted(() => {
     </header>
 
     <div
-      class="absolute left-52 sm:left-72 top-8 z-10 max-w-xs sm:max-w-sm pointer-events-auto"
+      class="relative pt-20 px-6 sm:absolute sm:left-72 sm:top-8 sm:pt-0 sm:px-0 z-10 max-w-xs sm:max-w-sm pointer-events-auto"
       :class="mounted ? 'animate-fade-in' : 'opacity-0'"
     >
-      <TerminalFeed :solved-list="solvedList" :total-count="items.length" />
+      <TerminalFeed
+        :solved-list="solvedList"
+        :total-count="items.length"
+        @open-info="showInfoModal = true"
+      />
     </div>
 
-    <main class="flex min-h-screen items-center justify-center px-6 py-28 sm:py-16">
+    <main class="flex flex-col items-center px-6 pb-12 pt-3 sm:min-h-screen sm:justify-center sm:py-16">
       <section
         class="mx-auto flex flex-wrap items-center justify-center gap-6 sm:gap-8 xl:gap-5 max-w-xs sm:max-w-lg lg:max-w-4xl xl:max-w-none"
         :class="mounted ? 'animate-fade-in' : 'opacity-0'"
@@ -93,5 +97,6 @@ onMounted(() => {
     </main>
 
     <PuzzleModal :item="activeItem" @close="activeId = null" />
+    <InfoModal :open="showInfoModal" @close="showInfoModal = false" />
   </div>
 </template>

@@ -195,43 +195,63 @@ Game.Backpack = class Backpack {
             this.headerText.setPosition(this.bgX + 99, this.bgY + 20);
             this.headerText.setOrigin(0.5, 0.5);
 
-            // Action: Inspect button
-            const inspectBtn = this.scene.add.text(178, 138, '[Inspect]', {
-                fontFamily: "'Pokemon Classic', 'Courier New', monospace",
-                fontSize: '32px',
-                color: '#004488'
-            }).setOrigin(1, 0.5).setInteractive({ useHandCursor: true }).setScale(0.22);
-
-            inspectBtn.on('pointerover', () => inspectBtn.setColor('#0088ff'));
-            inspectBtn.on('pointerout', () => inspectBtn.setColor('#004488'));
-            inspectBtn.on('pointerdown', () => this._handleInspect(item));
-            this.actionContainer.add(inspectBtn);
-
-            // Action: Use button (if item is usable) or Drop button
-            inspectBtn.setPosition(134, 138);
-
-            if (item.canUse) {
-                const useBtn = this.scene.add.text(178, 138, '[Use]', {
+            if (item.id === 'speaker') {
+                const playBtn = this.scene.add.text(134, 138, '[Play]', {
                     fontFamily: "'Pokemon Classic', 'Courier New', monospace",
                     fontSize: '32px',
                     color: '#006600'
                 }).setOrigin(1, 0.5).setInteractive({ useHandCursor: true }).setScale(0.22);
 
-                useBtn.on('pointerover', () => useBtn.setColor('#00cc00'));
-                useBtn.on('pointerout', () => useBtn.setColor('#006600'));
-                useBtn.on('pointerdown', () => this._handleUse(item));
-                this.actionContainer.add(useBtn);
-            } else {
-                const dropBtn = this.scene.add.text(178, 138, '[Drop]', {
+                playBtn.on('pointerover', () => playBtn.setColor('#00cc00'));
+                playBtn.on('pointerout', () => playBtn.setColor('#006600'));
+                playBtn.on('pointerdown', () => this._handleUse(item));
+                this.actionContainer.add(playBtn);
+
+                const placeBtn = this.scene.add.text(178, 138, '[Place]', {
                     fontFamily: "'Pokemon Classic', 'Courier New', monospace",
                     fontSize: '32px',
-                    color: '#cc0000'
+                    color: '#004488'
                 }).setOrigin(1, 0.5).setInteractive({ useHandCursor: true }).setScale(0.22);
 
-                dropBtn.on('pointerover', () => dropBtn.setColor('#ff3333'));
-                dropBtn.on('pointerout', () => dropBtn.setColor('#cc0000'));
-                dropBtn.on('pointerdown', () => this._handleDrop(item));
-                this.actionContainer.add(dropBtn);
+                placeBtn.on('pointerover', () => placeBtn.setColor('#0088ff'));
+                placeBtn.on('pointerout', () => placeBtn.setColor('#004488'));
+                placeBtn.on('pointerdown', () => this._handlePlaceSpeaker(item));
+                this.actionContainer.add(placeBtn);
+            } else {
+                const inspectBtn = this.scene.add.text(134, 138, '[Inspect]', {
+                    fontFamily: "'Pokemon Classic', 'Courier New', monospace",
+                    fontSize: '32px',
+                    color: '#004488'
+                }).setOrigin(1, 0.5).setInteractive({ useHandCursor: true }).setScale(0.22);
+
+                inspectBtn.on('pointerover', () => inspectBtn.setColor('#0088ff'));
+                inspectBtn.on('pointerout', () => inspectBtn.setColor('#004488'));
+                inspectBtn.on('pointerdown', () => this._handleInspect(item));
+                this.actionContainer.add(inspectBtn);
+
+                if (item.canUse) {
+                    const useBtn = this.scene.add.text(178, 138, '[Use]', {
+                        fontFamily: "'Pokemon Classic', 'Courier New', monospace",
+                        fontSize: '32px',
+                        color: '#006600'
+                    }).setOrigin(1, 0.5).setInteractive({ useHandCursor: true }).setScale(0.22);
+
+                    useBtn.on('pointerover', () => useBtn.setColor('#00cc00'));
+                    useBtn.on('pointerout', () => useBtn.setColor('#006600'));
+                    useBtn.on('pointerdown', () => this._handleUse(item));
+                    this.actionContainer.add(useBtn);
+                } else {
+                    const dropBtn = this.scene.add.text(178, 138, '[Drop]', {
+                        fontFamily: "'Pokemon Classic', 'Courier New', monospace",
+                        fontSize: '32px',
+                        color: '#cc0000'
+                    }).setOrigin(1, 0.5).setInteractive({ useHandCursor: true }).setScale(0.22);
+
+                    dropBtn.on('pointerover', () => dropBtn.setColor('#ff3333'));
+                    dropBtn.on('pointerout', () => dropBtn.setColor('#cc0000'));
+                    dropBtn.on('pointerdown', () => this._handleDrop(item));
+                    this.actionContainer.add(dropBtn);
+                }
             }
         }
 
@@ -388,6 +408,37 @@ Game.Backpack = class Backpack {
             this.scene.dialogue.show([
                 `You threw ${item.name} away`
             ], () => { this.open(); });
+        }
+    }
+
+    _handlePlaceSpeaker(item) {
+        this.close();
+        this.items = this.items.filter(i => i.id !== 'speaker');
+        this.selectedItem = null;
+
+        const px = this.scene.tileX;
+        const py = this.scene.tileY;
+
+        let frontX = px;
+        let frontY = py;
+        if (this.scene.facing === 'up') frontY--;
+        else if (this.scene.facing === 'down') frontY++;
+        else if (this.scene.facing === 'left') frontX--;
+        else if (this.scene.facing === 'right') frontX++;
+
+        let targetX = px;
+        let targetY = py;
+
+        if (this.scene.isTileWalkable && this.scene.isTileWalkable(frontX, frontY)) {
+            targetX = frontX;
+            targetY = frontY;
+        } else {
+            targetX = px;
+            targetY = py;
+        }
+
+        if (this.scene.placeSpeakerOnGround) {
+            this.scene.placeSpeakerOnGround(targetX, targetY);
         }
     }
 
@@ -613,12 +664,14 @@ Game.Backpack = class Backpack {
             if (volumePercent <= 0) {
                 if (this.scene.dialogue) {
                     this.scene.dialogue.show([
-                        'The speaker is silent because Volume is set to 0%!'
+                        'The Partybox is silent because Volume is set to 0%!'
                     ], () => { this.open(); });
                 }
             } else {
                 try {
-                    if (this.scene.sound && typeof this.scene.sound.add === 'function') {
+                    if (this.scene.startSpeakerMusic) {
+                        this.scene.startSpeakerMusic(vol);
+                    } else if (this.scene.sound && typeof this.scene.sound.add === 'function') {
                         if (this.scene.zynSound) {
                             this.scene.zynSound.stop();
                         }
@@ -635,8 +688,7 @@ Game.Backpack = class Backpack {
 
                 if (this.scene.dialogue) {
                     this.scene.dialogue.show([
-                        'Zyn zyn zyn',
-                        `Volume: ${volumePercent}%`
+                        `Zyn zyn zyn\n\nVolume: ${volumePercent}%`
                     ], () => { this.open(); });
                 }
             }

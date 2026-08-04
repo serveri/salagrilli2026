@@ -67,17 +67,14 @@ export const puzzleKnowledge = {
   3: {
     summary:
       'A top-down, Pokemon-style browser adventure game called "ServeriQuest", built with ' +
-      'Phaser. You control Serveri the mouse, walk around, talk to characters and manage an ' +
-      'Energy bar. Per the in-game About screen: beat the game and you get the flag, and ' +
-      'there may be other secrets. The flag is revealed inside the game once it is completed.',
+      'Phaser. You control Serveri the mouse, walk around, manage an Energy bar, trade items, ' +
+      'pass the exam, and discover secrets. Beat the game to reveal the flag at the end.',
     hints: [
-      'This is a playable game, not a static puzzle. Walk around, talk to characters and ' +
-        'explore the whole map.',
-      'Keep an eye on the Energy bar and interact with things in the world. Completing the ' +
-        'game is what reveals the flag.',
-      'Check the menu / About screen for context, and do not give up if you get stuck. The ' +
-        'game hints that you may need to restart a couple of times, and that there are hidden ' +
-        'secrets worth looking for.',
+      'This is a playable game, not a static puzzle. Walk around, talk to characters and explore the map. Keep an eye on your energy bar — eat berry bushes (+40 energy) or sleep in a bed to restore stamina.',
+      'Need a pencil for the exam? Look for one at home, or talk to the Serveri outside the exam room — he might hand one over if you trade him something neat or funny (maybe something triangular from around town!).',
+      'During the exam sentence-builder minigame, if a flying pencil sweeps across the screen, click it to catch it before it disappears.',
+      'If you have a spare pencil in your backpack during the exam, try talking to the unprepared Serveri student — helping a classmate will lift your spirits and restore energy!',
+      'Look out for a secret Partybox item hidden somewhere in town! Place or play it to watch nearby Serveri mice break into a dance.'
     ],
     hasAnswer: false,
   },

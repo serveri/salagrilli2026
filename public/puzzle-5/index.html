@@ -203,6 +203,29 @@
       margin-bottom: 6px;
     }
 
+    .restart-btn {
+      display: none;
+      margin: 8px auto;
+      padding: 10px 24px;
+      font-size: 14px;
+      font-weight: 700;
+      color: #fff;
+      background: #3a3a3c;
+      border: 1px solid #555;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: background 0.2s, border-color 0.2s;
+    }
+
+    .restart-btn:hover {
+      background: #538d4e;
+      border-color: #6ab064;
+    }
+
+    .restart-btn.show {
+      display: inline-block;
+    }
+
     @keyframes reveal {
       from {
         opacity: 0;
@@ -230,19 +253,31 @@
   </div>
 
   <div class="keyboard" id="keyboard"></div>
+  <button class="restart-btn" id="restartBtn">Restart</button>
 
   <script>
     (function () {
-      const WORD_POOL = ['ASCII', 'CACHE', 'QUEUE', 'SPACE', 'CLOUD', 'STACK', 'LINUX', 'SHELL', 'PIXEL'];
-      const shuffled = [...WORD_POOL].sort(() => Math.random() - 0.5);
-      const TARGET_WORDS = [shuffled[0], shuffled[1]];
+      const WORD_POOL = [
+        'QVNDSUk=', 'Q0FDSEU=', 'UVVFVUU=', 'U1BBQ0U=', 'Q0xPVUQ=',
+        'U1RBQ0s=', 'TElOVVg=', 'U0hFTEw=', 'UElYRUw=', 'RkxPQVQ=',
+        'RkFMU0U=', 'Q0xBU1M=', 'REVCVUc=', 'RVJST1I=', 'Q1JBU0g='
+      ].map(s => atob(s));
 
-      const FLAG = 'SALA{5P4C3_C4D37}';
-      const ROWS = 6;
+      function pickWord(exclude) {
+        const pool = exclude ? WORD_POOL.filter(w => w !== exclude) : WORD_POOL;
+        return pool[Math.floor(Math.random() * pool.length)];
+      }
+
+      let word1 = pickWord();
+      let word2 = pickWord(word1);
+      const TARGET_WORDS = [word1, word2];
+
+      const FLAG = atob('U0FMQHs1UDRDM19DNEQzN30=');
 
       const subEl = document.getElementById('subText');
       const boardEl = document.getElementById('board');
       const msgEl = document.getElementById('msg');
+      const restartBtn = document.getElementById('restartBtn');
       const flagEl = document.getElementById('flag');
       const flagTextEl = document.getElementById('flagText');
       const keyboardEl = document.getElementById('keyboard');
@@ -250,6 +285,7 @@
       let wordIndex = 0;
       let ANSWER = '';
       let COLS = 5;
+      let maxRows = 6;
       let row = 0;
       let current = '';
       let done = false;
@@ -275,21 +311,37 @@
         keyboardEl.appendChild(kr);
       });
 
+      restartBtn.addEventListener('click', () => {
+        restartBtn.classList.remove('show');
+        msgEl.textContent = '';
+        if (wordIndex === 0) {
+          TARGET_WORDS[0] = pickWord();
+          TARGET_WORDS[1] = pickWord(TARGET_WORDS[0]);
+          startWord(0);
+        } else {
+          TARGET_WORDS[1] = pickWord(TARGET_WORDS[0]);
+          startWord(1);
+        }
+      });
+
       function startWord(idx) {
         wordIndex = idx;
         ANSWER = TARGET_WORDS[wordIndex];
         COLS = ANSWER.length;
+        maxRows = 6;
         row = 0;
         current = '';
         done = false;
         tiles = [];
+        restartBtn.classList.remove('show');
 
-        subEl.textContent = `Word ${wordIndex + 1}/2 — Guess the ${COLS}-letter word. 6 tries.`;
+        subEl.textContent = `Word ${wordIndex + 1}/2 — Guess the ${COLS}-letter word. ${maxRows} tries.`;
 
         boardEl.innerHTML = '';
         boardEl.style.setProperty('--cols', COLS);
+        boardEl.style.setProperty('--rows', maxRows);
 
-        for (let r = 0; r < ROWS; r++) {
+        for (let r = 0; r < maxRows; r++) {
           const rowEl = document.createElement('div');
           rowEl.className = 'row';
           const rowTiles = [];
@@ -364,9 +416,10 @@
 
         row++;
         current = '';
-        if (row >= ROWS) {
+        if (row >= maxRows) {
           done = true;
           setMsg('Game over!');
+          restartBtn.classList.add('show');
         }
       }
 

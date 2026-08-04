@@ -333,7 +333,8 @@ Game.DialogueBox = class DialogueBox {
                 return;
             }
             if (this.currentIndex === this.messages.length - 1 && this.buttonsData && this.buttonsData.length > 0) {
-                return; // Require button click to proceed
+                this._close();
+                return;
             }
             this._showMessage(this.currentIndex + 1);
         };

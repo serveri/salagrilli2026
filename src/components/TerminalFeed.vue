@@ -13,16 +13,55 @@ const props = defineProps({
   },
 })
 
+const emit = defineEmits(['openInfo'])
+
 const intelEntries = computed(() => {
-  const entries = props.solvedList.map((item) => ({
-    id: item.id,
-    intel: String(item.id) === '0' ? 'Started locating the secret grill' : extractCoreIntel(item.reward),
-  }))
+  const isFiveSolved = props.solvedList.length >= 5
+  const hasTaskZero = props.solvedList.some((item) => String(item.id) === '0')
+
+  let entries = []
+
+  if (hasTaskZero) {
+    entries = props.solvedList.map((item) => {
+      if (String(item.id) === '0') {
+        return {
+          id: item.id,
+          intel: isFiveSolved ? 'Additional info found' : 'Started locating the secret grill',
+          isInfoLink: isFiveSolved,
+        }
+      }
+      return {
+        id: item.id,
+        intel: extractCoreIntel(item.reward),
+        isInfoLink: false,
+      }
+    })
+  } else if (isFiveSolved) {
+    entries = [
+      {
+        id: 0,
+        intel: 'Additional info found',
+        isInfoLink: true,
+      },
+      ...props.solvedList.map((item) => ({
+        id: item.id,
+        intel: extractCoreIntel(item.reward),
+        isInfoLink: false,
+      })),
+    ]
+  } else {
+    entries = props.solvedList.map((item) => ({
+      id: item.id,
+      intel: extractCoreIntel(item.reward),
+      isInfoLink: false,
+    }))
+  }
 
   if (props.solvedList.length > 0 && props.solvedList.length >= props.totalCount) {
     entries.push({
       id: 'all-completed',
       intel: 'All secrets found! A shot of jallu (or ginger shot) earned in the event',
+      isInfoLink: false,
     })
   }
 
@@ -78,7 +117,20 @@ onMounted(() => {
     >
       <span class="text-emerald-500 font-semibold select-none">&gt;</span>
       <span class="text-emerald-300 font-mono tracking-wide">
-        {{ typedOutputs[entry.id] !== undefined ? typedOutputs[entry.id] : entry.intel }}
+        <template v-if="entry.isInfoLink && (typedOutputs[entry.id] === undefined || typedOutputs[entry.id] === entry.intel)">
+          Additional
+          <button
+            type="button"
+            class="text-emerald-200 hover:text-emerald-100 font-semibold underline cursor-pointer transition-colors focus:outline-none"
+            @click="emit('openInfo')"
+          >
+            info
+          </button>
+          found
+        </template>
+        <template v-else>
+          {{ typedOutputs[entry.id] !== undefined ? typedOutputs[entry.id] : entry.intel }}
+        </template>
       </span>
     </div>
   </div>

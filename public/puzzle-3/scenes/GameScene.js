@@ -45,6 +45,13 @@ Game.GameScene = class GameScene extends Phaser.Scene {
             repeat: -1
         });
 
+        this.anims.create({
+            key: 'speaker_playing',
+            frames: this.anims.generateFrameNumbers('items', { start: 0, end: 3 }),
+            frameRate: 8,
+            repeat: -1
+        });
+
         // Pencil spin animation (6 frames)
         this.anims.create({
             key: 'pencil-spin',
@@ -224,6 +231,38 @@ Game.GameScene = class GameScene extends Phaser.Scene {
 
                 let interacted = this.npcManager ? this.npcManager.handleInteraction(targetX, targetY) : false;
 
+                const isFacingSpeaker = this.placedSpeaker && this.placedSpeaker.area === this.currentArea.name &&
+                    targetX === this.placedSpeaker.tileX && targetY === this.placedSpeaker.tileY;
+                const isStandingOnSpeaker = this.placedSpeaker && this.placedSpeaker.area === this.currentArea.name &&
+                    this.tileX === this.placedSpeaker.tileX && this.tileY === this.placedSpeaker.tileY;
+
+                if (!interacted && (isFacingSpeaker || isStandingOnSpeaker)) {
+                    const volumePercent = (window.Game && window.Game.settings && window.Game.settings.volume !== undefined)
+                        ? window.Game.settings.volume
+                        : 80;
+                    const vol = volumePercent / 100;
+
+                    this.dialogue.show(['Partybox: Plays your favorite song: Zyn Zyn Zyn.'], null, [
+                        {
+                            text: 'Play',
+                            color: '#006600',
+                            hoverColor: '#00cc00',
+                            onClick: () => {
+                                this.playPlacedSpeaker(vol);
+                            }
+                        },
+                        {
+                            text: 'Take',
+                            color: '#cc0000',
+                            hoverColor: '#ff3333',
+                            onClick: () => {
+                                this.takePlacedSpeaker();
+                            }
+                        }
+                    ]);
+                    interacted = true;
+                }
+
                 if (!interacted && targetTileIndex === 700) {
                     Game.state = Game.state || {};
                     if (!Game.state.serveriWoken) {
@@ -377,14 +416,14 @@ Game.GameScene = class GameScene extends Phaser.Scene {
                     if (this.backpack && !this.backpack.items.some(i => i.id === 'speaker')) {
                         this.backpack.items.push({
                             id: 'speaker',
-                            name: 'Speaker',
+                            name: 'Partybox',
                             desc: 'Plays your favorite song: Zyn Zyn Zyn.',
                             canUse: true
                         });
                     }
 
                     if (this.dialogue) {
-                        this.dialogue.show(['You found a Speaker!']);
+                        this.dialogue.show(['You found a Partybox!']);
                     }
                     interacted = true;
                 }
@@ -1165,6 +1204,32 @@ Game.GameScene = class GameScene extends Phaser.Scene {
             });
         }
 
+        if (Game.state && Game.state.placedSpeakerData) {
+            const data = Game.state.placedSpeakerData;
+            if (data.area === this.currentArea.name) {
+                if (!this.placedSpeaker || !this.placedSpeaker.sprite || !this.placedSpeaker.sprite.active) {
+                    const sprite = this.add.sprite(
+                        data.tileX * Game.TILE_SIZE,
+                        data.tileY * Game.TILE_SIZE,
+                        'items',
+                        this.isSpeakerDancing ? 1 : 0
+                    ).setOrigin(0, 0).setDepth(10);
+
+                    if (this.isSpeakerDancing) {
+                        sprite.play('speaker_playing');
+                    }
+
+                    this.placedSpeaker = {
+                        tileX: data.tileX,
+                        tileY: data.tileY,
+                        area: data.area,
+                        sprite,
+                        isPlaying: this.isSpeakerDancing
+                    };
+                }
+            }
+        }
+
         if (Game.state && Game.state.homeKeyCollected && this.currentArea.name === 'Laitos') {
             for (let y = 0; y < this.tileData.length; y++) {
                 for (let x = 0; x < this.tileData[y].length; x++) {
@@ -1403,11 +1468,249 @@ Game.GameScene = class GameScene extends Phaser.Scene {
         if (this.player.texture.key !== 'player') {
             this.player.setTexture('player');
         }
+        if (this.isSpeakerDancing && !this.isMoving && this.facing === 'down' && this.danceStep === 1) {
+            this.player.setFrame(16);
+            return;
+        }
         switch (this.facing) {
             case 'down': this.player.setFrame(0); break;
             case 'up': this.player.setFrame(4); break;
             case 'left': this.player.setFrame(8); break;
             case 'right': this.player.setFrame(12); break;
+        }
+    }
+
+    startSpeakerMusic(volume) {
+        this.stopSpeakerDance();
+
+        const onMusicEnd = () => {
+            this.stopSpeakerDance();
+        };
+
+        if (this.sound && typeof this.sound.add === 'function') {
+            this.zynSound = this.sound.add('zynzyn');
+            this.zynSound.play({ volume });
+            this.zynSound.once('complete', onMusicEnd);
+        } else {
+            this.speakerAudioFallback = new Audio('assets/Sound/zynzyn.mp3');
+            this.speakerAudioFallback.volume = volume;
+            this.speakerAudioFallback.play();
+            this.speakerAudioFallback.onended = onMusicEnd;
+        }
+
+        this.speakerDurationTimer = this.time.delayedCall(47000, onMusicEnd);
+
+        this.startSpeakerDance();
+    }
+
+    startSpeakerDance() {
+        this.isSpeakerDancing = true;
+        this.danceStep = 0;
+
+        if (!this.isMoving) {
+            this.facing = 'down';
+            this.setIdleFrame();
+        }
+
+        this.dancingNpcs = [];
+        const npcs = this._getAllServeriNpcs();
+        npcs.forEach(npc => {
+            if (!npc || !npc.sprite || !npc.sprite.active) return;
+            npc.facing = 'down';
+            npc.isDancing = true;
+            npc.sprite.setFrame(0);
+            this.dancingNpcs.push(npc);
+        });
+
+        if (this.placedSpeaker && this.placedSpeaker.sprite && this.placedSpeaker.sprite.active) {
+            this.placedSpeaker.sprite.play('speaker_playing');
+            this.placedSpeaker.isPlaying = true;
+        }
+
+        if (this.danceTimer) {
+            this.danceTimer.remove();
+        }
+        this.danceTimer = this.time.addEvent({
+            delay: 300,
+            loop: true,
+            callback: () => this._updateDanceStep()
+        });
+    }
+
+    stopSpeakerDance() {
+        this.isSpeakerDancing = false;
+        if (this.danceTimer) {
+            this.danceTimer.remove();
+            this.danceTimer = null;
+        }
+        if (this.speakerDurationTimer) {
+            this.speakerDurationTimer.remove();
+            this.speakerDurationTimer = null;
+        }
+        if (this.zynSound) {
+            try { this.zynSound.stop(); } catch(e) {}
+            this.zynSound = null;
+        }
+        if (this.speakerAudioFallback) {
+            try { this.speakerAudioFallback.pause(); } catch(e) {}
+            this.speakerAudioFallback = null;
+        }
+
+        if (!this.isMoving && this.facing === 'down') {
+            this.setIdleFrame();
+        }
+
+        if (this.placedSpeaker && this.placedSpeaker.sprite && this.placedSpeaker.sprite.active) {
+            this.placedSpeaker.sprite.anims.stop();
+            this.placedSpeaker.sprite.setFrame(0);
+            this.placedSpeaker.isPlaying = false;
+        }
+
+        if (this.dancingNpcs) {
+            this.dancingNpcs.forEach(npc => {
+                if (npc && npc.sprite && npc.sprite.active) {
+                    npc.isDancing = false;
+                    if (npc.facing === 'down') {
+                        npc.sprite.setFrame(0);
+                    }
+                }
+            });
+            this.dancingNpcs = [];
+        }
+    }
+
+    placeSpeakerOnGround(tileX, tileY) {
+        this.stopSpeakerDance();
+
+        if (this.placedSpeaker && this.placedSpeaker.sprite) {
+            this.placedSpeaker.sprite.destroy();
+        }
+
+        const sprite = this.add.sprite(
+            tileX * Game.TILE_SIZE,
+            tileY * Game.TILE_SIZE,
+            'items',
+            0
+        ).setOrigin(0, 0).setDepth(10);
+
+        this.placedSpeaker = {
+            tileX,
+            tileY,
+            area: this.currentArea.name,
+            sprite,
+            isPlaying: false
+        };
+
+        Game.state = Game.state || {};
+        Game.state.placedSpeakerData = {
+            area: this.currentArea.name,
+            tileX,
+            tileY
+        };
+
+        if (this.dialogue) {
+            this.dialogue.show(['Placed Partybox on the ground.']);
+        }
+    }
+
+    playPlacedSpeaker(volume) {
+        if (this.placedSpeaker && this.placedSpeaker.sprite && this.placedSpeaker.sprite.active) {
+            this.placedSpeaker.sprite.play('speaker_playing');
+            this.placedSpeaker.isPlaying = true;
+        }
+
+        const volumePercent = Math.round(volume * 100);
+        this.startSpeakerMusic(volume);
+
+        if (this.dialogue) {
+            this.dialogue.show([
+                `Zyn zyn zyn\n\nVolume: ${volumePercent}%`
+            ]);
+        }
+    }
+
+    takePlacedSpeaker() {
+        this.stopSpeakerDance();
+
+        if (this.placedSpeaker && this.placedSpeaker.sprite) {
+            this.placedSpeaker.sprite.destroy();
+        }
+        this.placedSpeaker = null;
+        if (Game.state) {
+            delete Game.state.placedSpeakerData;
+        }
+
+        if (this.backpack && !this.backpack.items.some(i => i.id === 'speaker')) {
+            this.backpack.items.push({
+                id: 'speaker',
+                name: 'Partybox',
+                desc: 'Plays your favorite song: Zyn Zyn Zyn.',
+                canUse: true
+            });
+        }
+
+        if (this.dialogue) {
+            this.dialogue.show(['Picked up Partybox.']);
+        }
+    }
+
+    _getAllServeriNpcs() {
+        const list = [];
+        const possibleNpcKeys = [
+            'sleepingServeri',
+            'examNpc',
+            'examPencilNpc',
+            'examStudent1',
+            'examStudent2',
+            'examStudent3',
+            'examServeriZyn',
+            'serverinpc2'
+        ];
+
+        possibleNpcKeys.forEach(key => {
+            const npc = this[key];
+            if (npc && npc.sprite && npc.sprite.active) {
+                const texKey = npc.sprite.texture ? npc.sprite.texture.key : '';
+                if (texKey === 'serverinpc' || texKey === 'serverinpc2' || texKey === 'player') {
+                    if (key === 'sleepingServeri' && (!window.Game || !window.Game.state || !window.Game.state.serveriWoken)) {
+                        return;
+                    }
+                    if (npc.isMoving || npc.isSleeping) return;
+                    list.push(npc);
+                }
+            }
+        });
+
+        return list;
+    }
+
+    _updateDanceStep() {
+        if (!this.isSpeakerDancing) return;
+
+        const soundActive = (this.zynSound && this.zynSound.isPlaying) ||
+                            (this.speakerAudioFallback && !this.speakerAudioFallback.paused && !this.speakerAudioFallback.ended);
+        if (!soundActive && (this.zynSound || this.speakerAudioFallback)) {
+            this.stopSpeakerDance();
+            return;
+        }
+
+        this.danceStep = (this.danceStep === 0) ? 1 : 0;
+
+        if (!this.isMoving && this.facing === 'down') {
+            this.setIdleFrame();
+        }
+
+        if (this.dancingNpcs) {
+            this.dancingNpcs.forEach(npc => {
+                if (!npc || !npc.sprite || !npc.sprite.active || !npc.isDancing) return;
+                if (npc.facing !== 'down' || npc.isMoving) return;
+
+                if (this.danceStep === 1) {
+                    npc.sprite.setFrame(16);
+                } else {
+                    npc.sprite.setFrame(0);
+                }
+            });
         }
     }
 
@@ -1420,8 +1723,37 @@ Game.GameScene = class GameScene extends Phaser.Scene {
         }
     }
 
+    isTileWalkable(x, y) {
+        if (!this.currentArea || !this.tileData) return false;
+        if (x < 0 || x >= this.currentArea.width || y < 0 || y >= this.currentArea.height) {
+            return false;
+        }
+        if (this.isNpcAt && this.isNpcAt(x, y)) {
+            return false;
+        }
+        if (this.placedSpeaker && this.placedSpeaker.area === this.currentArea.name &&
+            this.placedSpeaker.tileX === x && this.placedSpeaker.tileY === y) {
+            return false;
+        }
+        if (this.isDoorLocked && this.isDoorLocked(x, y)) {
+            return false;
+        }
+        const targetTileIndex = this.tileData[y][x];
+        if (!Game.WALKABLE_TILES.has(targetTileIndex)) {
+            return false;
+        }
+        if (targetTileIndex === 199 && this.facing !== 'right') return false;
+        if (targetTileIndex === 200 && this.facing !== 'left') return false;
+
+        return true;
+    }
+
     tryMove(dx, dy) {
         if (this.isCollapsing) return;
+
+        if (this.player && this.player.texture && this.player.texture.key !== 'player' && !this.isIntroSleeping) {
+            this.player.setTexture('player');
+        }
 
         if (this.energy <= 0) {
             this.player.anims.stop();
@@ -1546,6 +1878,12 @@ Game.GameScene = class GameScene extends Phaser.Scene {
         }
 
         if (this.isNpcAt(targetX, targetY)) {
+            this.player.play(`walk-${this.facing}`, true);
+            return;
+        }
+
+        if (this.placedSpeaker && this.placedSpeaker.area === this.currentArea.name &&
+            this.placedSpeaker.tileX === targetX && this.placedSpeaker.tileY === targetY) {
             this.player.play(`walk-${this.facing}`, true);
             return;
         }
@@ -1815,6 +2153,7 @@ Game.GameScene = class GameScene extends Phaser.Scene {
                     } else if (heldInput) {
                         this.facing = heldInput;
                         this.keyHoldTimer = 0;
+                        this.setIdleFrame();
                     } else {
                         this.player.anims.stop();
                         this.setIdleFrame();
@@ -2511,6 +2850,8 @@ Game.GameScene = class GameScene extends Phaser.Scene {
             Game.state.pencilCollected = true;
 
             this.dialogue.show(['You received a Pencil!']);
+        } else if (item.id === 'speaker') {
+            this.dialogue.show(['Serveri: A Partybox? Nah, I don\'t want to take it from you! But feel free to play it so we can listen to some tunes!']);
         } else {
             this.dialogue.show(['I have no use for that']);
         }
