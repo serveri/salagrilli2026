@@ -1548,11 +1548,11 @@ Game.GameScene = class GameScene extends Phaser.Scene {
             this.speakerDurationTimer = null;
         }
         if (this.zynSound) {
-            try { this.zynSound.stop(); } catch(e) {}
+            try { this.zynSound.stop(); } catch (e) { }
             this.zynSound = null;
         }
         if (this.speakerAudioFallback) {
-            try { this.speakerAudioFallback.pause(); } catch(e) {}
+            try { this.speakerAudioFallback.pause(); } catch (e) { }
             this.speakerAudioFallback = null;
         }
 
@@ -1688,7 +1688,7 @@ Game.GameScene = class GameScene extends Phaser.Scene {
         if (!this.isSpeakerDancing) return;
 
         const soundActive = (this.zynSound && this.zynSound.isPlaying) ||
-                            (this.speakerAudioFallback && !this.speakerAudioFallback.paused && !this.speakerAudioFallback.ended);
+            (this.speakerAudioFallback && !this.speakerAudioFallback.paused && !this.speakerAudioFallback.ended);
         if (!soundActive && (this.zynSound || this.speakerAudioFallback)) {
             this.stopSpeakerDance();
             return;
@@ -2851,7 +2851,7 @@ Game.GameScene = class GameScene extends Phaser.Scene {
 
             this.dialogue.show(['You received a Pencil!']);
         } else if (item.id === 'speaker') {
-            this.dialogue.show(['Serveri: A Partybox? Nah, I don\'t want to take it from you! But feel free to play it so we can listen to some tunes!']);
+            this.dialogue.show(['Serveri: A Partybox? Nah, I don\'t want to take it from you! But play it!']);
         } else {
             this.dialogue.show(['I have no use for that']);
         }

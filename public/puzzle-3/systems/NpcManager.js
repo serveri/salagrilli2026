@@ -141,10 +141,10 @@ Game.NpcManager = class NpcManager {
                 sprite: scene.add.sprite(51 * Game.TILE_SIZE, 59 * Game.TILE_SIZE - 4, 'juoppo', 0).setOrigin(0, 0).setDepth(10)
             };
             scene.hacker = {
-                tileX: 24,
-                tileY: 24,
+                tileX: 12,
+                tileY: 37,
                 facing: 'down',
-                sprite: scene.add.sprite(24 * Game.TILE_SIZE, 24 * Game.TILE_SIZE - 4, 'hacker', 0).setOrigin(0, 0).setDepth(10)
+                sprite: scene.add.sprite(12 * Game.TILE_SIZE, 37 * Game.TILE_SIZE - 4, 'hacker', 0).setOrigin(0, 0).setDepth(10)
             };
         }
 
@@ -408,7 +408,7 @@ Game.NpcManager = class NpcManager {
             return true;
         }
 
-        // 12. Hacker in savilahti at (24, 24)
+        // 12. Hacker in savilahti at (12, 37)
         if (scene.hacker && targetX === scene.hacker.tileX && targetY === scene.hacker.tileY) {
             this._faceNpc(scene.hacker);
             Game.state = Game.state || {};
