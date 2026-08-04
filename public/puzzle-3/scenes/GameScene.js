@@ -142,8 +142,8 @@ Game.GameScene = class GameScene extends Phaser.Scene {
 
             this.player.setTexture('playerextra', 1);
 
-            // Delay start dialogue box until location text has faded
-            this.time.delayedCall(1800, () => {
+            // Delay start dialogue box until location text has faded (2800ms to match +1s black screen duration)
+            this.time.delayedCall(2800, () => {
                 this.player.setTexture('playerextra', 1);
                 // Show intro dialogue with slower typing speed (50ms per character)
                 this.dialogue.show([
@@ -160,6 +160,8 @@ Game.GameScene = class GameScene extends Phaser.Scene {
                         }
                     });
                     this.isIntroSleeping = false;
+                    this.isSleeping = false;
+                    this.player.setTexture('player');
                     this.setIdleFrame();
                 }, [], 50);
             });
@@ -1380,8 +1382,7 @@ Game.GameScene = class GameScene extends Phaser.Scene {
 
         const endLoadingEl = document.getElementById('game-loading');
         if (endLoadingEl) {
-            const isServeriquest = csvPath.includes('serveriquest');
-            const holdDelay = isServeriquest ? 1300 : 300;
+            const holdDelay = isInitialStart ? 2300 : 300;
 
             endLoadingEl.style.transition = 'opacity 0.35s ease-out';
             setTimeout(() => {
@@ -1528,13 +1529,15 @@ Game.GameScene = class GameScene extends Phaser.Scene {
     }
 
     setIdleFrame() {
-        if (this.isIntroSleeping || this.isSleeping || (this.player && this.player.texture && this.player.texture.key === 'playerextra')) {
+        if (this.isIntroSleeping || this.isSleeping) {
             if (this.player && this.player.texture && this.player.texture.key !== 'playerextra') {
                 this.player.setTexture('playerextra', 1);
+            } else if (this.player && this.player.texture) {
+                this.player.setFrame(1);
             }
             return;
         }
-        if (this.player.texture.key !== 'player') {
+        if (this.player && this.player.texture && this.player.texture.key !== 'player') {
             this.player.setTexture('player');
         }
         const currentAreaName = this.currentArea ? this.currentArea.name : '';
@@ -1934,6 +1937,8 @@ Game.GameScene = class GameScene extends Phaser.Scene {
 
                 if (!canGroundSleep) {
                     // Player loses: collapsed after sleeping in bed, collapsed twice, or time >= 8
+                    this.stopSpeakerDance();
+                    if (window.YTManager) window.YTManager.pause();
                     this.player.setTexture('playerextra');
                     this.player.setFrame(1);
 

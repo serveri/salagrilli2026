@@ -211,7 +211,7 @@ Game.MenuScene = class MenuScene extends Phaser.Scene {
             lineSpacing: 4
         }).setOrigin(0.5, 0).setResolution(2);
 
-        const restText = this.add.text(width / 2, storyText.y + storyText.height + 42, 'Controls\nMove: WASD / Arrows\nInteract: Space\nBackpack: E / I\n\nCredit\nPokemon Classic font by TheLouster115\nisaiah658\'s Pixel Pack #2\nMusic: Zhonti feat. NN-Beka - ЗЫН ЗЫН\nEverything else by https://github.com/RemesTop', {
+        const restText = this.add.text(width / 2, storyText.y + storyText.height + 42, 'Controls\nMove: WASD / Arrows\nInteract: Space\nBackpack: E / I\n\nCredit\nPokemon Classic font by TheLouster115\nisaiah658\'s Pixel Pack #2\nMusic: Zhonti feat. NN-Beka - ЗЫН ЗЫН\nEverything else by github.com/RemesTop', {
             fontFamily: 'Pokemon Classic',
             fontSize: '18px',
             color: '#ffffff',

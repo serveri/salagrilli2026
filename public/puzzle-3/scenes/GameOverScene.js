@@ -9,6 +9,9 @@ Game.GameOverScene = class GameOverScene extends Phaser.Scene {
     init(data) {
         this.passed = data.passed || false;
         this.score = data.score || 0;
+        if (!this.passed && window.YTManager) {
+            window.YTManager.pause();
+        }
     }
 
     preload() {
@@ -23,6 +26,9 @@ Game.GameOverScene = class GameOverScene extends Phaser.Scene {
         }
 
         if (!this.passed) {
+            if (window.YTManager) {
+                window.YTManager.pause();
+            }
             // === LOSE SCREEN ===
             this.cameras.main.setBackgroundColor('#000000');
 
