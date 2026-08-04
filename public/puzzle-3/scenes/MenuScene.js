@@ -208,7 +208,7 @@ Game.MenuScene = class MenuScene extends Phaser.Scene {
             lineSpacing: 4
         }).setOrigin(0.5, 0).setResolution(2);
 
-        const restText = this.add.text(width / 2, storyText.y + storyText.height + 42, 'Controls\nMove: WASD / Arrows\nInteract: Space\nBackpack: E / I\n\nCredit\nPokemon Classic font by TheLouster115\nisaiah658\'s Pixel Pack #2\nEverything else by https://github.com/RemesTop', {
+        const restText = this.add.text(width / 2, storyText.y + storyText.height + 42, 'Controls\nMove: WASD / Arrows\nInteract: Space\nBackpack: E / I\n\nCredit\nPokemon Classic font by TheLouster115\nisaiah658\'s Pixel Pack #2\nMusic: Zhonti feat. NN-Beka - ЗЫН ЗЫН\nEverything else by https://github.com/RemesTop', {
             fontFamily: 'Pokemon Classic',
             fontSize: '18px',
             color: '#ffffff',
@@ -221,7 +221,7 @@ Game.MenuScene = class MenuScene extends Phaser.Scene {
         aboutGroup.add(storyText);
         aboutGroup.add(restText);
 
-        const aboutBackBtn = this.add.image(width / 2, height / 2 + 245, 'btn');
+        const aboutBackBtn = this.add.image(width / 2, height / 2 + 270, 'btn');
         aboutBackBtn.setScale(Game.SCALE);
         aboutBackBtn.setInteractive(
             new Phaser.Geom.Rectangle(0, 0, aboutBackBtn.width, aboutBackBtn.height),
@@ -230,7 +230,7 @@ Game.MenuScene = class MenuScene extends Phaser.Scene {
         aboutBackBtn.input.cursor = 'pointer';
         aboutGroup.add(aboutBackBtn);
 
-        const aboutBackBtnLabel = this.add.text(width / 2, height / 2 + 245, 'BACK', {
+        const aboutBackBtnLabel = this.add.text(width / 2, height / 2 + 270, 'BACK', {
             fontFamily: 'Pokemon Classic',
             fontSize: '8px',
             color: '#1a1a2e'

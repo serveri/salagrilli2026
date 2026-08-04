@@ -196,16 +196,30 @@ Game.Backpack = class Backpack {
             this.headerText.setOrigin(0.5, 0.5);
 
             if (item.id === 'speaker') {
-                const playBtn = this.scene.add.text(134, 138, '[Play]', {
+                const isPlaying = (this.scene && this.scene.isSpeakerDancing) || (window.YTManager && window.YTManager.isPlaying);
+                const btnLabel = isPlaying ? '[Pause]' : '[Play]';
+                const btnColor = isPlaying ? '#884400' : '#006600';
+                const btnHoverColor = isPlaying ? '#cc6600' : '#00cc00';
+
+                const playPauseBtn = this.scene.add.text(134, 138, btnLabel, {
                     fontFamily: "'Pokemon Classic', 'Courier New', monospace",
                     fontSize: '32px',
-                    color: '#006600'
+                    color: btnColor
                 }).setOrigin(1, 0.5).setInteractive({ useHandCursor: true }).setScale(0.22);
 
-                playBtn.on('pointerover', () => playBtn.setColor('#00cc00'));
-                playBtn.on('pointerout', () => playBtn.setColor('#006600'));
-                playBtn.on('pointerdown', () => this._handleUse(item));
-                this.actionContainer.add(playBtn);
+                playPauseBtn.on('pointerover', () => playPauseBtn.setColor(btnHoverColor));
+                playPauseBtn.on('pointerout', () => playPauseBtn.setColor(btnColor));
+                playPauseBtn.on('pointerdown', () => {
+                    if (isPlaying) {
+                        this.close();
+                        if (this.scene.pauseSpeakerMusic) {
+                            this.scene.pauseSpeakerMusic();
+                        }
+                    } else {
+                        this._handleUse(item);
+                    }
+                });
+                this.actionContainer.add(playPauseBtn);
 
                 const placeBtn = this.scene.add.text(178, 138, '[Place]', {
                     fontFamily: "'Pokemon Classic', 'Courier New', monospace",

@@ -242,15 +242,37 @@ Game.GameScene = class GameScene extends Phaser.Scene {
                         : 80;
                     const vol = volumePercent / 100;
 
-                    this.dialogue.show(['Partybox: Plays your favorite song: Zyn Zyn Zyn.'], null, [
-                        {
+                    const isPlaying = this.isSpeakerDancing || (window.YTManager && window.YTManager.isPlaying);
+                    const actionBtn = isPlaying
+                        ? {
+                            text: 'Pause',
+                            color: '#884400',
+                            hoverColor: '#cc6600',
+                            onClick: () => {
+                                this.pauseSpeakerMusic();
+                            }
+                        }
+                        : {
                             text: 'Play',
                             color: '#006600',
                             hoverColor: '#00cc00',
                             onClick: () => {
                                 this.playPlacedSpeaker(vol);
                             }
-                        },
+                        };
+
+                    const volBtn = {
+                        text: 'Vol',
+                        color: '#004488',
+                        hoverColor: '#0088ff',
+                        onClick: () => {
+                            this.showSpeakerVolumeMenu();
+                        }
+                    };
+
+                    this.dialogue.show(['Partybox: Plays your favorite song: Zyn Zyn Zyn.'], null, [
+                        actionBtn,
+                        volBtn,
                         {
                             text: 'Take',
                             color: '#cc0000',
@@ -1481,26 +1503,22 @@ Game.GameScene = class GameScene extends Phaser.Scene {
     }
 
     startSpeakerMusic(volume) {
-        this.stopSpeakerDance();
+        if (!window.YTManager) return;
+        const volumePercent = (volume > 1) ? Math.min(100, Math.round(volume)) : Math.round(volume * 100);
 
-        const onMusicEnd = () => {
+        window.YTManager.onEndCallback = () => {
             this.stopSpeakerDance();
         };
 
-        if (this.sound && typeof this.sound.add === 'function') {
-            this.zynSound = this.sound.add('zynzyn');
-            this.zynSound.play({ volume });
-            this.zynSound.once('complete', onMusicEnd);
-        } else {
-            this.speakerAudioFallback = new Audio('assets/Sound/zynzyn.mp3');
-            this.speakerAudioFallback.volume = volume;
-            this.speakerAudioFallback.play();
-            this.speakerAudioFallback.onended = onMusicEnd;
-        }
-
-        this.speakerDurationTimer = this.time.delayedCall(47000, onMusicEnd);
-
+        window.YTManager.play(volumePercent);
         this.startSpeakerDance();
+    }
+
+    pauseSpeakerMusic() {
+        if (window.YTManager) {
+            window.YTManager.pause();
+        }
+        this.stopSpeakerDance();
     }
 
     startSpeakerDance() {
@@ -1547,13 +1565,8 @@ Game.GameScene = class GameScene extends Phaser.Scene {
             this.speakerDurationTimer.remove();
             this.speakerDurationTimer = null;
         }
-        if (this.zynSound) {
-            try { this.zynSound.stop(); } catch (e) { }
-            this.zynSound = null;
-        }
-        if (this.speakerAudioFallback) {
-            try { this.speakerAudioFallback.pause(); } catch (e) { }
-            this.speakerAudioFallback = null;
+        if (window.YTManager) {
+            window.YTManager.pause();
         }
 
         if (!this.isMoving && this.facing === 'down') {
@@ -1613,13 +1626,60 @@ Game.GameScene = class GameScene extends Phaser.Scene {
         }
     }
 
+    showSpeakerVolumeMenu() {
+        const curVol = (window.Game && window.Game.settings && window.Game.settings.volume !== undefined)
+            ? window.Game.settings.volume
+            : 80;
+
+        this.dialogue.show([`Partybox Volume: ${curVol}%`], null, [
+            {
+                text: '-10%',
+                color: '#cc0000',
+                hoverColor: '#ff3333',
+                onClick: () => {
+                    const newVol = Math.max(0, curVol - 10);
+                    if (window.Game && window.Game.settings) {
+                        window.Game.settings.volume = newVol;
+                    }
+                    if (window.YTManager) {
+                        window.YTManager.setVolume(newVol);
+                    }
+                    this.showSpeakerVolumeMenu();
+                }
+            },
+            {
+                text: '+10%',
+                color: '#006600',
+                hoverColor: '#00cc00',
+                onClick: () => {
+                    const newVol = Math.min(100, curVol + 10);
+                    if (window.Game && window.Game.settings) {
+                        window.Game.settings.volume = newVol;
+                    }
+                    if (window.YTManager) {
+                        window.YTManager.setVolume(newVol);
+                    }
+                    this.showSpeakerVolumeMenu();
+                }
+            },
+            {
+                text: 'Back',
+                color: '#666666',
+                hoverColor: '#aaaaaa',
+                onClick: () => {
+                    this.tryInteract();
+                }
+            }
+        ]);
+    }
+
     playPlacedSpeaker(volume) {
         if (this.placedSpeaker && this.placedSpeaker.sprite && this.placedSpeaker.sprite.active) {
             this.placedSpeaker.sprite.play('speaker_playing');
             this.placedSpeaker.isPlaying = true;
         }
 
-        const volumePercent = Math.round(volume * 100);
+        const volumePercent = (volume > 1) ? Math.min(100, Math.round(volume)) : Math.round(volume * 100);
         this.startSpeakerMusic(volume);
 
         if (this.dialogue) {
@@ -1686,13 +1746,6 @@ Game.GameScene = class GameScene extends Phaser.Scene {
 
     _updateDanceStep() {
         if (!this.isSpeakerDancing) return;
-
-        const soundActive = (this.zynSound && this.zynSound.isPlaying) ||
-            (this.speakerAudioFallback && !this.speakerAudioFallback.paused && !this.speakerAudioFallback.ended);
-        if (!soundActive && (this.zynSound || this.speakerAudioFallback)) {
-            this.stopSpeakerDance();
-            return;
-        }
 
         this.danceStep = (this.danceStep === 0) ? 1 : 0;
 

@@ -119,9 +119,6 @@ Game.BootScene = class BootScene extends Phaser.Scene {
 
         // Lose screen image
         this.load.image('ratlost', 'ratlost.png');
-
-        // Zyn Zyn Zyn audio track
-        this.load.audio('zynzyn', 'Sound/zynzyn.mp3');
     }
 
     create() {

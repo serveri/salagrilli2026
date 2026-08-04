@@ -155,10 +155,12 @@ Game.DialogueBox = class DialogueBox {
 
         if (this.buttonElements && this.buttonElements.length > 0) {
             const btnY = boxY + this.boxH - 26; // Raised higher
-            let btnX = boxX + (this.boxW - (this.buttonElements.length * 75 - 5)) / 2 + 35;
+            const count = this.buttonElements.length;
+            const spacing = count >= 3 ? 46 : 58;
+            let btnX = boxX + (this.boxW - ((count - 1) * spacing)) / 2;
             this.buttonElements.forEach(b => {
                 b.text.setPosition(btnX, btnY);
-                btnX += 75;
+                btnX += spacing;
             });
         }
     }
