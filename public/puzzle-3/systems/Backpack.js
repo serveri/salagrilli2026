@@ -406,11 +406,20 @@ Game.Backpack = class Backpack {
             let pages = [];
             if (item.id === 'cheat_sheet') {
                 const activeQs = window.Game && window.Game.getOrCreateActiveQuestions ? window.Game.getOrCreateActiveQuestions() : [];
-                const lines = activeQs.map((q, idx) => `Q${idx + 1}: ${q.answerIndices.join(', ')}`);
-                const page1 = ['Cheat Sheet Answers:'].concat(lines.slice(0, 3)).join('\n');
-                const page2 = lines.slice(3, 7).join('\n');
-                const page3 = lines.slice(7, 10).join('\n');
-                pages = [page1, page2, page3];
+                pages = [];
+                const totalPages = Math.ceil(activeQs.length / 2);
+                for (let i = 0; i < activeQs.length; i += 2) {
+                    const pageNum = Math.floor(i / 2) + 1;
+                    const q1 = activeQs[i];
+                    const q2 = activeQs[i + 1];
+
+                    let pageStr = `Cheat Sheet (${pageNum}/${totalPages}):\n`;
+                    pageStr += `Q${i + 1}: ${q1.answer.join(' ')}`;
+                    if (q2) {
+                        pageStr += `\nQ${i + 2}: ${q2.answer.join(' ')}`;
+                    }
+                    pages.push(pageStr);
+                }
             } else if (Array.isArray(item.desc)) {
                 pages = item.desc.map((text, index) => index === 0 ? `${item.name}: ${text}` : text);
             } else {
@@ -478,7 +487,7 @@ Game.Backpack = class Backpack {
         if (item.id === 'energy_drink') {
             if (this.scene && typeof this.scene.energy !== 'undefined') {
                 const old = this.scene.energy;
-                this.scene.energy = Math.min(200, this.scene.energy + 100);
+                this.scene.energy = Math.min(200, this.scene.energy + 80);
                 if (this.scene.addEnergyDiff) {
                     this.scene.addEnergyDiff(this.scene.energy - old);
                 }
@@ -493,7 +502,7 @@ Game.Backpack = class Backpack {
             if (this.scene.dialogue) {
                 this.scene.dialogue.show([
                     `You drank the ${item.name}!`,
-                    `Restored 100 energy.`
+                    `Restored 80 energy.`
                 ], () => { this.open(); });
             }
         } else if (item.id === 'jallu' || item.id === 'gambina' || item.id === 'jallukanto') {
@@ -554,6 +563,10 @@ Game.Backpack = class Backpack {
 
                 if (typeof this.scene.updateDrunkEffect === 'function') {
                     this.scene.updateDrunkEffect();
+                }
+
+                if (typeof this.scene.onPlayerDrankAlcohol === 'function') {
+                    this.scene.onPlayerDrankAlcohol(item.id);
                 }
             }
 

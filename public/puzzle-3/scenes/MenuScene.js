@@ -93,17 +93,17 @@ Game.MenuScene = class MenuScene extends Phaser.Scene {
         menuGroup.add(settingsBtnLabel);
 
         // --- Settings View Elements ---
-        const settingsTitle = this.add.text(width / 2, height / 4, 'SETTINGS', {
+        const settingsTitle = this.add.text(width / 2, height / 4 - 30, 'SETTINGS', {
             fontFamily: 'Pokemon Classic',
-            fontSize: '24px',
+            fontSize: '28px',
             color: '#ffffff'
         }).setOrigin(0.5);
         settingsGroup.add(settingsTitle);
 
         // CRT Filter Option
-        const crtLabel = this.add.text(width / 2 - 120, height / 2 - 35, 'CRT Filter:', {
+        const crtLabel = this.add.text(width / 2 - 145, height / 2 - 110, 'CRT Filter:', {
             fontFamily: 'Pokemon Classic',
-            fontSize: '14px',
+            fontSize: '16px',
             color: '#aaaaaa'
         }).setOrigin(0, 0.5);
         settingsGroup.add(crtLabel);
@@ -111,9 +111,9 @@ Game.MenuScene = class MenuScene extends Phaser.Scene {
         const getCrtText = () => Game.settings.crtEnabled ? '[ ON ]' : '[ OFF ]';
         const getCrtColor = () => Game.settings.crtEnabled ? '#00ff66' : '#ff4444';
 
-        const crtToggleBtn = this.add.text(width / 2 + 50, height / 2 - 35, getCrtText(), {
+        const crtToggleBtn = this.add.text(width / 2 + 40, height / 2 - 110, getCrtText(), {
             fontFamily: 'Pokemon Classic',
-            fontSize: '14px',
+            fontSize: '16px',
             color: getCrtColor()
         }).setOrigin(0, 0.5).setInteractive({ useHandCursor: true });
         settingsGroup.add(crtToggleBtn);
@@ -130,30 +130,30 @@ Game.MenuScene = class MenuScene extends Phaser.Scene {
         });
 
         // Volume Option
-        const volLabel = this.add.text(width / 2 - 120, height / 2 + 15, 'Volume:', {
+        const volLabel = this.add.text(width / 2 - 145, height / 2 - 60, 'Volume:', {
             fontFamily: 'Pokemon Classic',
-            fontSize: '14px',
+            fontSize: '16px',
             color: '#aaaaaa'
         }).setOrigin(0, 0.5);
         settingsGroup.add(volLabel);
 
-        const volMinusBtn = this.add.text(width / 2 + 35, height / 2 + 15, '[-]', {
+        const volMinusBtn = this.add.text(width / 2 + 25, height / 2 - 60, '[-]', {
             fontFamily: 'Pokemon Classic',
-            fontSize: '14px',
+            fontSize: '16px',
             color: '#ffd700'
         }).setOrigin(0.5, 0.5).setInteractive({ useHandCursor: true });
         settingsGroup.add(volMinusBtn);
 
-        const volValueText = this.add.text(width / 2 + 95, height / 2 + 15, `${Game.settings.volume}%`, {
+        const volValueText = this.add.text(width / 2 + 90, height / 2 - 60, `${Game.settings.volume}%`, {
             fontFamily: 'Pokemon Classic',
-            fontSize: '14px',
+            fontSize: '16px',
             color: '#ffffff'
         }).setOrigin(0.5, 0.5);
         settingsGroup.add(volValueText);
 
-        const volPlusBtn = this.add.text(width / 2 + 155, height / 2 + 15, '[+]', {
+        const volPlusBtn = this.add.text(width / 2 + 155, height / 2 - 60, '[+]', {
             fontFamily: 'Pokemon Classic',
-            fontSize: '14px',
+            fontSize: '16px',
             color: '#ffd700'
         }).setOrigin(0.5, 0.5).setInteractive({ useHandCursor: true });
         settingsGroup.add(volPlusBtn);
@@ -176,7 +176,69 @@ Game.MenuScene = class MenuScene extends Phaser.Scene {
             volValueText.setText(`${Game.settings.volume}%`);
         });
 
-        // Settings Back Button
+        // Music Source Option
+        const musicSourceLabel = this.add.text(width / 2 - 145, height / 2 - 10, 'Music Source:', {
+            fontFamily: 'Pokemon Classic',
+            fontSize: '16px',
+            color: '#aaaaaa'
+        }).setOrigin(0, 0.5);
+        settingsGroup.add(musicSourceLabel);
+
+        const getMusicSourceText = () => (Game.settings.musicSource === 'mp3') ? '[ MP3 ]' : '[ YouTube ]';
+        const musicSourceToggleBtn = this.add.text(width / 2 + 40, height / 2 - 10, getMusicSourceText(), {
+            fontFamily: 'Pokemon Classic',
+            fontSize: '16px',
+            color: '#00ff66'
+        }).setOrigin(0, 0.5).setInteractive({ useHandCursor: true });
+        settingsGroup.add(musicSourceToggleBtn);
+
+        const musicSourceInfo = this.add.text(width / 2, height / 2 + 30, 'Use MP3 if YouTube fails to work', {
+            fontFamily: 'Pokemon Classic',
+            fontSize: '12px',
+            color: '#888899'
+        }).setOrigin(0.5, 0.5);
+        settingsGroup.add(musicSourceInfo);
+
+        let isTestingMusic = false;
+        const testMusicBtn = this.add.text(width / 2, height / 2 + 75, '[ Test audio ]', {
+            fontFamily: 'Pokemon Classic',
+            fontSize: '16px',
+            color: '#ffd700'
+        }).setOrigin(0.5, 0.5).setInteractive({ useHandCursor: true });
+        settingsGroup.add(testMusicBtn);
+
+        const stopMusicTest = () => {
+            if (window.YTManager) window.YTManager.stop();
+            isTestingMusic = false;
+            testMusicBtn.setText('[ Test audio ]');
+            testMusicBtn.setColor('#ffd700');
+        };
+
+        musicSourceToggleBtn.on('pointerover', () => musicSourceToggleBtn.setAlpha(0.8));
+        musicSourceToggleBtn.on('pointerout', () => musicSourceToggleBtn.setAlpha(1.0));
+        musicSourceToggleBtn.on('pointerdown', () => {
+            if (Game.playClickSound) Game.playClickSound();
+            stopMusicTest();
+            Game.settings.musicSource = (Game.settings.musicSource === 'mp3') ? 'youtube' : 'mp3';
+            Game.saveSettings();
+            musicSourceToggleBtn.setText(getMusicSourceText());
+        });
+
+        testMusicBtn.on('pointerover', () => testMusicBtn.setAlpha(0.8));
+        testMusicBtn.on('pointerout', () => testMusicBtn.setAlpha(1.0));
+        testMusicBtn.on('pointerdown', () => {
+            if (Game.playClickSound) Game.playClickSound();
+            if (isTestingMusic) {
+                stopMusicTest();
+            } else {
+                if (window.YTManager) window.YTManager.play(Game.settings.volume);
+                isTestingMusic = true;
+                testMusicBtn.setText('[ Stop audio ]');
+                testMusicBtn.setColor('#ff4444');
+            }
+        });
+
+        // Settings Back Button (Positioned at same level as Main Menu SETTINGS button: height / 2 + 170)
         const settingsBackBtn = this.add.image(width / 2, height / 2 + 170, 'btn');
         settingsBackBtn.setScale(Game.SCALE);
         settingsBackBtn.setInteractive(
@@ -270,6 +332,7 @@ Game.MenuScene = class MenuScene extends Phaser.Scene {
         settingsBtn.on('pointerdown', () => {
             if (starting) return;
             if (Game.playClickSound) Game.playClickSound();
+            stopMusicTest();
             settingsBtn.setTexture('btn_pressed');
             this.time.delayedCall(150, () => {
                 settingsBtn.setTexture('btn');
@@ -291,8 +354,10 @@ Game.MenuScene = class MenuScene extends Phaser.Scene {
 
         settingsBackBtn.on('pointerdown', () => {
             if (Game.playClickSound) Game.playClickSound();
+            stopMusicTest();
             settingsBackBtn.setTexture('btn_pressed');
             this.time.delayedCall(150, () => {
+                stopMusicTest();
                 settingsBackBtn.setTexture('btn');
                 settingsGroup.setVisible(false);
                 menuGroup.setVisible(true);
@@ -319,6 +384,7 @@ Game.MenuScene = class MenuScene extends Phaser.Scene {
 
         this.input.keyboard.on('keydown-ESC', () => {
             if (settingsGroup.getChildren()[0].visible) {
+                stopMusicTest();
                 settingsGroup.setVisible(false);
                 menuGroup.setVisible(true);
             } else if (aboutGroup.getChildren()[0].visible) {

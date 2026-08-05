@@ -154,13 +154,17 @@ Game.DialogueBox = class DialogueBox {
         }
 
         if (this.buttonElements && this.buttonElements.length > 0) {
-            const btnY = boxY + this.boxH - 26; // Raised higher
+            const btnY = boxY + this.boxH - 24;
             const count = this.buttonElements.length;
-            const spacing = count >= 3 ? 46 : 58;
-            let btnX = boxX + (this.boxW - ((count - 1) * spacing)) / 2;
+            const totalButtonsWidth = this.buttonElements.reduce((sum, b) => sum + (b.text.displayWidth || 0), 0);
+            const remainingSpace = Math.max(0, this.boxW - totalButtonsWidth);
+            const gap = remainingSpace / (count + 1);
+
+            let currentX = boxX + gap;
             this.buttonElements.forEach(b => {
-                b.text.setPosition(btnX, btnY);
-                btnX += spacing;
+                const halfW = (b.text.displayWidth || 0) / 2;
+                b.text.setPosition(currentX + halfW, btnY);
+                currentX += (b.text.displayWidth || 0) + gap;
             });
         }
     }

@@ -9,13 +9,23 @@ Game.EXAM_QUESTIONS = [
         answer: ['log n', 'n', 'n^2', '2^n']
     },
     {
+        question: 'What is the time complexity of queuing for Savo-Karjala excursion tickets?',
+        words: ['O(1)', 'O(n)', 'O(n^2)', 'O(infinity)'],
+        answer: ['O(infinity)']
+    },
+    {
+        question: 'What is the correct HTTP status code for blacking out during an exam?',
+        words: ['500', 'Internal', 'Serveri', 'Error', 'am', 'teapot'],
+        answer: ['500', 'Internal', 'Serveri', 'Error']
+    },
+    {
         question: 'Please, for the love of sanity, how do we start a Java program?',
         words: ['public', 'static', 'void', 'main', 'private', 'please'],
         answer: ['public', 'static', 'void', 'main']
     },
     {
-        question: 'a = 1\nb = a + (a + 1) * (a + 2) + (a + 3) \na += 4 \nprint(a, b)',
-        words: ['5 19', '1 20', '5 20'],
+        question: 'a = 1\nb = a + (a + 1) * (a + 2) + (a + 3) \na += 4 \nprint(a, b) #prints...',
+        words: ['5 19', '1 20', '5 20', 'a', 'python', 'snake'],
         answer: ['5 19']
     },
     {
@@ -40,7 +50,7 @@ Game.EXAM_QUESTIONS = [
     },
     {
         question: 'What is the fastest way to exit the Vim text editor?',
-        words: ['hold', 'down', 'the', 'power', 'button', 'colon', 'quit', 'escape', 'save'],
+        words: ['hold', 'down', 'the', 'power', 'button', 'quit', 'escape', 'save'],
         answer: ['hold', 'down', 'the', 'power', 'button']
     },
     {
@@ -55,7 +65,7 @@ Game.EXAM_QUESTIONS = [
     },
     {
         question: 'To be or not to be, that is the...',
-        words: ['standard', 'boolean', 'logic', 'joke', 'Letkautus', 'false'],
+        words: ['standard', 'boolean', 'logic', 'joke', 'vitsi', 'false'],
         answer: ['standard', 'boolean', 'logic']
     },
     {
@@ -95,7 +105,7 @@ Game.EXAM_QUESTIONS = [
     },
     {
         question: "Complete the sentence: A bug is an...",
-        words: ["error", "in", "code", "feature", "computer", "keyboard"],
+        words: ["error", "in", "code", "claude", "make", "mistake"],
         answer: ["error", "in", "code"]
     },
     {
@@ -1274,11 +1284,13 @@ Game.Exam = class Exam {
         });
 
         const passed = finalScore >= 50;
+        const centerX = (this.paperLeft + this.paperRight) / 2;
+        const centerY = (this.paperTop + this.paperBottom) / 2;
 
         // Result text
         const resultText = this.scene.add.text(
-            (this.paperLeft + this.paperRight) / 2,
-            (this.paperTop + this.paperBottom) / 2 - 15,
+            centerX,
+            centerY - 24,
             passed ? 'PASSED!' : 'FAILED',
             {
                 fontFamily: "'Pokemon Classic', 'Courier New', monospace",
@@ -1290,8 +1302,8 @@ Game.Exam = class Exam {
         this.container.add(resultText);
 
         const scoreResult = this.scene.add.text(
-            (this.paperLeft + this.paperRight) / 2,
-            (this.paperTop + this.paperBottom) / 2 + 5,
+            centerX,
+            centerY - 8,
             `Score: ${finalScore}/100`,
             {
                 fontFamily: "'Pokemon Classic', 'Courier New', monospace",
@@ -1302,14 +1314,42 @@ Game.Exam = class Exam {
         ).setOrigin(0.5, 0.5).setResolution(10);
         this.container.add(scoreResult);
 
+        // Feedback comment based on performance
+        let feedbackComment = "";
+        if (finalScore === 100) {
+            feedbackComment = "Suspicious... Did you get a cheat sheet from Old Serveri?";
+        } else if (finalScore >= 70) {
+            feedbackComment = "Impressive! Javaste would be proud.";
+        } else if (finalScore >= 50) {
+            feedbackComment = "Good enough for a Savonia AMK degree!";
+        } else if (finalScore >= 30) {
+            feedbackComment = "Are you drunk?";
+        } else {
+            feedbackComment = "500 Internal Serveri Error!";
+        }
+
+        const feedbackText = this.scene.add.text(
+            centerX,
+            centerY + 8,
+            feedbackComment,
+            {
+                fontFamily: "'Pokemon Classic', 'Courier New', monospace",
+                fontSize: '5.5px',
+                color: '#444455',
+                align: 'center',
+                wordWrap: { width: (this.paperRight - this.paperLeft) - 20 }
+            }
+        ).setOrigin(0.5, 0.5).setResolution(10);
+        this.container.add(feedbackText);
+
         const continueText = this.scene.add.text(
-            (this.paperLeft + this.paperRight) / 2,
-            (this.paperTop + this.paperBottom) / 2 + 22,
+            centerX,
+            centerY + 26,
             'Press SPACE to continue',
             {
                 fontFamily: "'Pokemon Classic', 'Courier New', monospace",
                 fontSize: '5px',
-                color: '#555566',
+                color: '#888899',
                 align: 'center'
             }
         ).setOrigin(0.5, 0.5).setResolution(10);

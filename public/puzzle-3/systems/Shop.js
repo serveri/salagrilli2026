@@ -17,11 +17,11 @@ Game.Shop = class Shop {
                 id: 'energy_drink',
                 name: 'Energy drink 5€',
                 price: 5,
-                desc: 'Classic MegaShopper energy drink, what a throwback! Restores 100 energy.',
+                desc: 'Classic MegaShopper energy drink, what a throwback! Restores 80 energy.',
                 itemData: {
                     id: 'energy_drink',
                     name: 'Energy drink',
-                    desc: 'Classic MegaShopper energy drink, what a throwback! Restores 100 energy.',
+                    desc: 'Classic MegaShopper energy drink, what a throwback! Restores 80 energy.',
                     canUse: true
                 }
             },

@@ -12,7 +12,8 @@ Game.testingmode = false;
 // Shared Game Settings & Persistence
 Game.settings = Game.settings || {
     crtEnabled: true,
-    volume: 80
+    volume: 80,
+    musicSource: 'youtube'
 };
 
 try {

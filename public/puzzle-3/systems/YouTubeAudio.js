@@ -1,15 +1,16 @@
-// YouTubeAudio: Manages background music playback via YouTube IFrame API (ECWwpmP3spY)
+// YouTubeAudio / MusicManager: Manages background music playback via YouTube IFrame API or Local MP3 Audio
 window.Game = window.Game || {};
 
 window.YTManager = {
     player: null,
+    mp3Player: null,
     isReady: false,
     isPlaying: false,
     isPendingPlay: false,
     checkInterval: null,
     volume: 80,
-    startTime: 5,
-    endTime: 175,
+    startTime: 0,
+    endTime: 177,
     onEndCallback: null,
 
     init() {
@@ -29,6 +30,36 @@ window.YTManager = {
 
         this._inited = true;
 
+        // Init MP3 Player
+        try {
+            this.mp3Player = new Audio();
+            this.mp3Player.src = 'assets/Sound/zynzyn.mp3';
+            this.mp3Player.loop = true;
+            this.mp3Player.addEventListener('play', () => {
+                const source = (window.Game && window.Game.settings && window.Game.settings.musicSource) ? window.Game.settings.musicSource : 'youtube';
+                if (source === 'mp3') {
+                    this.isPlaying = true;
+                    this.isPendingPlay = false;
+                }
+            });
+            this.mp3Player.addEventListener('pause', () => {
+                const source = (window.Game && window.Game.settings && window.Game.settings.musicSource) ? window.Game.settings.musicSource : 'youtube';
+                if (source === 'mp3' && !this.isPendingPlay) {
+                    this.isPlaying = false;
+                }
+            });
+            this.mp3Player.addEventListener('ended', () => {
+                const source = (window.Game && window.Game.settings && window.Game.settings.musicSource) ? window.Game.settings.musicSource : 'youtube';
+                if (source === 'mp3') {
+                    this.isPlaying = false;
+                    if (this.onEndCallback) this.onEndCallback();
+                }
+            });
+        } catch (e) {
+            console.warn('MP3 player init error:', e);
+        }
+
+        // Init YouTube Player Container
         if (!document.getElementById('yt-player-container')) {
             const container = document.createElement('div');
             container.id = 'yt-player-container';
@@ -55,7 +86,7 @@ window.YTManager = {
                     modestbranding: 1,
                     enablejsapi: 1,
                     origin: originStr,
-                    start: 5
+                    start: 0
                 },
                 events: {
                     onReady: (event) => {
@@ -65,13 +96,27 @@ window.YTManager = {
                             if (window.YTManager.volume !== undefined) {
                                 event.target.setVolume(window.YTManager.volume);
                             }
-                        } catch (e) {}
+                        } catch (e) { }
                         if (window.YTManager.isPendingPlay) {
                             window.YTManager.play(window.YTManager.volume);
+                        } else {
+                            try { event.target.pauseVideo(); } catch (e) { }
                         }
                     },
                     onStateChange: (event) => {
+                        const source = (window.Game && window.Game.settings && window.Game.settings.musicSource) ? window.Game.settings.musicSource : 'youtube';
+                        if (source !== 'youtube') {
+                            if (event.data === YT.PlayerState.PLAYING || event.data === YT.PlayerState.BUFFERING) {
+                                try { event.target.pauseVideo(); } catch (e) { }
+                            }
+                            return;
+                        }
+
                         if (event.data === YT.PlayerState.PLAYING) {
+                            if (!window.YTManager.isPendingPlay && !window.YTManager.isPlaying) {
+                                try { event.target.pauseVideo(); } catch (e) { }
+                                return;
+                            }
                             window.YTManager.isPlaying = true;
                             window.YTManager.isPendingPlay = false;
                             window.YTManager._startCheckInterval();
@@ -133,11 +178,37 @@ window.YTManager = {
 
     play(volPercent) {
         this.init();
-        this.isPendingPlay = true;
-        this.isPlaying = true;
         if (volPercent !== undefined) {
             this.volume = volPercent;
         }
+
+        const source = (window.Game && window.Game.settings && window.Game.settings.musicSource) ? window.Game.settings.musicSource : 'youtube';
+
+        if (source === 'mp3') {
+            // Pause YouTube player if playing
+            if (this.player && typeof this.player.pauseVideo === 'function') {
+                try { this.player.pauseVideo(); } catch (e) { }
+            }
+            this._stopCheckInterval();
+
+            if (this.mp3Player) {
+                this.mp3Player.volume = Math.max(0, Math.min(1, (this.volume / 100) * 0.6));
+                this.isPendingPlay = false;
+                this.isPlaying = true;
+                this.mp3Player.play().catch(e => {
+                    console.warn('MP3 play error:', e);
+                });
+            }
+            return;
+        }
+
+        // YouTube playback
+        if (this.mp3Player) {
+            try { this.mp3Player.pause(); } catch (e) { }
+        }
+
+        this.isPendingPlay = true;
+        this.isPlaying = true;
 
         if (this.player && typeof this.player.playVideo === 'function') {
             try {
@@ -161,8 +232,11 @@ window.YTManager = {
     pause() {
         this.isPendingPlay = false;
         this.isPlaying = false;
+        if (this.mp3Player) {
+            try { this.mp3Player.pause(); } catch (e) { }
+        }
         if (this.player && typeof this.player.pauseVideo === 'function') {
-            try { this.player.pauseVideo(); } catch (e) {}
+            try { this.player.pauseVideo(); } catch (e) { }
         }
         this._stopCheckInterval();
     },
@@ -170,21 +244,35 @@ window.YTManager = {
     stop() {
         this.isPendingPlay = false;
         this.isPlaying = false;
-        if (this.player && typeof this.player.pauseVideo === 'function') {
+        if (this.mp3Player) {
             try {
-                this.player.pauseVideo();
-                if (typeof this.player.seekTo === 'function') {
-                    this.player.seekTo(this.startTime, true);
+                this.mp3Player.pause();
+                this.mp3Player.currentTime = 0;
+            } catch (e) { }
+        }
+        if (this.player) {
+            try {
+                if (typeof this.player.pauseVideo === 'function') {
+                    this.player.pauseVideo();
                 }
-            } catch (e) {}
+                if (typeof this.player.stopVideo === 'function') {
+                    this.player.stopVideo();
+                }
+                if (typeof this.player.seekTo === 'function') {
+                    this.player.seekTo(0, true);
+                }
+            } catch (e) { }
         }
         this._stopCheckInterval();
     },
 
     setVolume(volPercent) {
         this.volume = volPercent;
+        if (this.mp3Player) {
+            try { this.mp3Player.volume = Math.max(0, Math.min(1, (volPercent / 100) * 0.6)); } catch (e) { }
+        }
         if (this.player && typeof this.player.setVolume === 'function') {
-            try { this.player.setVolume(volPercent); } catch (e) {}
+            try { this.player.setVolume(volPercent); } catch (e) { }
         }
     }
 };

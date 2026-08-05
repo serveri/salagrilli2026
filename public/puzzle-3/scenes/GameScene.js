@@ -45,12 +45,14 @@ Game.GameScene = class GameScene extends Phaser.Scene {
             repeat: -1
         });
 
-        this.anims.create({
-            key: 'speaker_playing',
-            frames: this.anims.generateFrameNumbers('items', { start: 0, end: 3 }),
-            frameRate: 8,
-            repeat: -1
-        });
+        if (!this.anims.exists('speaker_playing')) {
+            this.anims.create({
+                key: 'speaker_playing',
+                frames: this.anims.generateFrameNumbers('items', { start: 0, end: 3 }),
+                frameRate: 8,
+                repeat: -1
+            });
+        }
 
         // Pencil spin animation (6 frames)
         this.anims.create({
@@ -82,6 +84,32 @@ Game.GameScene = class GameScene extends Phaser.Scene {
         this.anims.create({
             key: 'poliisi-walk-right',
             frames: this.anims.generateFrameNumbers('poliisi', { frames: [12, 13, 14, 15] }),
+            frameRate: 10,
+            repeat: -1
+        });
+
+        // Oldman Animations (16x20, 4 columns)
+        this.anims.create({
+            key: 'oldman-walk-down',
+            frames: this.anims.generateFrameNumbers('oldman', { frames: [0, 1, 2, 3] }),
+            frameRate: 10,
+            repeat: -1
+        });
+        this.anims.create({
+            key: 'oldman-walk-up',
+            frames: this.anims.generateFrameNumbers('oldman', { frames: [4, 5, 6, 7] }),
+            frameRate: 10,
+            repeat: -1
+        });
+        this.anims.create({
+            key: 'oldman-walk-left',
+            frames: this.anims.generateFrameNumbers('oldman', { frames: [8, 9, 10, 11] }),
+            frameRate: 10,
+            repeat: -1
+        });
+        this.anims.create({
+            key: 'oldman-walk-right',
+            frames: this.anims.generateFrameNumbers('oldman', { frames: [12, 13, 14, 15] }),
             frameRate: 10,
             repeat: -1
         });
@@ -194,7 +222,7 @@ Game.GameScene = class GameScene extends Phaser.Scene {
         // Toggle backpack with 'E' or 'I' key
         const toggleBag = () => {
             if (this.dialogue && this.dialogue.active) return;
-            if (this.isMapOpen || this.isExamOpen || (this.shop && this.shop.isOpen)) return;
+            if (this.isMapOpen || this.isExamOpen || (this.shop && this.shop.isOpen) || this.isIntroSleeping || this.isSleeping) return;
 
             if (this.backpack && this.backpack.active) {
                 this.backpack.close();
@@ -218,7 +246,7 @@ Game.GameScene = class GameScene extends Phaser.Scene {
 
         // Inspect interaction
         this.input.keyboard.on('keydown-SPACE', () => {
-            if (this.isTransitioning || this.isMoving || this.isMapOpen || this.isExamOpen || (this.shop && this.shop.isOpen)) return;
+            if (this.isTransitioning || this.isMoving || this.isMapOpen || this.isExamOpen || (this.shop && this.shop.isOpen) || this.isIntroSleeping || this.isSleeping) return;
             if (this.dialogue && this.dialogue.active) return;
             if (this.backpack && this.backpack.active) return;
 
@@ -239,51 +267,7 @@ Game.GameScene = class GameScene extends Phaser.Scene {
                     this.tileX === this.placedSpeaker.tileX && this.tileY === this.placedSpeaker.tileY;
 
                 if (!interacted && (isFacingSpeaker || isStandingOnSpeaker)) {
-                    const volumePercent = (window.Game && window.Game.settings && window.Game.settings.volume !== undefined)
-                        ? window.Game.settings.volume
-                        : 80;
-                    const vol = volumePercent / 100;
-
-                    const isPlaying = this.isSpeakerDancing || (window.YTManager && window.YTManager.isPlaying);
-                    const actionBtn = isPlaying
-                        ? {
-                            text: 'Pause',
-                            color: '#884400',
-                            hoverColor: '#cc6600',
-                            onClick: () => {
-                                this.pauseSpeakerMusic();
-                            }
-                        }
-                        : {
-                            text: 'Play',
-                            color: '#006600',
-                            hoverColor: '#00cc00',
-                            onClick: () => {
-                                this.playPlacedSpeaker(vol);
-                            }
-                        };
-
-                    const volBtn = {
-                        text: 'Vol',
-                        color: '#004488',
-                        hoverColor: '#0088ff',
-                        onClick: () => {
-                            this.showSpeakerVolumeMenu();
-                        }
-                    };
-
-                    this.dialogue.show(['Partybox: Plays your favorite song: Zyn Zyn Zyn.'], null, [
-                        actionBtn,
-                        volBtn,
-                        {
-                            text: 'Take',
-                            color: '#cc0000',
-                            hoverColor: '#ff3333',
-                            onClick: () => {
-                                this.takePlacedSpeaker();
-                            }
-                        }
-                    ]);
+                    this._showSpeakerMenu();
                     interacted = true;
                 }
 
@@ -1353,9 +1337,21 @@ Game.GameScene = class GameScene extends Phaser.Scene {
         );
         this.setIdleFrame();
 
-        // Spawn Police if in serveriquest
+        // Spawn NPCs for this area
         if (this.npcManager) {
             this.npcManager.spawnNpcsForArea(this.currentArea.name);
+        }
+
+        // Create police chaser AI if police was spawned
+        if (this.police) {
+            this._createPoliceChaser();
+        }
+
+        // Clean up guard chaser when changing areas
+        if (this.guardChaserAI) {
+            this.guardChaserAI.destroy();
+            this.guardChaserAI = null;
+            this.oldServeriGuard = null;
         }
 
         // Camera bounds — center small areas
@@ -1408,6 +1404,7 @@ Game.GameScene = class GameScene extends Phaser.Scene {
         }
 
         this.updatePolice(time, delta);
+        this.updateOldServeriGuard(time, delta);
 
         if (this.exam && this.exam.isOpen) {
             this.exam.update(time, delta);
@@ -1417,7 +1414,7 @@ Game.GameScene = class GameScene extends Phaser.Scene {
             this.updateDrunkEffect();
         }
 
-        if (this.isTransitioning || (this.dialogue && this.dialogue.active) || (this.backpack && this.backpack.active) || (this.shop && this.shop.isOpen) || this.isMapOpen || this.isExamOpen || this.pendingBackpackOpen) {
+        if (this.isIntroSleeping || this.isSleeping || this.isTransitioning || (this.dialogue && this.dialogue.active) || (this.backpack && this.backpack.active) || (this.shop && this.shop.isOpen) || this.isMapOpen || this.isExamOpen || this.pendingBackpackOpen) {
             this.resetEnergyLostStack();
             return;
         }
@@ -1673,17 +1670,16 @@ Game.GameScene = class GameScene extends Phaser.Scene {
             this.placedSpeaker.isPlaying = false;
         }
 
-        if (this.dancingNpcs) {
-            this.dancingNpcs.forEach(npc => {
-                if (npc && npc.sprite && npc.sprite.active) {
-                    npc.isDancing = false;
-                    if (npc.facing === 'down') {
-                        npc.sprite.setFrame(0);
-                    }
+        const npcs = this._getAllServeriNpcs();
+        npcs.forEach(npc => {
+            if (npc && npc.sprite && npc.sprite.active) {
+                npc.isDancing = false;
+                if (npc.facing === 'down') {
+                    npc.sprite.setFrame(0);
                 }
-            });
-            this.dancingNpcs = [];
-        }
+            }
+        });
+        this.dancingNpcs = [];
     }
 
     placeSpeakerOnGround(tileX, tileY) {
@@ -1775,7 +1771,55 @@ Game.GameScene = class GameScene extends Phaser.Scene {
                 color: '#666666',
                 hoverColor: '#aaaaaa',
                 onClick: () => {
-                    this.tryInteract();
+                    this._showSpeakerMenu();
+                }
+            }
+        ]);
+    }
+
+    _showSpeakerMenu() {
+        const volumePercent = (window.Game && window.Game.settings && window.Game.settings.volume !== undefined)
+            ? window.Game.settings.volume
+            : 80;
+        const vol = volumePercent / 100;
+
+        const isPlaying = this.isSpeakerDancing || (window.YTManager && window.YTManager.isPlaying);
+        const actionBtn = isPlaying
+            ? {
+                text: 'Pause',
+                color: '#884400',
+                hoverColor: '#cc6600',
+                onClick: () => {
+                    this.pauseSpeakerMusic();
+                }
+            }
+            : {
+                text: 'Play',
+                color: '#006600',
+                hoverColor: '#00cc00',
+                onClick: () => {
+                    this.playPlacedSpeaker(vol);
+                }
+            };
+
+        const volBtn = {
+            text: 'Vol',
+            color: '#004488',
+            hoverColor: '#0088ff',
+            onClick: () => {
+                this.showSpeakerVolumeMenu();
+            }
+        };
+
+        this.dialogue.show(['Partybox: Plays your favorite song: Zyn Zyn Zyn.'], null, [
+            actionBtn,
+            volBtn,
+            {
+                text: 'Take',
+                color: '#cc0000',
+                hoverColor: '#ff3333',
+                onClick: () => {
+                    this.takePlacedSpeaker();
                 }
             }
         ]);
@@ -1832,14 +1876,17 @@ Game.GameScene = class GameScene extends Phaser.Scene {
             'examStudent2',
             'examStudent3',
             'examServeriZyn',
-            'serverinpc2'
+            'serverinpc2',
+            'oldServeriSavilahti',
+            'oldServeriExam',
+            'oldServeriGuard'
         ];
 
         possibleNpcKeys.forEach(key => {
             const npc = this[key];
             if (npc && npc.sprite && npc.sprite.active) {
                 const texKey = npc.sprite.texture ? npc.sprite.texture.key : '';
-                if (texKey === 'serverinpc' || texKey === 'serverinpc2' || texKey === 'player') {
+                if (texKey === 'serverinpc' || texKey === 'serverinpc2' || texKey === 'player' || texKey === 'oldman') {
                     if (key === 'sleepingServeri' && (!window.Game || !window.Game.state || !window.Game.state.serveriWoken)) {
                         return;
                     }
@@ -1861,20 +1908,32 @@ Game.GameScene = class GameScene extends Phaser.Scene {
             this.setIdleFrame();
         }
 
-        if (this.dancingNpcs) {
-            const currentAreaName = this.currentArea ? this.currentArea.name : '';
-            this.dancingNpcs.forEach(npc => {
-                if (!npc || !npc.sprite || !npc.sprite.active || !npc.isDancing) return;
-                if (npc.facing !== 'down' || npc.isMoving) return;
+        const currentAreaName = this.currentArea ? this.currentArea.name : '';
+        const npcs = this._getAllServeriNpcs();
 
-                const inRange = this._isCharWithinSpeakerRange(npc.tileX, npc.tileY, currentAreaName);
-                if (inRange && this.danceStep === 1) {
+        npcs.forEach(npc => {
+            if (!npc || !npc.sprite || !npc.sprite.active) return;
+            if (npc.isMoving) return;
+
+            const inRange = this._isCharWithinSpeakerRange(npc.tileX, npc.tileY, currentAreaName);
+
+            if (inRange) {
+                npc.facing = 'down';
+                npc.isDancing = true;
+                if (this.danceStep === 1) {
                     npc.sprite.setFrame(16);
                 } else {
                     npc.sprite.setFrame(0);
                 }
-            });
-        }
+            } else {
+                if (npc.isDancing) {
+                    npc.isDancing = false;
+                    if (npc.facing === 'down') {
+                        npc.sprite.setFrame(0);
+                    }
+                }
+            }
+        });
     }
 
     setSteppingFrame() {
@@ -2513,184 +2572,141 @@ Game.GameScene = class GameScene extends Phaser.Scene {
     }
 
     updatePolice(time, delta) {
+        if (this.policeChaserAI) {
+            this.policeChaserAI.update(time, delta);
+        }
+    }
+
+    _createPoliceChaser() {
         if (!this.police) return;
-        if (Game.state && Game.state.hasSlept) {
-            if (this.police.sprite) this.police.sprite.destroy();
-            this.police = null;
-            return;
-        }
-        if (this.police.isMoving) return;
-        if (this.isTransitioning) return;
-
-        // Calculate Manhattan distance to player
-        const dist = Math.abs(this.police.tileX - this.tileX) + Math.abs(this.police.tileY - this.tileY);
-
-        if (this.dialogue && this.dialogue.active && dist > 1) {
-            if (this.police.sprite.anims.isPlaying) {
-                this.police.sprite.anims.stop();
-                this.setPoliceIdleFrame();
-            }
-            return;
-        }
-
-        // If player is caught
-        if (dist <= 1) {
-            if (this.police.isStunned) return;
-
-            if (this.police.sprite.anims.isPlaying) {
-                this.police.sprite.anims.stop();
-            }
-            // Face the player
-            if (this.police.tileX > this.tileX) this.police.facing = 'left';
-            else if (this.police.tileX < this.tileX) this.police.facing = 'right';
-            else if (this.police.tileY > this.tileY) this.police.facing = 'up';
-            else if (this.police.tileY < this.tileY) this.police.facing = 'down';
-            this.setPoliceIdleFrame();
-
-            // Stop player and dialogue
-            if (this.player.anims.isPlaying) {
-                this.player.anims.stop();
-                this.setIdleFrame();
-            }
-
-            // Close backpack if open
-            if (this.backpack && this.backpack.isOpen) {
-                this.backpack.close();
-            }
-
-            this.isTransitioning = true; // lock player out
-
-            if (!this.police.hasRanOnce) {
-                this.dialogue.show(["Cop: You don't look well, how about we go sleep in the police station?"], null, [
-                    {
-                        text: 'Accept', color: '#006600', hoverColor: '#00cc00', onClick: () => {
-                            this._sendPlayerToJail();
-                        }
-                    },
-                    {
-                        text: 'Run', color: '#880000', hoverColor: '#cc0000', onClick: () => {
-                            if (this.police) {
-                                this.police.hasRanOnce = true;
-                                this.police.hasSeenPlayer = false;
-                                this.police.isStunned = true;
-                                this.time.delayedCall(4000, () => {
-                                    if (this.police) this.police.isStunned = false;
-                                });
+        this.policeChaserAI = new Game.ChaserAI(this, this.police, {
+            alertRange: 5,
+            animPrefix: 'poliisi-walk',
+            yOffset: -2,
+            speedPenalty: 15,
+            shouldRemove: (npc, scene) => {
+                return Game.state && Game.state.hasSlept;
+            },
+            onCatch: (chaserAI, scene) => {
+                const npc = chaserAI.npc;
+                if (!npc.hasRanOnce) {
+                    scene.dialogue.show(["Cop: You don't look well, how about we go sleep in the police station?"], null, [
+                        {
+                            text: 'Accept', color: '#006600', hoverColor: '#00cc00', onClick: () => {
+                                scene._sendPlayerToJail();
                             }
-                            this.isTransitioning = false;
+                        },
+                        {
+                            text: 'Run', color: '#880000', hoverColor: '#cc0000', onClick: () => {
+                                if (npc) {
+                                    npc.hasRanOnce = true;
+                                    npc.hasSeenPlayer = false;
+                                    npc.isStunned = true;
+                                    scene.time.delayedCall(4000, () => {
+                                        if (npc) npc.isStunned = false;
+                                    });
+                                }
+                                scene.isTransitioning = false;
+                            }
                         }
-                    }
-                ]);
-            } else {
-                this.dialogue.show(["Cop: And where are you planning to go then?"], () => {
-                    this._sendPlayerToJail();
-                });
-            }
-            return;
-        }
-
-        // If in range (<= 5), chase!
-        if (dist > 1 && dist <= 5) {
-            if (!this.police.hasSeenPlayer) {
-                this.police.hasSeenPlayer = true;
-                this.police.isStunned = true;
-
-                // Stop any previous animation
-                if (this.police.sprite.anims.isPlaying) {
-                    this.police.sprite.anims.stop();
-                    this.setPoliceIdleFrame();
-                }
-
-                // Show ! above police
-                const alertText = this.add.text(this.police.sprite.x + 8, this.police.sprite.y - 8, '!', {
-                    fontFamily: "'Pokemon Classic', 'Courier New', monospace",
-                    fontSize: '8px',
-                    color: '#ff0000',
-                    stroke: '#000000',
-                    strokeThickness: 1
-                }).setOrigin(0.5).setDepth(20).setResolution(2);
-
-                this.tweens.add({
-                    targets: alertText,
-                    y: alertText.y - 4,
-                    duration: 300,
-                    yoyo: true,
-                    onComplete: () => {
-                        alertText.destroy();
-                        this.police.isStunned = false;
-                    }
-                });
-                return;
-            }
-
-            if (this.police.isStunned) return;
-
-            // Find direction to move
-            const dx = this.tileX - this.police.tileX;
-            const dy = this.tileY - this.police.tileY;
-
-            let moveX = 0, moveY = 0;
-            let tryDir = null;
-
-            if (Math.abs(dx) > Math.abs(dy)) {
-                // Try X first
-                moveX = Math.sign(dx);
-                tryDir = moveX > 0 ? 'right' : 'left';
-            } else {
-                // Try Y first
-                moveY = Math.sign(dy);
-                tryDir = moveY > 0 ? 'down' : 'up';
-            }
-
-            // Fallback if blocked
-            if (!this.canPoliceMove(this.police.tileX + moveX, this.police.tileY + moveY)) {
-                if (moveX !== 0) {
-                    moveX = 0;
-                    moveY = Math.sign(dy) || 1; // Try Y if X is blocked
-                    tryDir = moveY > 0 ? 'down' : 'up';
+                    ]);
                 } else {
-                    moveY = 0;
-                    moveX = Math.sign(dx) || 1; // Try X if Y is blocked
-                    tryDir = moveX > 0 ? 'right' : 'left';
+                    scene.dialogue.show(["Cop: And where are you planning to go then?"], () => {
+                        scene._sendPlayerToJail();
+                    });
                 }
             }
+        });
+    }
 
-            if (this.canPoliceMove(this.police.tileX + moveX, this.police.tileY + moveY)) {
-                this.police.facing = tryDir;
-                this.police.isMoving = true;
-                this.police.sprite.play(`poliisi-walk-${this.police.facing}`, true);
+    onPlayerDrankAlcohol(itemId) {
+        if (!this.currentArea) return;
+        const areaName = this.currentArea.name;
 
-                const targetX = this.police.tileX + moveX;
-                const targetY = this.police.tileY + moveY;
-                const targetPxX = targetX * Game.TILE_SIZE;
-                const targetPxY = targetY * Game.TILE_SIZE - 2;
-
-                this.tweens.add({
-                    targets: this.police.sprite,
-                    x: targetPxX,
-                    y: targetPxY,
-                    duration: Game.TWEEN_DURATION + 15, // Slower police movement
-                    ease: 'Linear',
-                    onComplete: () => {
-                        this.police.tileX = targetX;
-                        this.police.tileY = targetY;
-                        this.police.isMoving = false;
+        if (areaName === 'Laitos') {
+            if (!this.guardChaserAI || !this.guardChaserAI.npc) {
+                const npc = {
+                    tileX: 2,
+                    tileY: 13,
+                    facing: 'down',
+                    isMoving: false,
+                    hasSeenPlayer: false,
+                    isStunned: false,
+                    sprite: this.add.sprite(2 * Game.TILE_SIZE, 13 * Game.TILE_SIZE - 4, 'oldman', 0).setOrigin(0, 0).setDepth(10)
+                };
+                this.oldServeriGuard = npc;
+                this.guardChaserAI = new Game.ChaserAI(this, npc, {
+                    alertRange: 15,
+                    animPrefix: 'oldman-walk',
+                    yOffset: -4,
+                    speedPenalty: 15,
+                    onCatch: (chaserAI, scene) => {
+                        scene.dialogue.show(["Old Serveri: No drinking at the department! You know perfectly well"], () => {
+                            Game.state = Game.state || {};
+                            Game.state.thrownOutByOldServeri = true;
+                            scene.cameras.main.fadeOut(300, 0, 0, 0, (camera, progress) => {
+                                if (progress === 1) {
+                                    chaserAI.destroy();
+                                    scene.guardChaserAI = null;
+                                    scene.oldServeriGuard = null;
+                                    scene.loadArea('data/savilahti.csv', 15, 42).then(() => {
+                                        scene.cameras.main.fadeIn(300, 0, 0, 0, (cam, prog) => {
+                                            if (prog === 1) {
+                                                scene.isTransitioning = false;
+                                                scene.dialogue.show(["The old man throws you out"]);
+                                            }
+                                        });
+                                    });
+                                }
+                            });
+                        });
                     }
                 });
-            } else {
-                // Blocked entirely
-                if (this.police.sprite.anims.isPlaying) {
-                    this.police.sprite.anims.stop();
-                    this.setPoliceIdleFrame();
-                }
             }
-        } else {
-            // Not in range, just stand still
-            this.police.hasSeenPlayer = false; // Reset alert so it triggers again if re-entered
-            if (this.police.sprite.anims.isPlaying) {
-                this.police.sprite.anims.stop();
-                this.setPoliceIdleFrame();
+        } else if (areaName === 'Exam') {
+            if (!this.guardChaserAI || !this.guardChaserAI.npc) {
+                const npc = {
+                    tileX: 22,
+                    tileY: 35,
+                    facing: 'down',
+                    isMoving: false,
+                    hasSeenPlayer: false,
+                    isStunned: false,
+                    sprite: this.add.sprite(22 * Game.TILE_SIZE, 35 * Game.TILE_SIZE - 4, 'oldman', 0).setOrigin(0, 0).setDepth(10)
+                };
+                this.oldServeriGuard = npc;
+                this.guardChaserAI = new Game.ChaserAI(this, npc, {
+                    alertRange: 15,
+                    animPrefix: 'oldman-walk',
+                    yOffset: -4,
+                    speedPenalty: 15,
+                    onCatch: (chaserAI, scene) => {
+                        scene.dialogue.show(["Old Serveri: No drinking at school! You know perfectly well"], () => {
+                            scene.cameras.main.fadeOut(300, 0, 0, 0, (camera, progress) => {
+                                if (progress === 1) {
+                                    chaserAI.destroy();
+                                    scene.guardChaserAI = null;
+                                    scene.oldServeriGuard = null;
+                                    scene.loadArea('data/snellmania.csv', 41, 20).then(() => {
+                                        scene.cameras.main.fadeIn(300, 0, 0, 0, (cam, prog) => {
+                                            if (prog === 1) {
+                                                scene.isTransitioning = false;
+                                                scene.dialogue.show(["The old man throws you out"]);
+                                            }
+                                        });
+                                    });
+                                }
+                            });
+                        });
+                    }
+                });
             }
+        }
+    }
+
+    updateOldServeriGuard(time, delta) {
+        if (this.guardChaserAI) {
+            this.guardChaserAI.update(time, delta);
         }
     }
 
