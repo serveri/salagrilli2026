@@ -62,6 +62,7 @@ Game.NpcManager = class NpcManager {
                 facing: 'down',
                 sprite: scene.add.sprite(13 * Game.TILE_SIZE, 5 * Game.TILE_SIZE - 4, 'opetusavustaja', 0).setOrigin(0, 0).setDepth(10)
             };
+            this.scheduleNpcTurn('examAssistant', true, 6000, 18000);
 
             scene.oldServeriExam = {
                 tileX: 14,
@@ -74,8 +75,9 @@ Game.NpcManager = class NpcManager {
                 tileX: 16,
                 tileY: 32,
                 facing: 'left',
-                sprite: scene.add.sprite(16 * Game.TILE_SIZE, 32 * Game.TILE_SIZE - 2, 'serverinpc2', 0).setOrigin(0, 0).setDepth(10)
+                sprite: scene.add.sprite(16 * Game.TILE_SIZE, 32 * Game.TILE_SIZE - 2, 'serverinpc2', 8).setOrigin(0, 0).setDepth(10)
             };
+            this.scheduleNpcTurn('examPencilNpc', true, 6000, 18000);
 
             scene.examStudent1 = {
                 tileX: 9,
@@ -155,12 +157,16 @@ Game.NpcManager = class NpcManager {
                 facing: 'down',
                 sprite: scene.add.sprite(51 * Game.TILE_SIZE, 59 * Game.TILE_SIZE - 4, 'juoppo', 0).setOrigin(0, 0).setDepth(10)
             };
+            this.scheduleNpcTurn('drunkard', true);
+
             scene.hacker = {
                 tileX: 20,
                 tileY: 14,
                 facing: 'down',
                 sprite: scene.add.sprite(20 * Game.TILE_SIZE, 14 * Game.TILE_SIZE - 4, 'hacker', 0).setOrigin(0, 0).setDepth(10)
             };
+            this.scheduleNpcTurn('hacker', true);
+
             scene.oldServeriSavilahti = {
                 tileX: 13,
                 tileY: 41,
@@ -177,52 +183,67 @@ Game.NpcManager = class NpcManager {
                 facing: 'down',
                 sprite: scene.add.sprite(37 * Game.TILE_SIZE, 54 * Game.TILE_SIZE - 2, 'hyeena', 0).setOrigin(0, 0).setDepth(10)
             };
-            this.scheduleHyeenaTurn();
+            this.scheduleNpcTurn('hyeena', false);
         }
     }
 
-    scheduleHyeenaTurn() {
+    scheduleNpcTurn(npcKey, allowUp = true, minDelay = 4000, maxDelay = 14000) {
         const scene = this.scene;
-        if (!scene.hyeena || !scene.hyeena.sprite || !scene.hyeena.sprite.active) return;
+        const npcObj = scene[npcKey];
+        if (!npcObj || !npcObj.sprite || !npcObj.sprite.active) return;
 
-        if (scene.hyeenaTurnTimer) {
-            scene.hyeenaTurnTimer.remove();
-            scene.hyeenaTurnTimer = null;
+        const timerProp = npcKey + 'TurnTimer';
+        if (scene[timerProp]) {
+            scene[timerProp].remove();
+            scene[timerProp] = null;
         }
 
-        const delay = Phaser.Math.Between(4000, 14000);
-        scene.hyeenaTurnTimer = scene.time.delayedCall(delay, () => {
-            if (!scene.hyeena || !scene.hyeena.sprite || !scene.hyeena.sprite.active) return;
+        const delay = Phaser.Math.Between(minDelay, maxDelay);
+        scene[timerProp] = scene.time.delayedCall(delay, () => {
+            const currentNpc = scene[npcKey];
+            if (!currentNpc || !currentNpc.sprite || !currentNpc.sprite.active) return;
 
-            if (!scene.hyeena.isDancing) {
-                const rand = Math.random();
-                let newFacing = 'down';
-                if (rand < 0.20) {
-                    newFacing = 'left';
-                } else if (rand < 0.40) {
-                    newFacing = 'right';
+            const isDancingOrInMusic = currentNpc.isDancing || (npcKey === 'examPencilNpc' && scene.isSpeakerDancing && typeof scene._isCharWithinSpeakerRange === 'function' && scene._isCharWithinSpeakerRange(currentNpc.tileX, currentNpc.tileY, scene.currentArea ? scene.currentArea.name : ''));
+
+            if (!isDancingOrInMusic) {
+                const directions = allowUp ? ['down', 'up', 'left', 'right'] : ['down', 'left', 'right'];
+                const newFacing = Phaser.Utils.Array.GetRandom(directions);
+                currentNpc.facing = newFacing;
+
+                const isFourFrame = currentNpc === scene.hyeena || (currentNpc.sprite.texture && currentNpc.sprite.texture.frameTotal <= 5);
+                if (isFourFrame) {
+                    switch (newFacing) {
+                        case 'down': currentNpc.sprite.setFrame(0); break;
+                        case 'up': currentNpc.sprite.setFrame(1); break;
+                        case 'left': currentNpc.sprite.setFrame(2); break;
+                        case 'right': currentNpc.sprite.setFrame(3); break;
+                    }
                 } else {
-                    newFacing = 'down';
-                }
-
-                scene.hyeena.facing = newFacing;
-                switch (newFacing) {
-                    case 'down': scene.hyeena.sprite.setFrame(0); break;
-                    case 'left': scene.hyeena.sprite.setFrame(8); break;
-                    case 'right': scene.hyeena.sprite.setFrame(12); break;
+                    switch (newFacing) {
+                        case 'down': currentNpc.sprite.setFrame(0); break;
+                        case 'up': currentNpc.sprite.setFrame(4); break;
+                        case 'left': currentNpc.sprite.setFrame(8); break;
+                        case 'right': currentNpc.sprite.setFrame(12); break;
+                    }
                 }
             }
 
-            this.scheduleHyeenaTurn();
+            this.scheduleNpcTurn(npcKey, allowUp, minDelay, maxDelay);
         });
+    }
+
+    scheduleHyeenaTurn() {
+        this.scheduleNpcTurn('hyeena', false);
     }
 
     destroyAll() {
         const scene = this.scene;
-        if (scene.hyeenaTurnTimer) {
-            scene.hyeenaTurnTimer.remove();
-            scene.hyeenaTurnTimer = null;
-        }
+        ['hyeenaTurnTimer', 'drunkardTurnTimer', 'hackerTurnTimer', 'examAssistantTurnTimer', 'examPencilNpcTurnTimer'].forEach(prop => {
+            if (scene[prop]) {
+                scene[prop].remove();
+                scene[prop] = null;
+            }
+        });
         ['police', 'assistant', 'sleepingServeri', 'examNpc', 'examAssistant', 'examPencilNpc', 'examStudent1', 'examStudent2', 'examStudent3', 'examSnackNpc', 'examPrismaServeri', 'shopkeep', 'drunkard', 'hyeena', 'serverinpc2', 'examServeriZyn', 'hacker', 'oldServeriSavilahti', 'oldServeriExam'].forEach(key => {
             if (scene[key] && scene[key].sprite) {
                 scene[key].sprite.destroy();
@@ -366,7 +387,7 @@ Game.NpcManager = class NpcManager {
                 key: 'hyeena',
                 handler: (scene) => {
                     if (Game.state.hyeenaSatisfied) {
-                        scene.dialogue.show(['Hyeena: Enjoy the Jallukanto!']);
+                        scene.dialogue.show(['Hyeena: I really respect you Serveri mice!']);
                     } else if (scene.hasItem('cup_of_coffee') || (scene.backpack && scene.backpack.items && scene.backpack.items.some(i => i.id === 'cup_of_coffee'))) {
                         scene.dialogue.show(['Hyeena: I wish I had coffee'], null, [
                             {
@@ -382,7 +403,7 @@ Game.NpcManager = class NpcManager {
                                         canUse: true,
                                         cl: 9999
                                     });
-                                    scene.dialogue.show(['Hyeena: Oh wow thanks! For your kindness, you can borrow this Jallukanto!']);
+                                    scene.dialogue.show(['Hyeena: Oh wow thanks! For your kindness, you can borrow this Jallukanto!', 'Just bring it back later.']);
                                 }
                             },
                             {
@@ -623,11 +644,20 @@ Game.NpcManager = class NpcManager {
         else if (scene.facing === 'left') npc.facing = 'right';
         else if (scene.facing === 'right') npc.facing = 'left';
 
-        switch (npc.facing) {
-            case 'down': npc.sprite.setFrame(0); break;
-            case 'up': npc.sprite.setFrame(4); break;
-            case 'left': npc.sprite.setFrame(8); break;
-            case 'right': npc.sprite.setFrame(12); break;
+        if (npc === scene.hyeena || (npc.sprite.texture && npc.sprite.texture.frameTotal <= 5)) {
+            switch (npc.facing) {
+                case 'down': npc.sprite.setFrame(0); break;
+                case 'up': npc.sprite.setFrame(1); break;
+                case 'left': npc.sprite.setFrame(2); break;
+                case 'right': npc.sprite.setFrame(3); break;
+            }
+        } else {
+            switch (npc.facing) {
+                case 'down': npc.sprite.setFrame(0); break;
+                case 'up': npc.sprite.setFrame(4); break;
+                case 'left': npc.sprite.setFrame(8); break;
+                case 'right': npc.sprite.setFrame(12); break;
+            }
         }
     }
 };
