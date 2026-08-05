@@ -165,6 +165,7 @@ Game.MenuScene = class MenuScene extends Phaser.Scene {
             Game.saveSettings();
             if (Game.playClickSound) Game.playClickSound();
             volValueText.setText(`${Game.settings.volume}%`);
+            if (window.YTManager) window.YTManager.setVolume(Game.settings.volume);
         });
 
         volPlusBtn.on('pointerover', () => volPlusBtn.setColor('#ffffff'));
@@ -174,6 +175,7 @@ Game.MenuScene = class MenuScene extends Phaser.Scene {
             Game.saveSettings();
             if (Game.playClickSound) Game.playClickSound();
             volValueText.setText(`${Game.settings.volume}%`);
+            if (window.YTManager) window.YTManager.setVolume(Game.settings.volume);
         });
 
         // Music Source Option
