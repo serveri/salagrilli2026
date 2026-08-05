@@ -187,7 +187,7 @@ Game.NpcManager = class NpcManager {
         }
     }
 
-    scheduleNpcTurn(npcKey, allowUp = true, minDelay = 4000, maxDelay = 14000) {
+    scheduleNpcTurn(npcKey, allowUp = true, minDelay = 2000, maxDelay = 8000) {
         const scene = this.scene;
         const npcObj = scene[npcKey];
         if (!npcObj || !npcObj.sprite || !npcObj.sprite.active) return;
@@ -203,7 +203,7 @@ Game.NpcManager = class NpcManager {
             const currentNpc = scene[npcKey];
             if (!currentNpc || !currentNpc.sprite || !currentNpc.sprite.active) return;
 
-            const isDancingOrInMusic = currentNpc.isDancing || (npcKey === 'examPencilNpc' && scene.isSpeakerDancing && typeof scene._isCharWithinSpeakerRange === 'function' && scene._isCharWithinSpeakerRange(currentNpc.tileX, currentNpc.tileY, scene.currentArea ? scene.currentArea.name : ''));
+            const isDancingOrInMusic = (npcKey === 'examPencilNpc') && (currentNpc.isDancing || (scene.isSpeakerDancing && typeof scene._isCharWithinSpeakerRange === 'function' && scene._isCharWithinSpeakerRange(currentNpc.tileX, currentNpc.tileY, scene.currentArea ? scene.currentArea.name : '')));
 
             if (!isDancingOrInMusic) {
                 const directions = allowUp ? ['down', 'up', 'left', 'right'] : ['down', 'left', 'right'];
@@ -521,10 +521,11 @@ Game.NpcManager = class NpcManager {
                         if (radBullIndex !== -1) {
                             scene.dialogue.show([
                                 'Hacker: Huh? Are you talking to me? OPSEC!',
-                                'Hacker: Wait... is that a Rad bull? Give me that and I will overclock your CPU kernel!'
+                                'Hacker: Wait... is that a Rad bull?',
+                                'Hacker: Give me that and I will overclock your CPU kernel!'
                             ], null, [
                                 {
-                                    text: 'Yes', color: '#006600', hoverColor: '#00cc00', onClick: () => {
+                                    text: 'Give Rad bull', color: '#006600', hoverColor: '#00cc00', onClick: () => {
                                         if (scene.backpack && scene.backpack.items) {
                                             scene.backpack.items.splice(radBullIndex, 1);
                                         }
@@ -546,13 +547,13 @@ Game.NpcManager = class NpcManager {
                                     }
                                 },
                                 {
-                                    text: 'No', color: '#880000', hoverColor: '#cc0000', onClick: () => { }
+                                    text: 'Leave', color: '#880000', hoverColor: '#cc0000', onClick: () => { }
                                 }
                             ]);
                         } else {
                             scene.dialogue.show([
                                 'Hacker: Huh? Are you talking to me? OPSEC!',
-                                'Hacker: You look sluggish... Bring me a Rad bull and I\'ll overclock your CPU kernel!'
+                                'Hacker: Bring me a Rad bull and I\'ll overclock your CPU kernel!'
                             ]);
                         }
                     }
