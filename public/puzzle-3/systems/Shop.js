@@ -41,11 +41,11 @@ Game.Shop = class Shop {
                 id: 'xtra_lasagna',
                 name: 'Xtra Lasagna 7€',
                 price: 7,
-                desc: 'Pre made lasagna. Would taste better heated up',
+                desc: 'Pre made lasagna. Would taste better heated up in an oven',
                 itemData: {
                     id: 'xtra_lasagna',
                     name: 'Xtra Lasagna',
-                    desc: 'Pre made lasagna. Would taste better heated up',
+                    desc: 'Pre made lasagna. Would taste better heated up in an oven',
                     canUse: true,
                     uses: 2,
                     maxUses: 2
