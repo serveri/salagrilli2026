@@ -137,7 +137,7 @@ Game.INSPECT_MESSAGES = {
 };
 
 Game.SIGN_MESSAGES = {
-    'serveriquest_66_24': ['Neulamäki karting', 'Open 10-19'],
+    'serveriquest_66_24': ['Neulamäki karting', 'Open 10-18'],
     'serveriquest_75_47': ['Berries are a good snack!', 'Eat them from a bush, but only once', 'Find multiple other energy restoring items, interract with items on the ground to collect them'],
     'serveriquest_54_21': ['Road to Neulamäki'],
     'serveriquest_55_4': ['Road to Savilahti'],

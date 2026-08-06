@@ -453,6 +453,84 @@ Game.GameScene = class GameScene extends Phaser.Scene {
                     interacted = true;
                 }
 
+                if (!interacted && (targetTileIndex === 263 || targetTileIndex === 264)) {
+                    this.tileData[targetY][targetX] = 0; // grass
+                    if (this.layer) {
+                        this.layer.putTileAt(0, targetX, targetY);
+                    }
+
+                    Game.state = Game.state || {};
+                    Game.state.collectedBottleLocations = Game.state.collectedBottleLocations || [];
+                    Game.state.collectedBottleLocations.push({ area: this.currentArea.name, x: targetX, y: targetY });
+
+                    if (targetTileIndex === 263) {
+                        if (this.backpack && this.backpack.addEmptyBottles) {
+                            this.backpack.addEmptyBottles(1);
+                        }
+                        this.dialogue.show(['You found an Empty bottle']);
+                    } else if (targetTileIndex === 264) {
+                        if (this.backpack) {
+                            this.backpack.items.push({
+                                id: 'jallu',
+                                name: 'Jallu',
+                                desc: 'Some kind of strong liquor. Would taste better in a mix',
+                                canUse: true,
+                                cl: 50
+                            });
+                        }
+                        this.dialogue.show(['You found a bottle of Jallu', 'Luckily you haven\'t drank it!']);
+                    }
+                    interacted = true;
+                }
+
+                if (!interacted && targetTileIndex === 505) {
+                    Game.state = Game.state || {};
+                    const bottleItem = this.backpack ? this.backpack.items.find(i => i.id === 'empty_bottle') : null;
+                    const count = bottleItem ? (bottleItem.count || 1) : 0;
+
+                    if (count > 0) {
+                        this.dialogue.show(['Return empty bottles?'], null, [
+                            {
+                                text: 'Return',
+                                color: '#006600', hoverColor: '#00cc00',
+                                onClick: () => {
+                                    const cntEarned = count * 20;
+                                    this.backpack.items = this.backpack.items.filter(i => i !== bottleItem);
+
+                                    Game.state.cents = (Game.state.cents || 0) + cntEarned;
+                                    if (Game.state.cents >= 100) {
+                                        const euros = Math.floor(Game.state.cents / 100);
+                                        Game.state.money = (Game.state.money !== undefined ? Game.state.money : 2) + euros;
+                                        Game.state.cents = Game.state.cents % 100;
+                                    }
+
+                                    let walletItem = this.backpack.items.find(i => i.id === 'wallet');
+                                    if (walletItem) {
+                                        walletItem.name = `Wallet ${Game.state.money}€`;
+                                    } else {
+                                        this.backpack.items.push({
+                                            id: 'wallet',
+                                            name: `Wallet ${Game.state.money}€`,
+                                            desc: 'Contains your money.',
+                                            canUse: false
+                                        });
+                                    }
+
+                                    this.dialogue.show([`You return ${count} bottles, you get ${cntEarned} cnt in return`]);
+                                }
+                            },
+                            {
+                                text: 'X',
+                                color: '#cc0000', hoverColor: '#ff4444',
+                                onClick: () => { }
+                            }
+                        ]);
+                    } else {
+                        this.dialogue.show(['Bottle return machine: Please insert empty bottles.']);
+                    }
+                    interacted = true;
+                }
+
                 if (!interacted && targetTileIndex === 324) {
                     this.tileData[targetY][targetX] = 0;
                     if (this.layer) {
@@ -1231,6 +1309,16 @@ Game.GameScene = class GameScene extends Phaser.Scene {
             });
         }
 
+        if (Game.state && Game.state.collectedBottleLocations) {
+            Game.state.collectedBottleLocations.forEach(loc => {
+                if (loc.area === this.currentArea.name) {
+                    if (this.tileData[loc.y] && (this.tileData[loc.y][loc.x] === 263 || this.tileData[loc.y][loc.x] === 264)) {
+                        this.tileData[loc.y][loc.x] = 0;
+                    }
+                }
+            });
+        }
+
         if (Game.state && Game.state.collectedCashLocations) {
             Game.state.collectedCashLocations.forEach(loc => {
                 if (loc.area === this.currentArea.name) {
@@ -1362,6 +1450,13 @@ Game.GameScene = class GameScene extends Phaser.Scene {
             this._createPoliceChaser();
         }
 
+        if (this.bottleGrandma) {
+            this._createBottleGrandmaAI();
+        } else if (this.bottleGrandmaAI) {
+            this.bottleGrandmaAI.destroy();
+            this.bottleGrandmaAI = null;
+        }
+
         // Clean up guard chaser when changing areas
         if (this.guardChaserAI) {
             this.guardChaserAI.destroy();
@@ -1420,6 +1515,9 @@ Game.GameScene = class GameScene extends Phaser.Scene {
 
         this.updatePolice(time, delta);
         this.updateOldServeriGuard(time, delta);
+        if (this.bottleGrandmaAI) {
+            this.bottleGrandmaAI.update(time, delta);
+        }
         if (this.npcManager && this.npcManager.update) {
             this.npcManager.update(time, delta);
         }
@@ -2595,6 +2693,14 @@ Game.GameScene = class GameScene extends Phaser.Scene {
         }
     }
 
+    _createBottleGrandmaAI() {
+        if (!this.bottleGrandma) return;
+        if (this.bottleGrandmaAI) {
+            this.bottleGrandmaAI.destroy();
+        }
+        this.bottleGrandmaAI = new Game.BottleGrandmaAI(this, this.bottleGrandma);
+    }
+
     _createPoliceChaser() {
         if (!this.police) return;
         this.policeChaserAI = new Game.ChaserAI(this, this.police, {
@@ -3069,8 +3175,27 @@ Game.GameScene = class GameScene extends Phaser.Scene {
         }
     }
 
-    _handleDrunkardGiveJallu() {
+    _handleDrunkardGiveJallu(givingEmptyBottle = false) {
         if (!this.backpack || !this.backpack.items) return;
+
+        if (givingEmptyBottle) {
+            const bottleItem = this.backpack.items.find(i => i.id === 'empty_bottle');
+            if (bottleItem) {
+                if (bottleItem.count && bottleItem.count > 1) {
+                    bottleItem.count--;
+                    bottleItem.name = bottleItem.count > 1 ? `Empty bottles (${bottleItem.count})` : 'Empty bottle';
+                    bottleItem.desc = `${bottleItem.count} empty bottles. Can be returned to the store for 20 cnt per bottle`;
+                } else {
+                    this.backpack.items = this.backpack.items.filter(i => i !== bottleItem);
+                }
+            }
+            this.dialogue.show([
+                'Drunkard: This bottle is empty! *SMASH*',
+                'The drunkard smashes the bottle on the ground in rage!'
+            ]);
+            return;
+        }
+
         const jalluItem = this.backpack.items.find(i => i.id === 'jallu' || i.id === 'jallukanto');
 
         if (!jalluItem) {
@@ -3078,55 +3203,45 @@ Game.GameScene = class GameScene extends Phaser.Scene {
             return;
         }
 
-        if (typeof jalluItem.cl !== 'undefined' && jalluItem.cl <= 0) {
-            // Bottle is empty! Drunkard throws a weak punch with -10 energy
-            const old = this.energy;
-            this.energy = Math.max(0, this.energy - 10);
-            if (this.addEnergyDiff) {
-                this.addEnergyDiff(this.energy - old);
+        Game.state = Game.state || {};
+        const isKanto = jalluItem.id === 'jallukanto';
+        const rewardMoney = isKanto ? 5 : 3;
+
+        if (isKanto) {
+            jalluItem.cl = Math.max(0, jalluItem.cl - 75);
+            jalluItem.desc = `Hyeena ry's legendary tree stump full of Jallu. ${jalluItem.cl}cl left`;
+        } else {
+            this.backpack.items = this.backpack.items.filter(i => i !== jalluItem);
+            if (this.backpack.addEmptyBottles) {
+                this.backpack.addEmptyBottles(1);
             }
+        }
+
+        Game.state.money = (Game.state.money !== undefined ? Game.state.money : 2) + rewardMoney;
+        Game.state.drunkardSatisfied = true;
+
+        let walletItem = this.backpack.items.find(i => i.id === 'wallet');
+        if (walletItem) {
+            walletItem.name = `Wallet ${Game.state.money}€`;
+        } else {
+            this.backpack.items.push({
+                id: 'wallet',
+                name: `Wallet ${Game.state.money}€`,
+                desc: 'Contains your money.',
+                canUse: false
+            });
+        }
+
+        if (isKanto) {
             this.dialogue.show([
-                'Drunkard: This bottle is empty! *WHACK*',
-                'The drunkard throws a weak punch at you! (-10 Energy)'
+                'Drunkard: Thanks buddy! Here\'s 5€ for your troubles!',
+                'Hyeena is probably not gonna get that back..'
             ]);
         } else {
-            Game.state = Game.state || {};
-            const isKanto = jalluItem.id === 'jallukanto';
-            const rewardMoney = isKanto ? 5 : 3;
-
-            if (isKanto) {
-                jalluItem.cl = Math.max(0, jalluItem.cl - 75);
-                jalluItem.desc = `Hyeena ry's legendary tree stump full of Jallu. ${jalluItem.cl}cl left`;
-            } else {
-                this.backpack.items = this.backpack.items.filter(i => i !== jalluItem);
-            }
-
-            Game.state.money = (Game.state.money !== undefined ? Game.state.money : 2) + rewardMoney;
-            Game.state.drunkardSatisfied = true;
-
-            let walletItem = this.backpack.items.find(i => i.id === 'wallet');
-            if (walletItem) {
-                walletItem.name = `Wallet ${Game.state.money}€`;
-            } else {
-                this.backpack.items.push({
-                    id: 'wallet',
-                    name: `Wallet ${Game.state.money}€`,
-                    desc: 'Contains your money.',
-                    canUse: false
-                });
-            }
-
-            if (isKanto) {
-                this.dialogue.show([
-                    'Drunkard: Thanks buddy! Here\'s 5€ for your troubles!',
-                    'Hyeena is probably not gonna get that back..'
-                ]);
-            } else {
-                this.dialogue.show([
-                    'Drunkard: Thanks buddy! Here\'s 3€ for your troubles!',
-                    'Whatever...'
-                ]);
-            }
+            this.dialogue.show([
+                'Drunkard: Thanks buddy! Here\'s 3€ for your troubles!',
+                'Whatever...'
+            ]);
         }
     }
 
@@ -3187,7 +3302,7 @@ Game.GameScene = class GameScene extends Phaser.Scene {
                 Math.max(areaWidthPx, 2500),
                 Math.max(areaHeightPx, 2500),
                 0x0c1033, // Soft midnight blue tint
-                0.12      // Soft darkness opacity
+                0.15      // Soft darkness opacity
             ).setOrigin(0, 0).setDepth(1800);
         } else {
             this.nightOverlay.setSize(Math.max(areaWidthPx, 2500), Math.max(areaHeightPx, 2500));

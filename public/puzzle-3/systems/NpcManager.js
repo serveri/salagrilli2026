@@ -12,17 +12,27 @@ Game.NpcManager = class NpcManager {
 
         const scene = this.scene;
 
-        // 1. Police in serveriquest
-        if (areaName === 'serveriquest' && (!Game.state || !Game.state.hasSlept)) {
-            const px = 25, py = 52;
-            scene.police = {
-                tileX: px,
-                tileY: py,
+        // 1. Police & Bottle Grandma in serveriquest
+        if (areaName === 'serveriquest') {
+            if (!Game.state || !Game.state.hasSlept) {
+                const px = 25, py = 52;
+                scene.police = {
+                    tileX: px,
+                    tileY: py,
+                    facing: 'down',
+                    isMoving: false,
+                    hasSeenPlayer: false,
+                    isStunned: false,
+                    sprite: scene.add.sprite(px * Game.TILE_SIZE, py * Game.TILE_SIZE - 2, 'poliisi', 0).setOrigin(0, 0).setDepth(10)
+                };
+            }
+
+            scene.bottleGrandma = {
+                tileX: 44,
+                tileY: 36,
                 facing: 'down',
                 isMoving: false,
-                hasSeenPlayer: false,
-                isStunned: false,
-                sprite: scene.add.sprite(px * Game.TILE_SIZE, py * Game.TILE_SIZE - 2, 'poliisi', 0).setOrigin(0, 0).setDepth(10)
+                sprite: scene.add.sprite(44 * Game.TILE_SIZE, 36 * Game.TILE_SIZE - 4, 'pullomummo', 0).setOrigin(0, 0).setDepth(10)
             };
         }
 
@@ -297,7 +307,7 @@ Game.NpcManager = class NpcManager {
                 scene[prop] = null;
             }
         });
-        ['police', 'assistant', 'sleepingServeri', 'examNpc', 'examAssistant', 'examPencilNpc', 'examStudent1', 'examStudent2', 'examStudent3', 'examSnackNpc', 'examPrismaServeri', 'shopkeep', 'drunkard', 'hyeena', 'serverinpc2', 'examServeriZyn', 'hacker', 'oldServeriSavilahti', 'oldServeriExam', 'houseCat'].forEach(key => {
+        ['police', 'assistant', 'sleepingServeri', 'examNpc', 'examAssistant', 'examPencilNpc', 'examStudent1', 'examStudent2', 'examStudent3', 'examSnackNpc', 'examPrismaServeri', 'shopkeep', 'drunkard', 'hyeena', 'serverinpc2', 'examServeriZyn', 'hacker', 'oldServeriSavilahti', 'oldServeriExam', 'houseCat', 'bottleGrandma'].forEach(key => {
             if (scene[key] && scene[key].sprite) {
                 scene[key].sprite.destroy();
                 scene[key] = null;
@@ -462,21 +472,34 @@ Game.NpcManager = class NpcManager {
                     if (Game.state.drunkardSatisfied) {
                         scene.dialogue.show(['Drunkard: *hic*... Jallu is good... *zzzz*']);
                     } else {
+                        const hasJallu = scene.backpack && scene.backpack.items && scene.backpack.items.some(i => i.id === 'jallu' || i.id === 'jallukanto');
+                        const hasEmptyBottle = scene.backpack && scene.backpack.items && scene.backpack.items.some(i => i.id === 'empty_bottle');
+
+                        const buttons = [];
+                        if (hasJallu) {
+                            buttons.push({
+                                text: 'Give Jallu', color: '#006600', hoverColor: '#00cc00', onClick: () => {
+                                    scene._handleDrunkardGiveJallu(false);
+                                }
+                            });
+                        } else if (hasEmptyBottle) {
+                            buttons.push({
+                                text: 'Give Empty bottle', color: '#006600', hoverColor: '#00cc00', onClick: () => {
+                                    scene._handleDrunkardGiveJallu(true);
+                                }
+                            });
+                        }
+
+                        buttons.push({
+                            text: 'Nope', color: '#880000', hoverColor: '#cc0000', onClick: () => {
+                                scene.dialogue.show(['Drunkard: But its my favorite drink, a fucking free one! *hic*']);
+                            }
+                        });
+
                         scene.dialogue.show([
                             'Drunkard: *hic*... Ihahaa I ha haa.. hepo hirnahtaa *burp*...',
                             'Drunkard: Give me a bottle of Jallu!'
-                        ], null, [
-                            {
-                                text: 'Sure', color: '#006600', hoverColor: '#00cc00', onClick: () => {
-                                    scene._handleDrunkardGiveJallu();
-                                }
-                            },
-                            {
-                                text: 'Nope', color: '#880000', hoverColor: '#cc0000', onClick: () => {
-                                    scene.dialogue.show(['Drunkard: But its my favorite drink, a fucking free one! *hic*']);
-                                }
-                            }
-                        ]);
+                        ], null, buttons);
                     }
                 }
             },
@@ -721,7 +744,7 @@ Game.NpcManager = class NpcManager {
             'examPencilNpc', 'examStudent1', 'examStudent2', 'examStudent3',
             'shopkeep', 'drunkard', 'hyeena', 'police', 'examServeriZyn',
             'examSnackNpc', 'examPrismaServeri', 'hacker', 'oldServeriSavilahti',
-            'oldServeriExam', 'houseCat'
+            'oldServeriExam', 'houseCat', 'bottleGrandma'
         ];
         for (const key of keys) {
             const npc = scene[key];

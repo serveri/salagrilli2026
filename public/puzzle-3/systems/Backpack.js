@@ -18,7 +18,6 @@ Game.Backpack = class Backpack {
 
         // Sample Inventory Items
         this.items = [
-            { id: 'jallu', name: 'Jallu', desc: 'Some kind of strong liquor. Would taste better in a mix', canUse: true, cl: 50 },
             { id: 'key', name: 'Nappi avain', desc: 'An electronic key to Microkatu kampus', canUse: false },
             { id: 'map', name: 'Town Map', desc: 'A map showing Kuopio. \n1: My home\n2: CS Department\n3: Snellmania', canUse: true },
             { id: 'energy_drink', name: 'Rad bull', desc: 'Small Rad bull energy drink. Restores 80 energy.', canUse: true },
@@ -86,6 +85,23 @@ Game.Backpack = class Backpack {
             }
         };
         this.scene.input.keyboard.on('keydown', this._keyHandler);
+    }
+
+    addEmptyBottles(count = 1) {
+        const bottleItem = this.items.find(i => i.id === 'empty_bottle');
+        if (bottleItem) {
+            bottleItem.count = (bottleItem.count || 1) + count;
+            bottleItem.name = bottleItem.count > 1 ? `Empty bottles (${bottleItem.count})` : 'Empty bottle';
+            bottleItem.desc = `${bottleItem.count} empty bottles. Can be returned to the store for 20 cnt per bottle`;
+        } else {
+            this.items.push({
+                id: 'empty_bottle',
+                name: count > 1 ? `Empty bottles (${count})` : 'Empty bottle',
+                desc: `${count} empty bottles. Can be returned to the store for 20 cnt per bottle`,
+                canUse: false,
+                count: count
+            });
+        }
     }
 
     /** Close the backpack overlay */
@@ -429,6 +445,11 @@ Game.Backpack = class Backpack {
             if ((item.id === 'jallu' || item.id === 'gambina') && typeof item.cl !== 'undefined') {
                 pages.push(`There is ${item.cl}cl left in the bottle.`);
             }
+            if (item.id === 'wallet') {
+                const cnt = (window.Game && window.Game.state && window.Game.state.cents !== undefined) ? window.Game.state.cents : 0;
+                const money = (window.Game && window.Game.state && window.Game.state.money !== undefined) ? window.Game.state.money : 0;
+                pages = [`${item.name}: ${item.desc}\n${money}€, ${cnt} cnt` ];
+            }
 
             this.scene.dialogue.show(pages, () => { this.open(); });
         }
@@ -451,9 +472,8 @@ Game.Backpack = class Backpack {
     }
 
     _handlePlaceSpeaker(item) {
-        this.close();
         this.items = this.items.filter(i => i.id !== 'speaker');
-        this.selectedItem = null;
+        this.close();
 
         const px = this.scene.tileX;
         const py = this.scene.tileY;
@@ -484,7 +504,7 @@ Game.Backpack = class Backpack {
     _handleUse(item) {
         this.close();
 
-        if (item.id === 'energy_drink') {
+        if (item.id === 'energy_drink' || item.id === 'rad_bull' || item.id.includes('energy_drink') || item.id.includes('rad_bull')) {
             if (this.scene && typeof this.scene.energy !== 'undefined') {
                 const old = this.scene.energy;
                 this.scene.energy = Math.min(200, this.scene.energy + 80);
@@ -498,6 +518,7 @@ Game.Backpack = class Backpack {
             // Remove from backpack (only this specific item instance)
             this.items = this.items.filter(i => i !== item);
             this.selectedItem = null;
+            this.addEmptyBottles(1);
 
             if (this.scene.dialogue) {
                 this.scene.dialogue.show([
@@ -526,6 +547,10 @@ Game.Backpack = class Backpack {
                 item.cl = Math.max(0, item.cl - 5);
                 if (item.cl <= 0) {
                     item.canUse = false;
+                    if (item.id === 'jallu' || item.id === 'gambina') {
+                        this.items = this.items.filter(i => i !== item);
+                        this.addEmptyBottles(1);
+                    }
                 }
 
                 if (item.id === 'jallu') {
