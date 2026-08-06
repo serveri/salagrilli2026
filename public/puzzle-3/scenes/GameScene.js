@@ -338,6 +338,21 @@ Game.GameScene = class GameScene extends Phaser.Scene {
                     interacted = true;
                 }
 
+                if (!interacted && targetTileIndex === 697) {
+                    if (this.backpack && !this.backpack.items.some(i => i.id === 'cat_food')) {
+                        this.backpack.items.push({
+                            id: 'cat_food',
+                            name: 'Cat food',
+                            desc: 'Delicious food for a cat.',
+                            canUse: false
+                        });
+                        this.dialogue.show(['You found some Cat food!']);
+                    } else {
+                        this.dialogue.show(['You already have Cat food in your backpack.']);
+                    }
+                    interacted = true;
+                }
+
                 if (!interacted && targetTileIndex === 698) {
                     Game.state = Game.state || {};
                     if (!Game.state.secondCoffeeMakerUsed) {
@@ -1405,6 +1420,9 @@ Game.GameScene = class GameScene extends Phaser.Scene {
 
         this.updatePolice(time, delta);
         this.updateOldServeriGuard(time, delta);
+        if (this.npcManager && this.npcManager.update) {
+            this.npcManager.update(time, delta);
+        }
 
         if (this.exam && this.exam.isOpen) {
             this.exam.update(time, delta);
@@ -2561,7 +2579,7 @@ Game.GameScene = class GameScene extends Phaser.Scene {
                     return true;
                 } else {
                     if (this.dialogue) {
-                        this.dialogue.show(['The door to my house is locked!', 'I need my Home Key to get inside.']);
+                        this.dialogue.show(['The door to my house is locked!', 'I need my Home Key to get inside.', 'Maybe somebody brought my home key to the CS department']);
                     }
                     return true;
                 }

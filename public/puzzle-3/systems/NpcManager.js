@@ -185,6 +185,59 @@ Game.NpcManager = class NpcManager {
             };
             this.scheduleNpcTurn('hyeena', false);
         }
+
+        // 8. Cat in House
+        if (areaName === 'House') {
+            scene.houseCat = {
+                tileX: 18,
+                tileY: 10,
+                facing: 'down',
+                sprite: scene.add.sprite(18 * Game.TILE_SIZE, 10 * Game.TILE_SIZE, 'housecat', 0).setOrigin(0, 0).setDepth(10)
+            };
+            if (scene.anims) {
+                if (!scene.anims.exists('cat_tail_wag')) {
+                    scene.anims.create({
+                        key: 'cat_tail_wag',
+                        frames: scene.anims.generateFrameNumbers('housecat', { start: 0, end: 2 }),
+                        frameRate: 3,
+                        repeat: -1
+                    });
+                }
+                if (!scene.anims.exists('cat_dance')) {
+                    scene.anims.create({
+                        key: 'cat_dance',
+                        frames: scene.anims.generateFrameNumbers('housecat', { frames: [0, 3] }),
+                        frameRate: 4,
+                        repeat: -1
+                    });
+                }
+            }
+        }
+    }
+
+    update(time, delta) {
+        this.updateCatAnimation();
+    }
+
+    updateCatAnimation() {
+        const scene = this.scene;
+        const cat = scene.houseCat;
+        if (!cat || !cat.sprite || !cat.sprite.active) return;
+
+        const isMusicPlaying = (scene.isSpeakerDancing || (window.YTManager && window.YTManager.isPlaying));
+
+        if (isMusicPlaying) {
+            if (!cat.sprite.anims.isPlaying || cat.sprite.anims.currentAnim.key !== 'cat_dance') {
+                cat.sprite.play('cat_dance');
+            }
+        } else if (Game.state && Game.state.catFeedCount > 0) {
+            if (!cat.sprite.anims.isPlaying || cat.sprite.anims.currentAnim.key !== 'cat_tail_wag') {
+                cat.sprite.play('cat_tail_wag');
+            }
+        } else {
+            cat.sprite.anims.stop();
+            cat.sprite.setFrame(0);
+        }
     }
 
     scheduleNpcTurn(npcKey, allowUp = true, minDelay = 2000, maxDelay = 8000) {
@@ -244,7 +297,7 @@ Game.NpcManager = class NpcManager {
                 scene[prop] = null;
             }
         });
-        ['police', 'assistant', 'sleepingServeri', 'examNpc', 'examAssistant', 'examPencilNpc', 'examStudent1', 'examStudent2', 'examStudent3', 'examSnackNpc', 'examPrismaServeri', 'shopkeep', 'drunkard', 'hyeena', 'serverinpc2', 'examServeriZyn', 'hacker', 'oldServeriSavilahti', 'oldServeriExam'].forEach(key => {
+        ['police', 'assistant', 'sleepingServeri', 'examNpc', 'examAssistant', 'examPencilNpc', 'examStudent1', 'examStudent2', 'examStudent3', 'examSnackNpc', 'examPrismaServeri', 'shopkeep', 'drunkard', 'hyeena', 'serverinpc2', 'examServeriZyn', 'hacker', 'oldServeriSavilahti', 'oldServeriExam', 'houseCat'].forEach(key => {
             if (scene[key] && scene[key].sprite) {
                 scene[key].sprite.destroy();
                 scene[key] = null;
@@ -258,6 +311,50 @@ Game.NpcManager = class NpcManager {
 
     _initInteractions() {
         return [
+            {
+                key: 'houseCat',
+                face: false,
+                handler: (scene) => {
+                    Game.state = Game.state || {};
+                    const isFed = Game.state.catFeedCount > 0;
+                    const greeting = isFed ? 'Meow! ^_^' : 'Meow!';
+
+                    scene.dialogue.show([greeting], null, [
+                        {
+                            text: 'Pet',
+                            color: '#006600', hoverColor: '#00cc00',
+                            onClick: () => {
+                                scene.dialogue.show(['*Purrr purrr...*', 'The cat purrs happily!']);
+                            }
+                        },
+                        {
+                            text: 'Give cat food',
+                            onClick: () => {
+                                const catFoodIndex = scene.backpack ? scene.backpack.items.findIndex(i => i.id === 'cat_food') : -1;
+                                if (catFoodIndex === -1) {
+                                    scene.dialogue.show(['You don\'t have any Cat food to give!']);
+                                } else {
+                                    const feedCount = Game.state.catFeedCount || 0;
+                                    if (feedCount >= 2) {
+                                        scene.dialogue.show(['The cat is full and refuses the food!']);
+                                    } else {
+                                        scene.backpack.items.splice(catFoodIndex, 1);
+                                        Game.state.catFeedCount = feedCount + 1;
+                                        this.updateCatAnimation();
+                                        scene.dialogue.show(['You fed the cat some Cat food!', 'The cat happily wags its tail!']);
+                                    }
+                                }
+                            }
+                        },
+                        {
+                            text: 'X',
+                            color: '#cc0000',
+                            hoverColor: '#ff4444',
+                            onClick: () => { }
+                        }
+                    ]);
+                }
+            },
             {
                 key: 'sleepingServeri',
                 face: false,
@@ -347,7 +444,7 @@ Game.NpcManager = class NpcManager {
                                     }
                                 },
                                 {
-                                    text: 'Keep pencil', color: '#880000', hoverColor: '#cc0000', onClick: () => { }
+                                    text: 'Leave', color: '#880000', hoverColor: '#cc0000', onClick: () => { }
                                 }
                             ]);
                         } else {
@@ -547,7 +644,7 @@ Game.NpcManager = class NpcManager {
                                     }
                                 },
                                 {
-                                    text: 'Leave', color: '#880000', hoverColor: '#cc0000', onClick: () => { }
+                                    text: 'No', color: '#880000', hoverColor: '#cc0000', onClick: () => { }
                                 }
                             ]);
                         } else {
@@ -624,7 +721,7 @@ Game.NpcManager = class NpcManager {
             'examPencilNpc', 'examStudent1', 'examStudent2', 'examStudent3',
             'shopkeep', 'drunkard', 'hyeena', 'police', 'examServeriZyn',
             'examSnackNpc', 'examPrismaServeri', 'hacker', 'oldServeriSavilahti',
-            'oldServeriExam'
+            'oldServeriExam', 'houseCat'
         ];
         for (const key of keys) {
             const npc = scene[key];

@@ -160,7 +160,7 @@ Game.DialogueBox = class DialogueBox {
             const remainingSpace = Math.max(0, this.boxW - totalButtonsWidth);
             const gap = remainingSpace / (count + 1);
 
-            let currentX = boxX + gap;
+            let currentX = boxX + gap + 4;
             this.buttonElements.forEach(b => {
                 const halfW = (b.text.displayWidth || 0) / 2;
                 b.text.setPosition(currentX + halfW, btnY);

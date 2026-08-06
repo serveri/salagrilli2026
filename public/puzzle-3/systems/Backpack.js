@@ -19,12 +19,12 @@ Game.Backpack = class Backpack {
         // Sample Inventory Items
         this.items = [
             { id: 'jallu', name: 'Jallu', desc: 'Some kind of strong liquor. Would taste better in a mix', canUse: true, cl: 50 },
-            { id: 'key', name: 'Nappi avain', desc: 'A key found in the grass.', canUse: false },
+            { id: 'key', name: 'Nappi avain', desc: 'An electronic key to Microkatu kampus', canUse: false },
             { id: 'map', name: 'Town Map', desc: 'A map showing Kuopio. \n1: My home\n2: CS Department\n3: Snellmania', canUse: true },
             { id: 'energy_drink', name: 'Rad bull', desc: 'Small Rad bull energy drink. Restores 80 energy.', canUse: true },
             { id: 'wallet', name: `Wallet ${startingMoney}€`, desc: 'Contains your money.', canUse: false },
             { id: 'note', name: 'Reminder Note', desc: ['"Remember to feed the cat.. "', '"Exam today at 10:00 in SN100!"', '..Can\'t forget!'], canUse: false },
-            { id: 'watch', name: 'Watch', desc: 'It says 4:16 ..quite late', canUse: false }
+            { id: 'watch', name: 'Watch', desc: 'It says 4:16 AM ..very early.', canUse: false }
         ];
 
         if (Game.testingmode) {
@@ -734,7 +734,7 @@ Game.Backpack = class Backpack {
                 ], () => {
                     this.scene.cameras.main.fadeOut(250, 0, 0, 0, (camera, progress) => {
                         if (progress === 1) {
-                            this.scene.loadArea('data/Exam.csv', 28, 38).then(() => {
+                            this.scene.loadArea('data/House.csv', 9, 10).then(() => {
                                 this.scene.cameras.main.fadeIn(250, 0, 0, 0, (cam, prog) => {
                                     if (prog === 1) {
                                         this.scene.isTransitioning = false;

@@ -69,6 +69,12 @@ Game.BootScene = class BootScene extends Phaser.Scene {
             frameHeight: 16
         });
 
+        // Housecat spritesheet (16x16 frames)
+        this.load.spritesheet('housecat', 'housecat.png', {
+            frameWidth: 16,
+            frameHeight: 16
+        });
+
         // Tileset (1024x1024, 64 tiles per row)
         this.load.image('tiles', 'Tileset.png');
 
