@@ -3205,7 +3205,10 @@ Game.GameScene = class GameScene extends Phaser.Scene {
 
         Game.state = Game.state || {};
         const isKanto = jalluItem.id === 'jallukanto';
-        const rewardMoney = isKanto ? 5 : 3;
+        const isDrunkJallu = !isKanto && jalluItem.cl !== undefined && jalluItem.cl < 50;
+
+        const rewardEuros = isKanto ? 5 : (isDrunkJallu ? 2 : 3);
+        const rewardCents = (!isKanto && isDrunkJallu) ? 40 : 0;
 
         if (isKanto) {
             jalluItem.cl = Math.max(0, jalluItem.cl - 75);
@@ -3217,7 +3220,14 @@ Game.GameScene = class GameScene extends Phaser.Scene {
             }
         }
 
-        Game.state.money = (Game.state.money !== undefined ? Game.state.money : 2) + rewardMoney;
+        Game.state.money = (Game.state.money !== undefined ? Game.state.money : 2) + rewardEuros;
+        Game.state.cents = (Game.state.cents || 0) + rewardCents;
+        if (Game.state.cents >= 100) {
+            const extraEuros = Math.floor(Game.state.cents / 100);
+            Game.state.money += extraEuros;
+            Game.state.cents = Game.state.cents % 100;
+        }
+
         Game.state.drunkardSatisfied = true;
 
         let walletItem = this.backpack.items.find(i => i.id === 'wallet');
@@ -3236,6 +3246,11 @@ Game.GameScene = class GameScene extends Phaser.Scene {
             this.dialogue.show([
                 'Drunkard: Thanks buddy! Here\'s 5€ for your troubles!',
                 'Hyeena is probably not gonna get that back..'
+            ]);
+        } else if (isDrunkJallu) {
+            this.dialogue.show([
+                'Drunkard: Thanks buddy! Here\'s 2€ 40 cnt for your troubles!',
+                'Whatever...'
             ]);
         } else {
             this.dialogue.show([

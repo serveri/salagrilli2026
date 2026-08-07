@@ -470,7 +470,7 @@ Game.NpcManager = class NpcManager {
                 key: 'drunkard',
                 handler: (scene) => {
                     if (Game.state.drunkardSatisfied) {
-                        scene.dialogue.show(['Drunkard: *hic*... Jallu is good... *zzzz*']);
+                        scene.dialogue.show(['Drunkard: *hic*... Hey mickey mouse... *zzzz*']);
                     } else {
                         const hasJallu = scene.backpack && scene.backpack.items && scene.backpack.items.some(i => i.id === 'jallu' || i.id === 'jallukanto');
                         const hasEmptyBottle = scene.backpack && scene.backpack.items && scene.backpack.items.some(i => i.id === 'empty_bottle');
@@ -498,7 +498,7 @@ Game.NpcManager = class NpcManager {
 
                         scene.dialogue.show([
                             'Drunkard: *hic*... Ihahaa I ha haa.. hepo hirnahtaa *burp*...',
-                            'Drunkard: Give me a bottle of Jallu!'
+                            'Drunkard: Hey Mickey Mouse! Give me a bottle of Jallu!'
                         ], null, buttons);
                     }
                 }
